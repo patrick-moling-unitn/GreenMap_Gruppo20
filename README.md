@@ -9,3 +9,8 @@ Link dei deliverable consegnati
 
 In questa repository è presente
 + il file **green_map_documentation.yaml** che spiega le funzionalità RESTful offerte dal nostro servizio.
++ il file **server.js** che permette di eseguire il backend del nostro servizio.
+
+Come avviare il server
++ inserire il comando *npm install* nella console per installare tutte i moduli node richiesti.
++ inserire il comando *node server.js* per avviare il servizio backend del server.
