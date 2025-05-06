@@ -12,5 +12,9 @@ In questa repository è presente
 + il file **server.js** che permette di eseguire il backend del nostro servizio.
 
 Come avviare il server
++ navigare nella directory del progetto *.../GreenMap_Gruppo20*
 + inserire il comando *npm install* nella console per installare tutte i moduli node richiesti.
 + inserire il comando *node server.js* per avviare il servizio backend del server.
++ inserire il comando *cd app* per entrare nella cartella *.../GreenMap_Gruppo20/app*
++ inserire il comando *npm install* nella console per installare tutte i moduli node richiesti.
++ inserire il comando *npm run build* nella console per creare la build del server VueJS.

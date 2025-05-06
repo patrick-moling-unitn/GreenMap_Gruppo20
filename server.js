@@ -5,7 +5,7 @@ const app = express()
 
 app.use(CORS())
 
-const path = __dirname + '/app/';
+const path = __dirname + '/app/dist/';
 console.log(path)
 app.use(express.static(path));
 
