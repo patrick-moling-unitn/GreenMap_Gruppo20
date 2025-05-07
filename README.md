@@ -10,6 +10,7 @@ Link dei deliverable consegnati
 In questa repository è presente
 + il file **green_map_documentation.yaml** che spiega le funzionalità RESTful offerte dal nostro servizio.
 + il file **server.js** che permette di eseguire il backend del nostro servizio.
++ i file **index.html** e **App.vue** sui quali viene costruita la build del nostro frontend offerto poi da Express.
 
 Come avviare il server
 + navigare nella directory del progetto *.../GreenMap_Gruppo20*
