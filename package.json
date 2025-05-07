@@ -4,6 +4,8 @@
   "description": "Prima versione dell'applicazione GreenMap",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "node -r dotenv/config server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -11,5 +13,8 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.5.0"
   }
 }

@@ -1,6 +1,8 @@
 const express = require("express")
 const CORS = require("cors")
 
+const PORT = process.env.SERVER_PORT;
+
 const app = express()
 
 app.use(CORS())
@@ -13,4 +15,4 @@ app.use("/", (req, res) =>{
     res.sendFile(path + "index.html");
 })
 
-app.listen(3000, () => { console.log("Listening on port 3000") })
+app.listen(PORT, () => { console.log(`Listening on port ${PORT}`) })
