@@ -1,7 +1,9 @@
 const express = require("express")
 const CORS = require("cors")
+const mongoose = require('mongoose');
 
 const PORT = process.env.SERVER_PORT;
+const DB_URL = process.env.DATABASE_URL;
 
 const app = express()
 
@@ -15,4 +17,12 @@ app.use("/", (req, res) =>{
     res.sendFile(path + "index.html");
 })
 
-app.listen(PORT, () => { console.log(`Listening on port ${PORT}`) })
+console.log(DB_URL)
+app.locals.db = mongoose.connect(DB_URL)
+.then (() => {
+    console.log("Connected to Database");
+    app.listen(PORT, () => { console.log(`Listening on port ${PORT}`) }) 
+})
+.catch ((e) => {
+    console.log("Connessione al Database fallita"+e);
+});
