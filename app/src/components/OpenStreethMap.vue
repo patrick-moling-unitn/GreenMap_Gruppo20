@@ -40,7 +40,7 @@ export default {
           var center = map.getCenter();
           console.log("Map center coordinates:", center.lat, center.lng);
           
-          showAllTrashcans();
+          showAllTrashcans(center);
         });
 
         function getLocation() {
@@ -77,40 +77,48 @@ export default {
             geolocalizationMarket.setLatLng(geolocalizedPosition)
         }
 
-        function showAllTrashcans(){
+        function showAllTrashcans(currentPosition){
           fetch(`http://localhost:${3000}/trashcans`)
             .then(response => response.json())
             .then(trashcans => { 
               console.log(trashcans)
               
-              let i = 0;
+              let i = 0, visibleTrashcanCount = trashcans.length;
+              console.log("in " + trashcanMarkers.length);
+              //console.log(trashcanMarkers);
               trashcans.forEach(element => {
                 let lat = parseFloat(element.latitude.$numberDecimal);
                 let lng = parseFloat(element.longitude.$numberDecimal);
-                console.log(trashcanMarkers);
-                console.log(trashcanMarkers.length);
 
-                let position = L.latLng(lat, lng), marker;
-                if (trashcanMarkers.length > i){
-                  marker = trashcanMarkers[i];
-                  marker.setLatLng(position);
-                }
-                else{
-                  marker = L.marker(position);
-                  trashcanMarkers.push(marker);
-                  marker.addTo(map);
-                }
-                marker.setIcon(residueBinIcon);
+                let position = L.latLng(lat, lng);
+                
+                //console.log(position.distanceTo(currentPosition));
+                if (position.distanceTo(currentPosition) < 1000){
+                  let marker;
+                  if (trashcanMarkers.length > i){
+                    marker = trashcanMarkers[i];
+                    marker.setLatLng(position);
+                  }
+                  else{
+                    marker = L.marker(position);
+                    trashcanMarkers.push(marker);
+                    marker.addTo(map);
+                  }
+                  marker.setIcon(residueBinIcon);
 
-                i++;
+                  i++;
+                }else
+                  visibleTrashcanCount--;
               });
+              console.log("visible " + visibleTrashcanCount);
 
-              if (trashcans.length < trashcanMarkers.length){
-                for (i=trashcans.length; i<trashcanMarkers.length; i++){
+              if (visibleTrashcanCount < trashcanMarkers.length){
+                for (i=visibleTrashcanCount; i<trashcanMarkers.length; i++){
                   trashcanMarkers[i].removeFrom(map);
                 }
-                trashcanMarkers = trashcanMarkers.slice(trashcans.length);
+                trashcanMarkers = trashcanMarkers.slice(0, visibleTrashcanCount);
               }
+              console.log("out " + trashcanMarkers.length);
             });
         }
 
