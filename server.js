@@ -1,6 +1,10 @@
+const mongoose = require('mongoose');
 const express = require("express")
 const CORS = require("cors")
-const mongoose = require('mongoose');
+const trashcan = require('./api/trashcanManager')
+
+//const trashcanManager = require("./app/api/trashcanManager.js")
+//app.use(trashcanManager)
 
 const PORT = process.env.SERVER_PORT;
 const DB_URL = process.env.DATABASE_URL;
@@ -8,12 +12,15 @@ const DB_URL = process.env.DATABASE_URL;
 const app = express()
 
 app.use(CORS())
+app.use(express.json());
+
+app.use("/trashcans", trashcan)
 
 const path = __dirname + '/app/dist/';
 console.log(path)
 app.use(express.static(path));
 
-app.use("/", (req, res) =>{
+app.get("/", (req, res) =>{
     res.sendFile(path + "index.html");
 })
 
