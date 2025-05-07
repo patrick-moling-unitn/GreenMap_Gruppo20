@@ -16,6 +16,10 @@ app.use(express.json());
 
 app.use("/trashcans", trashcan)
 
+app.get("/residue-bin-icon", (req, res) =>{
+    res.sendFile(__dirname + "/app/public/" + "residue-bin-icon.png");
+})
+
 const path = __dirname + '/app/dist/';
 console.log(path)
 app.use(express.static(path));

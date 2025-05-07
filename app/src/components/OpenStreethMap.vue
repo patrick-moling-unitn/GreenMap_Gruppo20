@@ -13,6 +13,11 @@ export default {
         let geolocalizationMarket;
         let repeater;
 
+        let residueBinIcon = L.icon({
+          iconUrl: 'residue-bin-icon',
+          iconSize: [25, 25],
+        });
+
         //const PORT = process.env.SERVER_PORT;
 
         let trashcanMarkers = [];
@@ -85,16 +90,18 @@ export default {
                 console.log(trashcanMarkers);
                 console.log(trashcanMarkers.length);
 
-                let position = L.latLng(lat, lng);
+                let position = L.latLng(lat, lng), marker;
                 if (trashcanMarkers.length > i){
-                  let marker = trashcanMarkers[i];
+                  marker = trashcanMarkers[i];
                   marker.setLatLng(position);
                 }
                 else{
-                  let marker = L.marker(position);
+                  marker = L.marker(position);
                   trashcanMarkers.push(marker);
                   marker.addTo(map);
                 }
+                marker.setIcon(residueBinIcon);
+
                 i++;
               });
 
