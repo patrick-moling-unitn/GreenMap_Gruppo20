@@ -13,6 +13,8 @@ export default {
         let geolocalizationMarket;
         let repeater;
 
+        const PORT = process.env.SERVER_PORT;
+
         getLocation();
 
         console.log("creating map options")
@@ -26,6 +28,18 @@ export default {
 
         let layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
         map.addLayer(layer);
+        
+        map.on('moveend', function() {
+          var center = map.getCenter();
+          console.log("Map center coordinates:", center.lat, center.lng);
+          
+          fetch(`http://localhost:${3000}/trashcans`)
+            .then(response => response.json())
+            .then(trashcans => { 
+              console.log(trashcans)
+              //Show the trashcans on the map
+            });
+        });
 
         function getLocation() {
           if (navigator.geolocation) {
