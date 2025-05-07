@@ -3,13 +3,16 @@
 </template>
 
 <script template>
-import vector2 from "vector2"
 export default {
     data: () => ({
       //......data of your component
     }),
     mounted() {
         let geolocalizedPosition = new L.LatLng(0,0);
+        let geolocalizationSuccess = false;
+        let geolocalizationMarket;
+        let repeater;
+
         getLocation();
 
         console.log("creating map options")
@@ -37,11 +40,24 @@ export default {
           " Longitude: " + position.coords.longitude);
           geolocalizedPosition = new L.LatLng(position.coords.
             latitude, position.coords.longitude);
-          map.panTo(geolocalizedPosition)
+
+          if (!geolocalizationSuccess){
+            geolocalizationSuccess = true;
+            map.panTo(geolocalizedPosition);
+          }
+          updateCurrentPosition();
+          repeater = setTimeout(getLocation, 10000);
         }
 
         function error() {
           alert("Sorry, no position available.")
+        }
+
+        function updateCurrentPosition(){
+          if (geolocalizationMarket == null)
+            geolocalizationMarket = L.marker(geolocalizedPosition).addTo(map);
+          else
+            geolocalizationMarket.setLatLng(geolocalizedPosition)
         }
     },
     methods: {
