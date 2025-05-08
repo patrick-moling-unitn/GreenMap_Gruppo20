@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const express = require("express")
 const CORS = require("cors")
 const trashcan = require('./api/trashcanManager')
+const authManager = require('./api/authenticationManager')
 
 //const trashcanManager = require("./app/api/trashcanManager.js")
 //app.use(trashcanManager)
@@ -15,6 +16,7 @@ app.use(CORS())
 app.use(express.json());
 
 app.use("/trashcans", trashcan)
+app.use("/login", authManager)
 
 app.get("/residue-bin-icon", (req, res) =>{
     res.sendFile(__dirname + "/app/public/" + "residue-bin-icon.png");
