@@ -2,14 +2,6 @@ const express = require('express');
 const Trashcan = require('../models/trashcan');
 const router = express.Router();
 
-const TrashType = Object.freeze({
-    PAPER: 0,
-    PLASTIC: 1,
-    RESIDUE: 2,
-    GLASS: 3,
-    ANY: 4
-});
-
 router.get("/", async (req, res) => {
     console.log("get all trashcans request")
     let trashcanList = await Trashcan.find({});
@@ -22,6 +14,23 @@ router.get("/", async (req, res) => {
         };
     });
     res.status(200).json(trashcanList);
+});
+
+router.get("/:position", async (req, res) => {
+    console.log(req.params.position)
+    let trashcanList = await Trashcan.find({});
+    let finalList = []
+    console.log("start: "+trashcanList)
+    trashcanList.forEach(element => {
+        let lat = parseFloat(element.latitude.$numberDecimal);
+        let lng = parseFloat(element.longitude.$numberDecimal);
+
+        let trashcanPosition; // = L.latLng(lat, lng); Leaflet non è definita qui!
+        // if (req.params.position.distanceTo(trashcanPosition) < 1000) distanceTo non è definita qui!
+        finalList.push(element)
+    });
+    console.log("finalList: "+finalList)
+    res.status(200).json(finalList);
 });
 
 router.post("",  async (req, res) => {
