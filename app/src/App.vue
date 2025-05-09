@@ -2,20 +2,28 @@
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
 import OpenStreethMap from './components/OpenStreethMap.vue'
+import Register from './components/Register.vue'
 </script>
 
 <template>
-  <OpenStreethMap/>
-  <header>
+  <!-- <header>
     <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
     </div>
-  </header>
+  </header> -->
 
   <main>
-    <TheWelcome />
+    <section> <!-- sezione mappa -->
+      <OpenStreethMap/>
+    </section>
+    <section> <!-- sezione registrazione -->
+      <Register/>
+    </section>
+    <section>
+      <TheWelcome />
+    </section>
   </main>
 </template>
 
