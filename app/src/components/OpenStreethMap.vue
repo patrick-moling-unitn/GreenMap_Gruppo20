@@ -14,7 +14,44 @@ export default
     const GPS_UPDATE_INTERVAL_MS = 10_000;
     
     const DEBUGGING_CONSOLE_LEVEL = 1; //1: min; 2: mid; 3: high
-    const TEST_MODE = true;
+    const TEST_MODE = true;    
+    
+    const TrashType = Object.freeze({
+        PAPER: 0,
+        PLASTIC: 1,
+        RESIDUE: 2,
+        GLASS: 3,
+        ORGANIC: 4
+    });
+
+    const paperBinIcon = L.icon({
+      iconUrl: 'paper-bin-icon',
+      shadowUrl: 'recycle-bin-hardshadow',
+      iconSize: [35, 35],
+      shadowSize: [35, 35]
+    }),
+    plasticBinIcon = L.icon({
+      iconUrl: 'plastic-bin-icon',
+      shadowUrl: 'recycle-bin-shadow',
+      iconSize: [35, 35],
+      shadowSize: [35, 35]
+    }),
+    residueBinIcon = L.icon({
+      iconUrl: 'residue-bin-icon',
+      iconSize: [35, 35]
+    }),
+    glassBinIcon = L.icon({
+      iconUrl: 'glass-bin-icon',
+      shadowUrl: 'recycle-bin-shadow',
+      iconSize: [35, 35],
+      shadowSize: [35, 35]
+    }),
+    organicBinIcon = L.icon({
+      iconUrl: 'organic-bin-icon',
+      shadowUrl: 'recycle-bin-shadow',
+      iconSize: [35, 35],
+      shadowSize: [35, 35]
+    });
 
     let geolocalizationManager = new GeolocalizationManager();
     let geolocalizationMarker;
@@ -22,11 +59,6 @@ export default
 
     let trashcansCached;
     let lastTrashcanUpdateTime = -1;
-
-    let residueBinIcon = L.icon({
-      iconUrl: 'residue-bin-icon',
-      iconSize: [25, 25],
-    });
 
     let trashcanMarkers = [];
 
@@ -127,7 +159,14 @@ export default
               trashcanMarkers.push(marker);
               marker.addTo(map);
             }
-            marker.setIcon(residueBinIcon);
+            switch (element.trashcanType){
+              case TrashType.PAPER: marker.setIcon(paperBinIcon); break;
+              case TrashType.PLASTIC: marker.setIcon(plasticBinIcon); break;
+              case TrashType.RESIDUE: marker.setIcon(residueBinIcon); break;
+              case TrashType.GLASS: marker.setIcon(glassBinIcon); break;
+              case TrashType.ORGANIC: marker.setIcon(organicBinIcon); break;
+              default: console.warn("Funzionalità non implementata! (type: "+element.trashcanType+")");
+            }
 
             i++;
           }else
@@ -146,13 +185,17 @@ export default
       if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("out " + trashcanMarkers.length);
     }
 
+    function randomIntFromInterval(min, max) { // massimo e minimo inclusi
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
     function addNewTrashcan(geolocalizedPosition){
       fetch(`http://localhost:${3000}/trashcans`, {
         method: "POST",
         body: JSON.stringify({
           latitude: geolocalizedPosition.lat + (Math.random() - Math.random())/100,
           longitude: geolocalizedPosition.lng + (Math.random() - Math.random())/100,
-          trashcanType: 3
+          trashcanType: randomIntFromInterval(TrashType.PAPER, TrashType.ORGANIC)
         }),
         headers: {
           "Content-type": "application/json; charset=UTF-8"
