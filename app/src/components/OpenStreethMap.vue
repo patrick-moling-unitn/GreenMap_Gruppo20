@@ -25,30 +25,30 @@ export default
     });
 
     const paperBinIcon = L.icon({
-      iconUrl: 'paper-bin-icon',
-      shadowUrl: 'recycle-bin-hardshadow',
+      iconUrl: './paper-bin-icon.png',
+      shadowUrl: './recycle-bin-hardshadow.png',
       iconSize: [35, 35],
       shadowSize: [35, 35]
     }),
     plasticBinIcon = L.icon({
-      iconUrl: 'plastic-bin-icon',
-      shadowUrl: 'recycle-bin-shadow',
+      iconUrl: './plastic-bin-icon.png',
+      shadowUrl: './recycle-bin-shadow.png',
       iconSize: [35, 35],
       shadowSize: [35, 35]
     }),
     residueBinIcon = L.icon({
-      iconUrl: 'residue-bin-icon',
+      iconUrl: './residue-bin-icon.png',
       iconSize: [35, 35]
     }),
     glassBinIcon = L.icon({
-      iconUrl: 'glass-bin-icon',
-      shadowUrl: 'recycle-bin-shadow',
+      iconUrl: './glass-bin-icon.png',
+      shadowUrl: './recycle-bin-shadow.png',
       iconSize: [35, 35],
       shadowSize: [35, 35]
     }),
     organicBinIcon = L.icon({
-      iconUrl: 'organic-bin-icon',
-      shadowUrl: 'recycle-bin-shadow',
+      iconUrl: './organic-bin-icon.png',
+      shadowUrl: './recycle-bin-shadow.png',
       iconSize: [35, 35],
       shadowSize: [35, 35]
     });
