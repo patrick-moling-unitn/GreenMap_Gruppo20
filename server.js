@@ -3,6 +3,7 @@ const express = require("express")
 const CORS = require("cors")
 const trashcan = require('./api/trashcanManager')
 const authManager = require('./api/authenticationManager')
+const registrManager = require('./api/registrationManager')
 
 //const trashcanManager = require("./app/api/trashcanManager.js")
 //app.use(trashcanManager)
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use("/trashcans", trashcan)
 app.use("/login", authManager)
+app.use("/users", registrManager)
 
 app.get("/residue-bin-icon", (req, res) =>{
     res.sendFile(__dirname + "/app/public/" + "residue-bin-icon.png");
