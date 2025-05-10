@@ -1,9 +1,5 @@
 <template>
   <form @submit.prevent="handleSubmit">
-    <div>
-      <label for="username">Username:</label>
-      <input id="username" v-model="form.username" type="text" required />
-    </div>
 
     <div>
       <label for="email">Email:</label>
@@ -31,7 +27,6 @@ export default {
     data() {
         return {
             form: {
-                username: '',
                 email: '',
                 password: ''
             },
@@ -47,7 +42,6 @@ export default {
             fetch(`http://localhost:${3000}/users/newuser`, {
                 method: "POST",
                 body: JSON.stringify({
-                    username: this.form.username,
                     email: this.form.email,
                     password: this.form.password
                 }),

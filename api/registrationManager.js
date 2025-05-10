@@ -9,9 +9,7 @@ router.get("/allusers", async (req, res) => {
     let usersList = await User.find({});
     usersList = usersList.map((user) => {
         return {
-            self: '/users/' + user.id,
-            id: user.id,
-            username: user.username,
+            self: '/users/' + user._id,
             email: user.email,
             passwordHash: user.password
         };
@@ -22,8 +20,6 @@ router.get("/allusers", async (req, res) => {
 router.post("/newuser",  async (req, res) => {
     console.log("post trashcan request");
 	let user = new User({
-        id: "",
-        username: req.body.username,
         email: req.body.email,
         admin: false,
         points: 0,
@@ -31,33 +27,24 @@ router.post("/newuser",  async (req, res) => {
         passwordHash: req.body.password
     });
     if (user.passwordHash.length < USER_PASSWORD_LENGTH)
-        return res.status(400).json({error: "password troppo breve"});
-
-    async function generateAndSendId(){
-        user.id=Math.random().toString(36).substring(2, USER_ID_LENGTH+2);
+        res.status(400).json({error: "password troppo breve"});
+    else{
         try{
             await user.save();
-            return res.location("user/" + user.id).status(201).send();
+            res.location("user/" + user.id).status(201).send();
         }catch(err){
-            if (err.code === 11000){
-                const duplicateKey = Object.keys(err.keyValue)[0];
-                if(duplicateKey == "id")
-                    return await generateAndSendId();
-                else if(duplicateKey == "email")
-                    return res.status(400).json({error: "email già esistente"});
-            }
-            else{
+            if (err.code === 11000 && Object.keys(err.keyValue)[0] == "email")
+                res.status(400).json({error: "email già esistente"});
+            else
                 return res.status(500).json(err);
-            }
-        }      
+        }
     }
-    await generateAndSendId();    
 });
 
 router.delete('/delete/:id', async (req, res) => {
-    await User.deleteOne({ id: req.params.id });
+    await User.deleteOne({ _id: req.params.id });
     console.log('user removed');
-    res.status(204).json({ id: req.params.id });
+    res.status(204).json({ _id: req.params.id });
 });
 
 module.exports = router;
