@@ -1,6 +1,5 @@
 <template>
   <form @submit.prevent="handleSubmit">
-
     <div>
       <label for="email">Email:</label>
       <input id="email" v-model="form.email" type="email" required />
@@ -14,21 +13,30 @@
     <button type="submit">Registrati</button>
   </form>
 
+  <button @click="deleteAllUsers">Delete All</button>
   <button @click="showAllUsers">Show All</button>
 
   <form @submit.prevent="deleteUser">
     <input id="userid" v-model="user.id" type="text"/>
     <button type="submit">Delete User</button>
   </form>
+  <EmailVerification v-if="this.verification.id" :userId="this.verification.id"/>
 </template>
 
 <script>
+import EmailVerification from './EmailVerification.vue';
 export default {
+    components: {
+      EmailVerification
+    },
     data() {
         return {
             form: {
                 email: '',
                 password: ''
+            },
+            verification: {
+              id: ''
             },
             user: {
                 id: ''
@@ -36,10 +44,9 @@ export default {
         }
     },
     methods: {
-        
         handleSubmit() {
             console.log('Dati inviati:', this.form);
-            fetch(`http://localhost:${3000}/users/newuser`, {
+            fetch(`http://localhost:${3000}/users/register`, {
                 method: "POST",
                 body: JSON.stringify({
                     email: this.form.email,
@@ -48,7 +55,19 @@ export default {
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
                 }
-            }).then(response => console.log(response));
+            })
+            .then(response => {
+              if (!response.ok) {
+                console.log("Errore nella risposta:", response);
+                alert("Errore nelle credenziali");
+                return;
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data)
+                this.verification.id = data.id;
+            });
         },
         showAllUsers(){
             console.log('Dati richiesti');
@@ -59,6 +78,13 @@ export default {
         deleteUser(){
             console.log('Dati inviati');
             fetch(`http://localhost:${3000}/users/delete/${this.user.id}`,{
+                method: "DELETE",
+            })
+            .then(response => console.log(response));
+        },
+        deleteAllUsers(){
+          console.log('Dati inviati');
+            fetch(`http://localhost:${3000}/users/deleteall`,{
                 method: "DELETE",
             })
             .then(response => console.log(response));
