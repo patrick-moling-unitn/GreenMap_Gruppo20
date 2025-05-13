@@ -20,7 +20,6 @@
     <input id="userid" v-model="user.id" type="text"/>
     <button type="submit">Delete User</button>
   </form>
-  <EmailVerification v-if="this.verification.id" :userId="this.verification.id"/>
 </template>
 
 <script>
