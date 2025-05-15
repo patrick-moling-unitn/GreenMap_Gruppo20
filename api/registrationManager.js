@@ -7,14 +7,14 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 
 const router = express.Router();
 //costanti
-const USER_PASSWORD_LENGTH =8;
-const SALT_ROUNDS=10;
+const MIN_USER_PASSWORD_LENGTH = 8;
+const SALT_ROUNDS = process.env.HASHING_SALT_ROUNDS;
 const USERNAME = process.env.EMAIL_USER;
 const PASSWORD = process.env.EMAIL_PASS;
 
 router.get("/", async (req, res) => {
-    console.log("get all users request")
-    let usersList = await AuthenticatedUser.find({});
+    console.log("get all registering user request")
+    let usersList = await RegisteringUser.find({});
     usersList = usersList.map((user) => {
         return {
             self: '/users/' + user._id,
@@ -28,13 +28,13 @@ router.get("/", async (req, res) => {
 router.post("/",  async (req, res, next) => {
     if (req.body.email)
     {
-        alreadyRegisteringEmail= await RegisteringUser.findOne({ email: req.body.email.toLowerCase()});
+        alreadyRegisteringEmail = await RegisteringUser.findOne({ email: req.body.email.toLowerCase()});
         if(alreadyRegisteringEmail)
             return res.status(400).json({error: "already sent request"});
         alreadyExistingEmail = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
         if(alreadyExistingEmail)
             return res.status(400).json({error: "email already existing"});
-        if (req.body.password.length < USER_PASSWORD_LENGTH)
+        if (req.body.password.length < MIN_USER_PASSWORD_LENGTH)
             return res.status(400).json({error: "password too short"});
 
         let reguser = new RegisteringUser({
@@ -96,7 +96,7 @@ router.post("/",  async (req, res) => {
         email: newuser.email,
         admin: false,
         points: 0,
-        authenticated: false,
+        banned: false,
         passwordHash: newuser.passwordHash
     });
     await RegisteringUser.deleteOne({_id: req.body.id});
@@ -114,10 +114,10 @@ router.delete('/:id', async (req, res) => {
     console.log('user removed');
     res.status(204).json({ _id: req.params.id });
 });
+
 router.delete('/', async (req, res) => {
-    await AuthenticatedUser.deleteMany({})
     await RegisteringUser.deleteMany({})
-    console.log('all users removed');
+    console.log('all registrating users removed');
     res.status(204).send();
 });
 

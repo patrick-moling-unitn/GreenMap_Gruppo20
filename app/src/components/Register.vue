@@ -15,8 +15,8 @@
       <button type="submit">Registrati</button>
     </form>
 
-    <button @click="deleteAllUsers">Delete All</button>
-    <button @click="showAllUsers">Show All</button>
+    <button @click="deleteAllUsers">Delete All Registering User</button>
+    <button @click="showAllUsers">Show All Registering User</button>
 
     <form @submit.prevent="deleteUser">
       <input id="userid" v-model="user.id" type="text"/>
