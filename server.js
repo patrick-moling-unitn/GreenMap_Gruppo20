@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const express = require("express")
 const CORS = require("cors")
-const trashcan = require('./api/trashcanManager')
-const authManager = require('./api/authenticationManager')
-const registrManager = require('./api/registrationManager')
+const trashcanManager = require('./api/trashcanManager')
+const authenticationManager = require('./api/authenticationManager')
+const registrationManager = require('./api/registrationManager')
 
 //const trashcanManager = require("./app/api/trashcanManager.js")
 //app.use(trashcanManager)
@@ -16,13 +16,9 @@ const app = express()
 app.use(CORS())
 app.use(express.json());
 
-app.use("/trashcans", trashcan)
-app.use("/login", authManager)
-app.use("/users", registrManager)
-
-app.get("/residue-bin-icon", (req, res) =>{
-    res.sendFile(__dirname + "/app/public/" + "residue-bin-icon.png");
-})
+app.use("/trashcans", trashcanManager)
+app.use("/login", authenticationManager)
+app.use("/register", registrationManager)
 
 const path = __dirname + '/app/dist/';
 console.log(path)

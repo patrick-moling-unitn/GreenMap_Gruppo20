@@ -7,7 +7,6 @@
 </template>
 
 <script>
-import Register from './Register.vue';
 export default {
     data() {
         return {
@@ -19,7 +18,7 @@ export default {
     },
     methods: {
         verifyCode() {
-            fetch(`http://localhost:${3000}/users/newuser`, {
+            fetch(`http://localhost:${3000}/register`, {
                 method: "POST",
                 body: JSON.stringify({
                     id: this.userId,
@@ -37,7 +36,7 @@ export default {
         }
     },
     mounted() {
-        this.userId = Register.verification.id;
+        //
     }
 }
 </script>

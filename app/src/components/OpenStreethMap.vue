@@ -7,6 +7,10 @@ import GeolocalizationManager from '../geolocalization';
 
 export default
 {
+  activated()
+  {
+    console.log("Activated");
+  },
   mounted()
   {
     const MAX_TRASHCAN_VIEW_DISTANCE = 1_000;

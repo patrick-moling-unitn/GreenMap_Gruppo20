@@ -1,25 +1,28 @@
 <template>
-  <form @submit.prevent="handleSubmit">
-    <div>
-      <label for="email">Email:</label>
-      <input id="email" v-model="form.email" type="email" required />
-    </div>
+  <EmailVerification v-if="this.verification.id" :userId="this.verification.id"/>
+  <div v-else>
+    <form @submit.prevent="handleSubmit">
+      <div>
+        <label for="email">Email:</label>
+        <input id="email" v-model="form.email" type="email" required />
+      </div>
 
-    <div>
-      <label for="password">Password:</label>
-      <input id="password" v-model="form.password" type="password" required />
-    </div>
+      <div>
+        <label for="password">Password:</label>
+        <input id="password" v-model="form.password" type="password" required />
+      </div>
 
-    <button type="submit">Registrati</button>
-  </form>
+      <button type="submit">Registrati</button>
+    </form>
 
-  <button @click="deleteAllUsers">Delete All</button>
-  <button @click="showAllUsers">Show All</button>
+    <button @click="deleteAllUsers">Delete All</button>
+    <button @click="showAllUsers">Show All</button>
 
-  <form @submit.prevent="deleteUser">
-    <input id="userid" v-model="user.id" type="text"/>
-    <button type="submit">Delete User</button>
-  </form>
+    <form @submit.prevent="deleteUser">
+      <input id="userid" v-model="user.id" type="text"/>
+      <button type="submit">Delete User</button>
+    </form>
+  </div>
 </template>
 
 <script>
@@ -45,7 +48,7 @@ export default {
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
-            fetch(`http://localhost:${3000}/users/register`, {
+            fetch(`http://localhost:${3000}/register`, {
                 method: "POST",
                 body: JSON.stringify({
                     email: this.form.email,
@@ -70,20 +73,20 @@ export default {
         },
         showAllUsers(){
             console.log('Dati richiesti');
-            fetch(`http://localhost:${3000}/users/allusers`)
+            fetch(`http://localhost:${3000}/register`)
             .then(response => response.json())
             .then(users => console.log(users));
         },
         deleteUser(){
             console.log('Dati inviati');
-            fetch(`http://localhost:${3000}/users/delete/${this.user.id}`,{
+            fetch(`http://localhost:${3000}/register/${this.user.id}`,{
                 method: "DELETE",
             })
             .then(response => console.log(response));
         },
         deleteAllUsers(){
           console.log('Dati inviati');
-            fetch(`http://localhost:${3000}/users/deleteall`,{
+            fetch(`http://localhost:${3000}/register`,{
                 method: "DELETE",
             })
             .then(response => console.log(response));
