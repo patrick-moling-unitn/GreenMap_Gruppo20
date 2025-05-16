@@ -34,7 +34,8 @@ router.get("/:position", async (req, res) => {
 });
 
 router.post("",  async (req, res) => {
-    console.log("post trashcan request")
+    console.log("post trashcan request from user "+req.loggedUser.email)
+
 	let trashcan = new Trashcan({
         latitude: req.body.latitude,
         longitude: req.body.longitude,

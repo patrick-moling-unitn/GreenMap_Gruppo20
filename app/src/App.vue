@@ -60,19 +60,24 @@ const currentView = computed(() => {
 const loginHandler = function(recievedToken) {
   console.log(`User logged in and has the following auth token: ${recievedToken}`)
   authToken.value = recievedToken;
-  currentPath.value = "#/"
+  window.location.hash = "#/"
   alert("Logged in")
 }
 
 const logoutHandler = function() {
   console.log(`User logged out`)
   authToken.value = null;
-  currentPath.value = "#/"
+  window.location.hash = "#/"
   alert("Logged out")
+}
+
+const sendAuthToken = function() {
+  EventBus.emit('authToken', authToken.value)
 }
 
 EventBus.on('loggedin', loginHandler)
 EventBus.on('loggedout', logoutHandler)
+EventBus.on('authTokenRequest', sendAuthToken)
 </script>
 
 <template>

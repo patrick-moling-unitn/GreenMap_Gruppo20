@@ -5,6 +5,7 @@
 <script template>
 import GeolocalizationManager from '../geolocalization';
 import { onActivated, onDeactivated } from 'vue'
+import TokenManager from '@/tokenManager'
 
 export default
 {
@@ -112,10 +113,11 @@ export default
       let geolocalizedPosition = L.latLng(position.coords.latitude, position.coords.longitude);
 
       if (firstSuccess){
-        if (TEST_MODE) addNewTrashcan(geolocalizedPosition); //---TEST--- aggiunge un cestino vicino la posizione attuale
         showAllTrashcans(geolocalizedPosition);
         map.panTo(geolocalizedPosition);
       }
+
+      if (TEST_MODE) addNewTrashcan(geolocalizedPosition); //---TEST--- aggiunge un cestino vicino la posizione attuale
 
       updateCurrentPosition(geolocalizedPosition);
       requestRepeater = setTimeout(requestUserLocation, GPS_UPDATE_INTERVAL_MS);
@@ -207,7 +209,8 @@ export default
           trashcanType: randomIntFromInterval(TrashType.PAPER, TrashType.ORGANIC)
         }),
         headers: {
-          "Content-type": "application/json; charset=UTF-8"
+          "Content-type": "application/json; charset=UTF-8",
+          "x-access-token": TokenManager()
         }
       });
     }

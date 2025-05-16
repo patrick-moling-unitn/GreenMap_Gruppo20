@@ -4,6 +4,7 @@ const CORS = require("cors")
 const trashcanManager = require('./api/trashcanManager')
 const authenticationManager = require('./api/authenticationManager')
 const registrationManager = require('./api/registrationManager')
+const requestValidator = require('./api/requestValidator');
 
 //const trashcanManager = require("./app/api/trashcanManager.js")
 //app.use(trashcanManager)
@@ -15,6 +16,8 @@ const app = express()
 
 app.use(CORS())
 app.use(express.json());
+
+app.post("/trashcans", requestValidator) //TEST: devi essere autenticato per inviare un cestino
 
 app.use("/trashcans", trashcanManager)
 app.use("/login", authenticationManager)
