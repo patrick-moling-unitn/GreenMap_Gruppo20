@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import EventBus from '@/EventBus';
 export default {
     data() {
         return {
@@ -34,6 +35,44 @@ export default {
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
+            fetch(`http://localhost:${3000}/login`, {
+                method: "POST",
+                body: JSON.stringify({
+                    email: this.form.email,
+                    password: this.form.password
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+            .then(response => {
+              if (!response.ok) {
+                console.log("Errore nella risposta:", response);
+                alert("Errore nelle credenziali");
+                return;
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data && data.authToken){
+                console.log(data.authToken)
+                this.authToken = data.authToken;
+                EventBus.emit('loggedin', this.authToken);
+              }
+            });
+        },
+        showAllUsers(){
+            console.log('Dati richiesti');
+            fetch(`http://localhost:${3000}/login`)
+            .then(response => response.json())
+            .then(users => console.log(users));
+        },
+        deleteAllUsers(){
+          console.log('Dati inviati');
+            fetch(`http://localhost:${3000}/login`,{
+                method: "DELETE",
+            })
+            .then(response => console.log(response));
         }
     },
     mounted() {

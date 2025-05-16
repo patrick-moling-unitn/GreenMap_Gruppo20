@@ -1,6 +1,6 @@
-const router = express.Router();
 const express = require('express');
 const bcrypt = require('bcrypt');
+const router = express.Router();
 
 const RegisteringUser = require('../models/registeringUser');
 const AuthenticatedUser = require('../models/authenticatedUser');
@@ -26,16 +26,15 @@ router.get("/", async (req, res) => {
 
 router.post("/",  async (req, res) => {
     let authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
-    if(!authenticatedUserd)
-        return res.status(400).json({error: "inserted email doesn't match any user"});
+    if(!authenticatedUser)
+        return res.status(400).json({messagge: "EMAIL INSERITA INESISTENTE"});
 
     await bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
         if (result == true)
-            console.log("PASSWORD CORRETTA")
+            res.status(200).json({authToken: "test"});
         else
-            console.log("PASSWORD ERRATA")
+            res.status(400).json({messagge: "PASSWORD ERRATA"});
     });
-    res.status(200).send();
 });
 
 router.delete('/', async (req, res) => {

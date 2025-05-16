@@ -4,13 +4,10 @@
 
 <script template>
 import GeolocalizationManager from '../geolocalization';
+import { onActivated, onDeactivated } from 'vue'
 
 export default
 {
-  activated()
-  {
-    console.log("Activated");
-  },
   mounted()
   {
     const MAX_TRASHCAN_VIEW_DISTANCE = 1_000;
@@ -96,6 +93,14 @@ export default
             
         requestAllTrashcans(center);
     });
+
+    onActivated(() => {
+      requestUserLocation();
+    })
+
+    onDeactivated(() => {
+      if (requestRepeater) clearTimeout(requestRepeater);
+    })
 
     function requestUserLocation(){
       geolocalizationManager.getUserLocation(success, failure);
@@ -206,13 +211,13 @@ export default
         }
       });
     }
-  }
+  },
 }
 </script>
 
 <style scoped>
     #map{
-        width: 100%;
-        height: 100vh;
+      width: 100vh;
+      height: 100vh;
     }
 </style>
