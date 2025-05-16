@@ -1,6 +1,5 @@
 <template>
-  <p v-if="this.authToken!=''">Authenticated!</p>
-  <div v-else>
+  <div>
     <form @submit.prevent="handleSubmit">
       <div>
         <label for="email">Email:</label>
@@ -28,8 +27,7 @@ export default {
             form: {
                 email: '',
                 password: ''
-            },
-            authToken: ''
+            }
         }
     },
     methods: {
@@ -56,8 +54,7 @@ export default {
             .then(data => {
               if (data && data.authToken){
                 console.log(data.authToken)
-                this.authToken = data.authToken;
-                EventBus.emit('loggedin', this.authToken);
+                EventBus.emit('loggedin', data.authToken);
               }
             });
         },
