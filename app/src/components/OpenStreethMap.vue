@@ -1,5 +1,7 @@
 <template>
     <div id="map"></div>
+    <button type="button" class="btn btn-secondary" @click="getAllReports">Get all reports TEST</button>
+    <button type="button" class="btn btn-secondary" @click="getPersonalReports">Get personal reports TEST</button>
     <!-- Modal -->
     <div class="modal fade" id="issueReportModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -60,13 +62,53 @@ export default
       }
   },
   methods: {
+    getPersonalReports(){
+        fetch(`http://localhost:${3000}${ApiManager()}/reports?type=personal`, {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+            "x-access-token": TokenManager()
+          }
+        });
+    },
+    getAllReports(){
+        fetch(`http://localhost:${3000}${ApiManager()}/reports?type=all`, {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+            "x-access-token": TokenManager()
+          }
+        })
+        .then(response => response.json())
+        .then(reports => { 
+          console.log("Got all reports: ")
+          console.log(reports)
+        });
+    },
     submitReport(){
       console.log(this.report.type);
       console.log(this.report.description);
       if (!this.report.type || !this.report.description)
         this.error = true;
       else{
-        clearReport();
+        $('#issueReportModal').modal('hide');
+        fetch(`http://localhost:${3000}${ApiManager()}/reports`, {
+          method: "POST",
+          body: JSON.stringify({
+            reportType: this.report.type,
+            reportDescription: this.report.description,
+            latitude: this.reportPosition.lat,
+            longitude: this.reportPosition.lng
+          }),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+            "x-access-token": TokenManager()
+          }
+        }).then(response => {
+          if (response.ok)
+            alert("Report issued!")
+        });
+        this.clearReport();
       }
     },
     clearReport(){
@@ -82,7 +124,7 @@ export default
     const GPS_UPDATE_INTERVAL_MS = 10_000;
     
     const DEBUGGING_CONSOLE_LEVEL = 1; //1: min; 2: mid; 3: high
-    const TEST_MODE = true;    
+    const TEST_MODE = false;    
     
     const TrashType = Object.freeze({
         PAPER: 0,
@@ -162,8 +204,9 @@ export default
     }); 
     
     map.on('click', (event) => {
-      let time = new Date().getTime();
       console.log("Map clicked: " + event.latlng)
+      this.reportPosition.lat = event.latlng.lat
+      this.reportPosition.lng = event.latlng.lng
       this.formattedReportPosition = "{ "+event.latlng.lat.toFixed(4) + ", " + event.latlng.lng.toFixed(4)+" }"
       $('#issueReportModal').modal('show');
     });

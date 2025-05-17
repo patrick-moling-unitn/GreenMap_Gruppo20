@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 router.get("/", async (req, res) => {
-    console.log("get all authennticated users request")
+    console.log("get all authenticated users request")
     let userList = await AuthenticatedUser.find({});
     userList = userList.map((user) => {
         return {
@@ -25,6 +25,21 @@ router.get("/", async (req, res) => {
     res.status(200).json(userList);
 });
 
+router.put("/:id", async (req, res) => {
+    console.log("ban authenticated user request")
+    let authenticatedUser = await AuthenticatedUser.findOne({ _id: id});
+    if(!authenticatedUser)
+        return res.status(400).json({messagge: "ID INSERITO INESISTENTE"});
+    authenticatedUser.banned = true;
+    
+    try{
+        authenticatedUser.save();
+    }catch(err){
+        return res.status(500).json(err);
+    }
+
+    res.status(200).json(authenticatedUser);
+});
 
 router.post("/",  async (req, res) => {
     let authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
