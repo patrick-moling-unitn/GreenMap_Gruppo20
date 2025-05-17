@@ -72,6 +72,12 @@ const logoutHandler = function() {
   alert("Logged out")
 }
 
+const registrationHandler = function() {
+  console.log(`User registered`)
+  window.location.hash = "#/login"
+  alert("Registered")
+}
+
 const sendAuthToken = function(currentToken) {
   console.log("New auth token: " + (currentToken !== authToken.value))
   if (currentToken !== authToken.value)
@@ -84,6 +90,7 @@ const sendApiVersion = function() {
 
 EventBus.on('loggedin', loginHandler)
 EventBus.on('loggedout', logoutHandler)
+EventBus.on('registered', registrationHandler)
 EventBus.on('authTokenRequest', sendAuthToken)
 EventBus.on('apiVersionRequest', sendApiVersion)
 </script>
@@ -104,7 +111,7 @@ EventBus.on('apiVersionRequest', sendApiVersion)
   </header>
   <body>
     <KeepAlive>
-      <component :is="currentView" />
+      <component :is="currentView"/>
     </KeepAlive>
   </body>
 </template>

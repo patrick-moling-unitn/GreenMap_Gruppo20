@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h1>Login using existing account</h1>
     <form @submit.prevent="handleSubmit">
       <div>
         <label for="email">Email:</label>
@@ -54,8 +55,9 @@ export default {
             })
             .then(data => {
               if (data && data.authToken){
-                console.log(data.authToken)
                 EventBus.emit('loggedin', data.authToken);
+                this.form.email = '';
+                this.form.password = '';
               }
             });
         },

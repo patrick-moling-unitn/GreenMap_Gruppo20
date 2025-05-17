@@ -7,6 +7,7 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 
 const router = express.Router();
 //costanti
+const EMAIL_CODE_EXPIRATION_TIME_MIN=15
 const MIN_USER_PASSWORD_LENGTH = 8;
 const SALT_ROUNDS = Number(process.env.HASHING_SALT_ROUNDS);
 const USERNAME = process.env.EMAIL_USER;
@@ -37,27 +38,29 @@ router.post("/",  async (req, res, next) => {
         if (req.body.password.length < MIN_USER_PASSWORD_LENGTH)
             return res.status(400).json({error: "password too short"});
 
+        let expireDate = new Date(Date.now() + EMAIL_CODE_EXPIRATION_TIME_MIN * 60 * 1000);
         let reguser = new RegisteringUser({
             email: req.body.email,
             passwordHash: await bcrypt.hash(req.body.password, SALT_ROUNDS),
             verificationCode: {
                 code: Math.floor(100000 + Math.random() * 900000).toString(),
-                expireDate: new Date(Date.now() + 15 * 60 * 1000)
+                expireDate: new Date(expireDate)
             }
         });
 
-        var transporter = nodemailer.createTransport({
+        let transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: USERNAME,
                 pass: PASSWORD
             }
             });
-        var mailOptions = {
+        let mailOptions = {
             from: 'noreply.software.engineering@gmail.com',
             to: req.body.email,
-            subject: 'Your verification code',
-            text: 'Your verification code is: '+ reguser.verificationCode.code
+            subject: '[GreenMap] Verify your email',
+            text: 'Your verification code is: '+ reguser.verificationCode.code + '\n' +
+                  'The verification code will expire in '+EMAIL_CODE_EXPIRATION_TIME_MIN+' minutes.'
         };
         transporter.sendMail(mailOptions, function(error, info){
             if (error) {
@@ -86,15 +89,15 @@ router.post("/",  async (req, res, next) => {
     }
     if(verifyinguser.verificationCode.code != req.body.code)
         return res.status(400).json({error: "wrong code"});
-    req['reguser'] = verifyinguser;
+    req['registeringUser'] = verifyinguser;
     next();
 });
 
 router.post("/",  async (req, res) => {
-    const newuser = req['reguser'];
+    const newuser = req['registeringUser'];
 	let user = new AuthenticatedUser({
         email: newuser.email,
-        admin: false,
+        administrator: false,
         points: 0,
         banned: false,
         passwordHash: newuser.passwordHash
@@ -102,7 +105,6 @@ router.post("/",  async (req, res) => {
     await RegisteringUser.deleteOne({_id: req.body.id});
     try{
         await user.save();
-        console.log("user saved!")
         return res.location("user/" + user.id).status(201).send();
     }catch(err){
         return res.status(500).json(err);

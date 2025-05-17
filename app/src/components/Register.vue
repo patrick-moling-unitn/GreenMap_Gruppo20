@@ -1,6 +1,7 @@
 <template>
   <EmailVerification v-if="this.verification.id" :userId="this.verification.id"/>
   <div v-else>
+    <h1>Register new account</h1>
     <form @submit.prevent="handleSubmit">
       <div>
         <label for="email">Email:</label>
@@ -28,6 +29,7 @@
 <script>
 import EmailVerification from './EmailVerification.vue';
 import ApiManager from '@/apiManager'
+import EventBus from '@/EventBus'
 export default {
     components: {
       EmailVerification
@@ -69,7 +71,9 @@ export default {
             })
             .then(data => {
               if (data)
+              {
                 this.verification.id = data.id;
+              }
             });
         },
         showAllUsers(){
@@ -94,7 +98,12 @@ export default {
         }
     },
     mounted() {
-        //
+      EventBus.on('registered', () => {
+        console.log('resetUserID')
+        this.form.email = '';
+        this.form.password = '';
+        this.verification.id = '';
+      })
     }
 }
 </script>

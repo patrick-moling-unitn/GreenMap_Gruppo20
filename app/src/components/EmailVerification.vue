@@ -1,13 +1,15 @@
 <template>
+  <h1>Verify email</h1>
   <form @submit.prevent="verifyCode">
     <p>UserId ricevuto: {{ userId }}</p>
     <input name="code" v-model="this.code" type="text"/>
-    <button type="submit">Send Code</button>
+    <button type="submit">Confirm Code</button>
   </form>
 </template>
 
 <script>
 import ApiManager from '@/apiManager'
+import EventBus from '@/EventBus'
 export default {
     data() {
         return {
@@ -29,10 +31,12 @@ export default {
                     "Content-type": "application/json; charset=UTF-8"
                 }
             }).then(response => {
-              if(response.ok)
-                alert("Utente creato");
-              else
-                console.log(response);
+              if(response.ok){
+                EventBus.emit('registered')
+              }
+              else{
+                alert(response.error);
+              }
             });
         }
     },
