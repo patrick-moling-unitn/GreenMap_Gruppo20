@@ -6,6 +6,7 @@
 import GeolocalizationManager from '../geolocalization';
 import { onActivated, onDeactivated } from 'vue'
 import TokenManager from '@/tokenManager'
+import ApiManager from '@/apiManager'
 
 export default
 {
@@ -135,7 +136,7 @@ export default
     }
 
     function requestAllTrashcans(currentPosition){
-      fetch(`http://localhost:${3000}/trashcans`) //`http://localhost:${3000}/trashcans/`+currentPosition
+      fetch(`http://localhost:${3000}${ApiManager()}/trashcans`) //`http://localhost:${3000}/trashcans/`+currentPosition
         .then(response => response.json())
         .then(trashcans => { 
           if (DEBUGGING_CONSOLE_LEVEL >= 1) console.log("Get all trashcans")
@@ -201,7 +202,7 @@ export default
     }
 
     function addNewTrashcan(geolocalizedPosition){
-      fetch(`http://localhost:${3000}/trashcans`, {
+      fetch(`http://localhost:${3000}${ApiManager()}/trashcans`, {
         method: "POST",
         body: JSON.stringify({
           latitude: geolocalizedPosition.lat + (Math.random() - Math.random())/100,

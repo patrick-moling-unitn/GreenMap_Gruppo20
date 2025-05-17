@@ -7,6 +7,7 @@
 </template>
 
 <script>
+import ApiManager from '@/apiManager'
 export default {
     data() {
         return {
@@ -18,7 +19,7 @@ export default {
     },
     methods: {
         verifyCode() {
-            fetch(`http://localhost:${3000}/register`, {
+            fetch(`http://localhost:${3000}${ApiManager()}/register`, {
                 method: "POST",
                 body: JSON.stringify({
                     id: this.userId,

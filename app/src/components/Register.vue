@@ -27,6 +27,7 @@
 
 <script>
 import EmailVerification from './EmailVerification.vue';
+import ApiManager from '@/apiManager'
 export default {
     components: {
       EmailVerification
@@ -48,7 +49,7 @@ export default {
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
-            fetch(`http://localhost:${3000}/register`, {
+            fetch(`http://localhost:${3000}${ApiManager()}/register`, {
                 method: "POST",
                 body: JSON.stringify({
                     email: this.form.email,
@@ -73,20 +74,20 @@ export default {
         },
         showAllUsers(){
             console.log('Dati richiesti');
-            fetch(`http://localhost:${3000}/register`)
+            fetch(`http://localhost:${3000}${ApiManager()}/register`)
             .then(response => response.json())
             .then(users => console.log(users));
         },
         deleteUser(){
             console.log('Dati inviati');
-            fetch(`http://localhost:${3000}/register/${this.user.id}`,{
+            fetch(`http://localhost:${3000}${ApiManager()}/register/${this.user.id}`,{
                 method: "DELETE",
             })
             .then(response => console.log(response));
         },
         deleteAllUsers(){
           console.log('Dati inviati');
-            fetch(`http://localhost:${3000}/register`,{
+            fetch(`http://localhost:${3000}${ApiManager()}/register`,{
                 method: "DELETE",
             })
             .then(response => console.log(response));

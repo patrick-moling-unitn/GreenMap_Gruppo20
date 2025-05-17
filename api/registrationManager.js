@@ -8,7 +8,7 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 const router = express.Router();
 //costanti
 const MIN_USER_PASSWORD_LENGTH = 8;
-const SALT_ROUNDS = process.env.HASHING_SALT_ROUNDS;
+const SALT_ROUNDS = Number(process.env.HASHING_SALT_ROUNDS);
 const USERNAME = process.env.EMAIL_USER;
 const PASSWORD = process.env.EMAIL_PASS;
 

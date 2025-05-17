@@ -9,6 +9,7 @@ import OpenStreethMap from './components/OpenStreethMap.vue'
 
 import EventBus from './EventBus';
 
+const API_VERSION = "/api/v1"
 const authToken = ref('')
 
 const routes = {
@@ -71,34 +72,45 @@ const logoutHandler = function() {
   alert("Logged out")
 }
 
-const sendAuthToken = function() {
-  EventBus.emit('authToken', authToken.value)
+const sendAuthToken = function(currentToken) {
+  console.log("New auth token: " + (currentToken !== authToken.value))
+  if (currentToken !== authToken.value)
+    EventBus.emit('authToken', authToken.value)
+}
+
+const sendApiVersion = function() {
+  EventBus.emit('apiVersion', API_VERSION)
 }
 
 EventBus.on('loggedin', loginHandler)
 EventBus.on('loggedout', logoutHandler)
 EventBus.on('authTokenRequest', sendAuthToken)
+EventBus.on('apiVersionRequest', sendApiVersion)
 </script>
 
 <template>
-  <div class="full-width" v-if="!authToken">
-    <a href="#/">Home</a> |
-    <a href="#/register">Register</a> |
-    <a href="#/login">Login</a>
-  </div>
-  <div class="full-width" v-else>
-    <a href="#/">Home</a> |
-    <a href="#/todo">Issue Report</a> |
-    <a href="#/todo">Compile Questionnaire</a> |
-    <a href="#/logout">Logout</a>
-  </div>
-<KeepAlive>
-  <component :is="currentView" />
-</KeepAlive>
+  <header>
+    <div class="header-div" v-if="!authToken">
+      <a href="#/">Home</a> |
+      <a href="#/register">Register</a> |
+      <a href="#/login">Login</a>
+    </div>
+    <div class="header-div" v-else>
+      <a href="#/">Home</a> |
+      <a href="#/todo">Issue Report</a> |
+      <a href="#/todo">Compile Questionnaire</a> |
+      <a href="#/logout">Logout</a>
+    </div>
+  </header>
+  <body>
+    <KeepAlive>
+      <component :is="currentView" />
+    </KeepAlive>
+  </body>
 </template>
 
 <style scoped>
-    .full-width{
+    .header-div{
       padding: 5px;
     }
 </style>

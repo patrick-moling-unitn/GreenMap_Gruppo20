@@ -6,30 +6,24 @@ const authenticationManager = require('./api/authenticationManager')
 const registrationManager = require('./api/registrationManager')
 const requestValidator = require('./api/requestValidator');
 
-//const trashcanManager = require("./app/api/trashcanManager.js")
-//app.use(trashcanManager)
-
 const PORT = process.env.SERVER_PORT;
 const DB_URL = process.env.DATABASE_URL;
+const API_V = process.env.API_VERSION;
 
 const app = express()
 
 app.use(CORS())
 app.use(express.json());
 
-app.post("/trashcans", requestValidator) //TEST: devi essere autenticato per inviare un cestino
+app.post(API_V+"/trashcans", requestValidator) //TEST: devi essere autenticato per inviare un cestino
 
-app.use("/trashcans", trashcanManager)
-app.use("/login", authenticationManager)
-app.use("/register", registrationManager)
+app.use(API_V+"/trashcans", trashcanManager)
+app.use(API_V+"/login", authenticationManager)
+app.use(API_V+"/register", registrationManager)
 
 const path = __dirname + '/app/dist/';
 console.log(path)
 app.use(express.static(path));
-
-app.get("/", (req, res) =>{
-    res.sendFile(path + "index.html");
-})
 
 console.log(DB_URL)
 app.locals.db = mongoose.connect(DB_URL)

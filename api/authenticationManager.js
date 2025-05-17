@@ -4,7 +4,7 @@ const router = express.Router();
 const RegisteringUser = require('../models/registeringUser');
 const AuthenticatedUser = require('../models/authenticatedUser');
 
-const SALT_ROUNDS = process.env.HASHING_SALT_ROUNDS;
+const SALT_ROUNDS = Number(process.env.HASHING_SALT_ROUNDS);
 const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
@@ -45,7 +45,7 @@ router.post("/",  async (req, res) => {
 router.delete('/', async (req, res) => {
     await AuthenticatedUser.deleteMany({})
     console.log('all authenticated users removed');
-    res.status(204).send();
+    res.status(204).json({messagge: "UTENTI AUTENTICATI CANCELLATI"});
 });
 
 

@@ -21,6 +21,7 @@
 
 <script>
 import EventBus from '@/EventBus';
+import ApiManager from '@/apiManager'
 export default {
     data() {
         return {
@@ -33,7 +34,7 @@ export default {
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
-            fetch(`http://localhost:${3000}/login`, {
+            fetch(`http://localhost:${3000}${ApiManager()}/login`, {
                 method: "POST",
                 body: JSON.stringify({
                     email: this.form.email,
@@ -60,13 +61,13 @@ export default {
         },
         showAllUsers(){
             console.log('Dati richiesti');
-            fetch(`http://localhost:${3000}/login`)
+            fetch(`http://localhost:${3000}${ApiManager()}/login`)
             .then(response => response.json())
             .then(users => console.log(users));
         },
         deleteAllUsers(){
           console.log('Dati inviati');
-            fetch(`http://localhost:${3000}/login`,{
+            fetch(`http://localhost:${3000}${ApiManager()}/login`,{
                 method: "DELETE",
             })
             .then(response => console.log(response));

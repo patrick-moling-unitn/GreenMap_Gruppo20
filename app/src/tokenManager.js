@@ -8,6 +8,6 @@ const updateAuthToken = (newToken) => authToken = newToken
 EventBus.on('authToken', updateAuthToken)
 
 export default function getAuthToken(){
-    EventBus.emit('authTokenRequest')
+    EventBus.emit('authTokenRequest', authToken)
     return authToken;
 }
