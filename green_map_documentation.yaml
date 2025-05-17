@@ -112,3 +112,19 @@ paths:
                   latitude: 46.06146267294853
                   longitude: 11.117831247229145
                   trashcanType: 2
+    get:
+      summary: Returns the nearest trashcan of the specified type.
+      responses:
+        "200": #success status code
+          description: A trashcan object.
+          content:
+            application/json:
+              schema:
+                type: object 
+                properties:
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                    trashcanType:
+                      type: integer
