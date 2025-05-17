@@ -1,5 +1,40 @@
 <template>
     <div id="map"></div>
+    <!-- Modal -->
+    <div class="modal fade" id="issueReportModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Issue Report</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Report position: {{ formattedReportPosition }}</p>
+            <div class="input-group mb-3">
+              <label class="input-group-text" for="inputGroupSelect01">Report Type</label>
+              <select class="form-select" id="inputGroupSelect01" v-model="report.type">
+                <option selected disabled value="">Choose an option...</option>
+                <option value="1">Trashcan location suggestion</option>
+                <option value="2">Trashcan position missing</option>
+                <option value="3">Trash out of place</option>
+                <option value="4">Trashcan full</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text">Short report description</span>
+              <textarea class="form-control" aria-label="Short report description" v-model="report.description"></textarea>
+            </div>
+            <div class="alert alert-danger" role="alert" v-if="error">
+              Please select a valid report type and enter a short report description
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="clearReport">Cancel</button>
+            <button type="button" class="btn btn-primary" @click="submitReport">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
 </template>
 
 <script template>
@@ -10,6 +45,36 @@ import ApiManager from '@/apiManager'
 
 export default
 {
+  data() {
+      return {
+          reportPosition: {
+            lat: '',
+            lng: ''
+          },
+          report: {
+            type: '',
+            description: ''
+          },
+          error: false,
+          formattedReportPosition: ''
+      }
+  },
+  methods: {
+    submitReport(){
+      console.log(this.report.type);
+      console.log(this.report.description);
+      if (!this.report.type || !this.report.description)
+        this.error = true;
+      else{
+        clearReport();
+      }
+    },
+    clearReport(){
+      this.report.description = '';
+      this.report.type = '';
+      this.error = false;
+    }
+  },
   mounted()
   {
     const MAX_TRASHCAN_VIEW_DISTANCE = 1_000;
@@ -56,6 +121,13 @@ export default
       shadowSize: [35, 35]
     });
 
+    /*const myModal = document.getElementById('myModal')
+    const myInput = document.getElementById('myInput')
+
+    myModal.addEventListener('shown.bs.modal', () => {
+      myInput.focus()
+    })*/
+
     let geolocalizationManager = new GeolocalizationManager();
     let geolocalizationMarker;
     let requestRepeater; //fai si che il garbage collector non uccida la set timeout
@@ -87,8 +159,15 @@ export default
             
         showAllTrashcans(center);
       }
+    }); 
+    
+    map.on('click', (event) => {
+      let time = new Date().getTime();
+      console.log("Map clicked: " + event.latlng)
+      this.formattedReportPosition = "{ "+event.latlng.lat.toFixed(4) + ", " + event.latlng.lng.toFixed(4)+" }"
+      $('#issueReportModal').modal('show');
     });
-          
+
     map.on('moveend', function() {
         var center = map.getCenter();
         if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("Map center coordinates:", center.lat, center.lng);
