@@ -1,6 +1,7 @@
 const express = require('express');
 const Trashcan = require('../models/trashcan');
 const router = express.Router();
+const geolib = require("geolib");
 
 router.get("/", async (req, res) => {
     console.log("get all trashcans request")
@@ -17,20 +18,27 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:position", async (req, res) => {
-    console.log(req.params.position)
-    let trashcanList = await Trashcan.find({});
-    let finalList = []
-    console.log("start: "+trashcanList)
-    trashcanList.forEach(element => {
-        let lat = parseFloat(element.latitude.$numberDecimal);
-        let lng = parseFloat(element.longitude.$numberDecimal);
+    const [lat, lng] = req.params.position.split(',').map(Number);
+    console.log(req.params.position + " " + req.query.distance)
 
-        let trashcanPosition; // = L.latLng(lat, lng); Leaflet non è definita qui!
-        // if (req.params.position.distanceTo(trashcanPosition) < 1000) distanceTo non è definita qui!
-        finalList.push(element)
+    if (isNaN(lat) || isNaN(lng))
+        return res.status(400).json({message: "COORDINATES NOT VALID!"});
+    
+    let userPosition = {
+        latitude: lat,
+        longitude: lng
+    }
+
+    let trashcanList = await Trashcan.find({});
+    trashcanList = trashcanList.filter(element => {
+        let trashcanPosition =  {
+            latitude: parseFloat(element.latitude),
+            longitude: parseFloat(element.longitude)
+        }
+        return geolib.getDistance(userPosition, trashcanPosition) < req.query.distance;
     });
-    console.log("finalList: "+finalList)
-    res.status(200).json(finalList);
+    
+    res.status(200).json(trashcanList);
 });
 
 router.post("",  async (req, res) => {

@@ -98,7 +98,8 @@ export default
 
     requestUserLocation();
 
-    map.on('move', function() {
+    //NON E' PIU NECESSARIO (O ALMENO SEMBRA) PERCHE' I CESTINI VENGONO AGGIORNATI QUANDO LA MAPPA VIENE LASCIATA
+    /*map.on('move', function() { 
       let time = new Date().getTime();
       if (lastTrashcanUpdateTime + TRASHCAN_UPDATE_INTERVAL_MS < time)
       {
@@ -108,7 +109,7 @@ export default
             
         showAllTrashcans(center);
       }
-    }); 
+    });*/
     
     map.on('click', (event) => {
       console.log("Map clicked: " + event.latlng)
@@ -165,11 +166,14 @@ export default
     }
 
     function requestAllTrashcans(currentPosition){
-      fetch(`http://localhost:${3000}${ApiManager()}/trashcans`) //`http://localhost:${3000}/trashcans/`+currentPosition
+      fetch(`http://localhost:${3000}${ApiManager()}/trashcans/${currentPosition.lat},${currentPosition.lng}
+             ?distance=${MAX_TRASHCAN_VIEW_DISTANCE}`)
         .then(response => response.json())
         .then(trashcans => { 
-          if (DEBUGGING_CONSOLE_LEVEL >= 1) console.log("Get all trashcans")
+          if (DEBUGGING_CONSOLE_LEVEL >= 1) console.log("Get all trashcans from current position")
+          console.log(trashcans)
           trashcansCached = trashcans
+          showAllTrashcans(currentPosition)
       });
     }
 
@@ -187,31 +191,26 @@ export default
           let lng = parseFloat(element.longitude.$numberDecimal);
 
           let position = L.latLng(lat, lng);
-                
-          if (DEBUGGING_CONSOLE_LEVEL >= 3) console.log(position.distanceTo(currentPosition));
-          if (position.distanceTo(currentPosition) < MAX_TRASHCAN_VIEW_DISTANCE){
-            let marker;
-            if (trashcanMarkers.length > i){
-              marker = trashcanMarkers[i];
-              marker.setLatLng(position);
-            }
-            else{
-              marker = L.marker(position);
-              trashcanMarkers.push(marker);
-              marker.addTo(map);
-            }
-            switch (element.trashcanType){
-              case TrashType.PAPER: marker.setIcon(paperBinIcon); break;
-              case TrashType.PLASTIC: marker.setIcon(plasticBinIcon); break;
-              case TrashType.RESIDUE: marker.setIcon(residueBinIcon); break;
-              case TrashType.GLASS: marker.setIcon(glassBinIcon); break;
-              case TrashType.ORGANIC: marker.setIcon(organicBinIcon); break;
-              default: console.warn("Funzionalità non implementata! (type: "+element.trashcanType+")");
-            }
+          let marker;
+          if (trashcanMarkers.length > i){
+            marker = trashcanMarkers[i];
+            marker.setLatLng(position);
+          }
+          else{
+            marker = L.marker(position);
+            trashcanMarkers.push(marker);
+            marker.addTo(map);
+          }
+          switch (element.trashcanType){
+            case TrashType.PAPER: marker.setIcon(paperBinIcon); break;
+            case TrashType.PLASTIC: marker.setIcon(plasticBinIcon); break;
+            case TrashType.RESIDUE: marker.setIcon(residueBinIcon); break;
+            case TrashType.GLASS: marker.setIcon(glassBinIcon); break;
+            case TrashType.ORGANIC: marker.setIcon(organicBinIcon); break;
+            default: console.warn("Funzionalità non implementata! (type: "+element.trashcanType+")");
+          }
 
-            i++;
-          }else
-            visibleTrashcanCount--;
+          i++;
         });
       }
       if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("visible " + visibleTrashcanCount);
