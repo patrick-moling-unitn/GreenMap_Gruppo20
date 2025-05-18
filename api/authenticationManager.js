@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const RegisteringUser = require('../models/registeringUser');
 const AuthenticatedUser = require('../models/authenticatedUser');
 
-const SALT_ROUNDS = Number(process.env.HASHING_SALT_ROUNDS);
 const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
@@ -17,9 +15,10 @@ router.get("/", async (req, res) => {
             self: '/authenticatedUser/' + user.id,
             passwordHash: user.passwordHash,
             email: user.email,
-            authenticated: user.authenticated,
+            banned: user.banned,
             administrator: user.administrator,
-            points: user.points
+            points: user.points,
+            lastReportIssueDate: user.lastReportIssueDate
         };
     });
     res.status(200).json(userList);
@@ -27,10 +26,15 @@ router.get("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
     console.log("ban authenticated user request")
-    let authenticatedUser = await AuthenticatedUser.findOne({ _id: id});
-    if(!authenticatedUser)
-        return res.status(400).json({messagge: "ID INSERITO INESISTENTE"});
-    authenticatedUser.banned = true;
+
+    let authenticatedUser;
+    try{
+        authenticatedUser = await AuthenticatedUser.findById(req.params.id);
+    }catch(err){
+        return res.status(400).json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
+    }
+    
+    authenticatedUser.banned = req.body.banned;
     
     try{
         authenticatedUser.save();
@@ -44,7 +48,7 @@ router.put("/:id", async (req, res) => {
 router.post("/",  async (req, res) => {
     let authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
     if(!authenticatedUser)
-        return res.status(400).json({messagge: "EMAIL INSERITA INESISTENTE"});
+        return res.status(400).json({message: "EMAIL INSERITA INESISTENTE"});
 
     await bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
         if (result == true){
@@ -53,14 +57,14 @@ router.post("/",  async (req, res) => {
             res.status(200).json({authToken: jwt.sign(payload, process.env.JWT_SECRET, options)});
         }
         else
-            res.status(400).json({messagge: "PASSWORD ERRATA"});
+            res.status(400).json({message: "PASSWORD ERRATA"});
     });
 });
 
 router.delete('/', async (req, res) => {
     await AuthenticatedUser.deleteMany({})
     console.log('all authenticated users removed');
-    res.status(204).json({messagge: "UTENTI AUTENTICATI CANCELLATI"});
+    res.status(204).json({message: "UTENTI AUTENTICATI CANCELLATI"});
 });
 
 

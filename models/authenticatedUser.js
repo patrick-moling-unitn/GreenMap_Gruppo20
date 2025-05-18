@@ -7,5 +7,6 @@ module.exports = mongoose.model('AuthenticatedUser', new Schema({
     email: {type: String, lowercase: true, unique: true},
     banned: Boolean, //Non ci serve sapere se è autenticato visto che possiede un authToken
     administrator: Boolean,
-    points: Schema.Types.Int32
+    points: Schema.Types.Int32,
+    lastReportIssueDate: Date
 }));

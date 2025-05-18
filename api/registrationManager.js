@@ -38,13 +38,12 @@ router.post("/",  async (req, res, next) => {
         if (req.body.password.length < MIN_USER_PASSWORD_LENGTH)
             return res.status(400).json({error: "password too short"});
 
-        let expireDate = new Date(Date.now() + EMAIL_CODE_EXPIRATION_TIME_MIN * 60 * 1000);
         let reguser = new RegisteringUser({
             email: req.body.email,
             passwordHash: await bcrypt.hash(req.body.password, SALT_ROUNDS),
             verificationCode: {
                 code: Math.floor(100000 + Math.random() * 900000).toString(),
-                expireDate: new Date(expireDate)
+                expireDate: new Date(Date.now() + EMAIL_CODE_EXPIRATION_TIME_MIN * 60 * 1000)
             }
         });
 
@@ -100,7 +99,8 @@ router.post("/",  async (req, res) => {
         administrator: false,
         points: 0,
         banned: false,
-        passwordHash: newuser.passwordHash
+        passwordHash: newuser.passwordHash,
+        lastReportIssueDate: null
     });
     await RegisteringUser.deleteOne({_id: req.body.id});
     try{

@@ -96,20 +96,20 @@ EventBus.on('apiVersionRequest', sendApiVersion)
 </script>
 
 <template>
-  <header>
-    <div class="header-div" v-if="!authToken">
+  <header class="header-div">
+    <div v-if="!authToken">
       <a href="#/">Home</a> |
       <a href="#/register">Register</a> |
       <a href="#/login">Login</a>
     </div>
-    <div class="header-div" v-else>
+    <div v-else>
       <a href="#/">Home</a> |
       <a href="#/todo">Issue Report</a> |
       <a href="#/todo">Compile Questionnaire</a> |
       <a href="#/logout">Logout</a>
     </div>
   </header>
-  <body>
+  <body class="body-div">
     <KeepAlive>
       <component :is="currentView"/>
     </KeepAlive>
@@ -118,6 +118,9 @@ EventBus.on('apiVersionRequest', sendApiVersion)
 
 <style scoped>
     .header-div{
+      padding: 5px;
+    }
+    .body-div{
       padding: 5px;
     }
 </style>

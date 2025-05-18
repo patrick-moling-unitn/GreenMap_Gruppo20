@@ -1,42 +1,6 @@
 <template>
+    <IssueReport :position="this.reportPosition" :formattedPosition="this.formattedReportPosition"></IssueReport>
     <div id="map"></div>
-    <button type="button" class="btn btn-secondary" @click="getAllReports">Get all reports TEST</button>
-    <button type="button" class="btn btn-secondary" @click="getPersonalReports">Get personal reports TEST</button>
-    <!-- Modal -->
-    <div class="modal fade" id="issueReportModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Issue Report</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Report position: {{ formattedReportPosition }}</p>
-            <div class="input-group mb-3">
-              <label class="input-group-text" for="inputGroupSelect01">Report Type</label>
-              <select class="form-select" id="inputGroupSelect01" v-model="report.type">
-                <option selected disabled value="">Choose an option...</option>
-                <option value="1">Trashcan location suggestion</option>
-                <option value="2">Trashcan position missing</option>
-                <option value="3">Trash out of place</option>
-                <option value="4">Trashcan full</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <span class="input-group-text">Short report description</span>
-              <textarea class="form-control" aria-label="Short report description" v-model="report.description"></textarea>
-            </div>
-            <div class="alert alert-danger" role="alert" v-if="error">
-              Please select a valid report type and enter a short report description
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="clearReport">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="submitReport">Submit</button>
-          </div>
-        </div>
-      </div>
-    </div>
 </template>
 
 <script template>
@@ -44,78 +8,21 @@ import GeolocalizationManager from '../geolocalization';
 import { onActivated, onDeactivated } from 'vue'
 import TokenManager from '@/tokenManager'
 import ApiManager from '@/apiManager'
+import IssueReport from './IssueReport.vue'
 
 export default
 {
+  components: {
+    IssueReport
+  },
   data() {
       return {
           reportPosition: {
             lat: '',
             lng: ''
           },
-          report: {
-            type: '',
-            description: ''
-          },
-          error: false,
-          formattedReportPosition: ''
+          formattedReportPosition: '',
       }
-  },
-  methods: {
-    getPersonalReports(){
-        fetch(`http://localhost:${3000}${ApiManager()}/reports?type=personal`, {
-          method: "GET",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "x-access-token": TokenManager()
-          }
-        });
-    },
-    getAllReports(){
-        fetch(`http://localhost:${3000}${ApiManager()}/reports?type=all`, {
-          method: "GET",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "x-access-token": TokenManager()
-          }
-        })
-        .then(response => response.json())
-        .then(reports => { 
-          console.log("Got all reports: ")
-          console.log(reports)
-        });
-    },
-    submitReport(){
-      console.log(this.report.type);
-      console.log(this.report.description);
-      if (!this.report.type || !this.report.description)
-        this.error = true;
-      else{
-        $('#issueReportModal').modal('hide');
-        fetch(`http://localhost:${3000}${ApiManager()}/reports`, {
-          method: "POST",
-          body: JSON.stringify({
-            reportType: this.report.type,
-            reportDescription: this.report.description,
-            latitude: this.reportPosition.lat,
-            longitude: this.reportPosition.lng
-          }),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "x-access-token": TokenManager()
-          }
-        }).then(response => {
-          if (response.ok)
-            alert("Report issued!")
-        });
-        this.clearReport();
-      }
-    },
-    clearReport(){
-      this.report.description = '';
-      this.report.type = '';
-      this.error = false;
-    }
   },
   mounted()
   {
