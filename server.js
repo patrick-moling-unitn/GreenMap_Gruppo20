@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const express = require("express")
 const CORS = require("cors")
+const reportManager = require('./api/reportManager')
 const trashcanManager = require('./api/trashcanManager')
 const authenticationManager = require('./api/authenticationManager')
 const registrationManager = require('./api/registrationManager')
@@ -16,7 +17,9 @@ app.use(CORS())
 app.use(express.json());
 
 app.post(API_V+"/trashcans", requestValidator) //TEST: devi essere autenticato per inviare un cestino
+app.use(API_V+"/reports", requestValidator) //TEST: devi essere autenticato per inviare un report
 
+app.use(API_V+"/reports", reportManager)
 app.use(API_V+"/trashcans", trashcanManager)
 app.use(API_V+"/login", authenticationManager)
 app.use(API_V+"/register", registrationManager)

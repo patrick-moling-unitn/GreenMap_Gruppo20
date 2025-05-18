@@ -1,4 +1,5 @@
 <template>
+    <IssueReport :position="this.reportPosition" :formattedPosition="this.formattedReportPosition"></IssueReport>
     <div id="map"></div>
 </template>
 
@@ -7,9 +8,22 @@ import GeolocalizationManager from '../geolocalization';
 import { onActivated, onDeactivated } from 'vue'
 import TokenManager from '@/tokenManager'
 import ApiManager from '@/apiManager'
+import IssueReport from './IssueReport.vue'
 
 export default
 {
+  components: {
+    IssueReport
+  },
+  data() {
+      return {
+          reportPosition: {
+            lat: '',
+            lng: ''
+          },
+          formattedReportPosition: '',
+      }
+  },
   mounted()
   {
     const MAX_TRASHCAN_VIEW_DISTANCE = 1_000;
@@ -17,7 +31,7 @@ export default
     const GPS_UPDATE_INTERVAL_MS = 10_000;
     
     const DEBUGGING_CONSOLE_LEVEL = 1; //1: min; 2: mid; 3: high
-    const TEST_MODE = true;    
+    const TEST_MODE = false;    
     
     const TrashType = Object.freeze({
         PAPER: 0,
@@ -56,6 +70,13 @@ export default
       shadowSize: [35, 35]
     });
 
+    /*const myModal = document.getElementById('myModal')
+    const myInput = document.getElementById('myInput')
+
+    myModal.addEventListener('shown.bs.modal', () => {
+      myInput.focus()
+    })*/
+
     let geolocalizationManager = new GeolocalizationManager();
     let geolocalizationMarker;
     let requestRepeater; //fai si che il garbage collector non uccida la set timeout
@@ -87,8 +108,16 @@ export default
             
         showAllTrashcans(center);
       }
+    }); 
+    
+    map.on('click', (event) => {
+      console.log("Map clicked: " + event.latlng)
+      this.reportPosition.lat = event.latlng.lat
+      this.reportPosition.lng = event.latlng.lng
+      this.formattedReportPosition = "{ "+event.latlng.lat.toFixed(4) + ", " + event.latlng.lng.toFixed(4)+" }"
+      $('#issueReportModal').modal('show');
     });
-          
+
     map.on('moveend', function() {
         var center = map.getCenter();
         if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("Map center coordinates:", center.lat, center.lng);
