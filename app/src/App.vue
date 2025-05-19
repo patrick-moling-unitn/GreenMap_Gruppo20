@@ -146,10 +146,9 @@ EventBus.on('apiVersionRequest', sendApiVersion)
 </template>
 
 <style scoped>
-    .header-div{
+    .header-div, .body-div{
       padding: 5px;
-    }
-    .body-div{
-      padding: 5px;
+      display: flex;
+      flex-direction: column;
     }
 </style>
