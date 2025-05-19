@@ -14,9 +14,6 @@
 
       <button type="submit">Login</button>
     </form>
-
-    <button @click="deleteAllUsers">Delete All Authenticated Users</button>
-    <button @click="showAllUsers">Show All Authenticated Users</button>
   </div>
 </template>
 
@@ -60,19 +57,6 @@ export default {
                 this.form.password = '';
               }
             });
-        },
-        showAllUsers(){
-            console.log('Dati richiesti');
-            fetch(`http://localhost:${3000}${ApiManager()}/login`)
-            .then(response => response.json())
-            .then(users => console.log(users));
-        },
-        deleteAllUsers(){
-          console.log('Dati inviati');
-            fetch(`http://localhost:${3000}${ApiManager()}/login`,{
-                method: "DELETE",
-            })
-            .then(response => console.log(response));
         }
     },
     mounted() {

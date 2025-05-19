@@ -6,6 +6,7 @@ import ResolveReport from './components/ResolveReport.vue'
 import Login from './components/Login.vue'
 import Logout from './components/Logout.vue'
 import OpenStreethMap from './components/OpenStreethMap.vue'
+import ManageUsers from './components/ManageUsers.vue'
 //import NotFound from './NotFound.vue'
 
 import EventBus from './EventBus';
@@ -20,6 +21,7 @@ const routes = {
   '/login': Login,
   '/logout': Logout,
   '/resolveReport': ResolveReport,
+  '/manageUsers' : ManageUsers,
   '/todo': Todo
 }
 
@@ -113,6 +115,7 @@ EventBus.on('apiVersionRequest', sendApiVersion)
     </div>
     <div v-if="TEST_MODE || isAdministrator()">
       <a href="#/resolveReport">Resolve Report</a>
+      <a href="#/manageUsers">Manage Users</a>
     </div>
   </header>
   <body class="body-div">
