@@ -3,8 +3,11 @@ const Trashcan = require('../models/trashcan');
 const router = express.Router();
 const geolib = require("geolib");
 
+const TEST_MODE = false;
+const LOG_MODE = 3; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
+
 router.get("/", async (req, res) => {
-    console.log("get all trashcans request")
+    if (LOG_MODE >= 1) console.log("get all trashcans request")
     let trashcanList = await Trashcan.find({});
     trashcanList = trashcanList.map((trashcan) => {
         return {
@@ -17,32 +20,73 @@ router.get("/", async (req, res) => {
     res.status(200).json(trashcanList);
 });
 
-router.get("/:position", async (req, res) => {
-    const [lat, lng] = req.params.position.split(',').map(Number);
-    console.log(req.params.position + " " + req.query.distance)
+router.get("/:position", async (req, res, next) => {
+    if (req.query.distance){
+        const [lat, lng] = req.params.position.split(',').map(Number);
+        if (LOG_MODE >= 1) console.log("Get all trashcans near: " + req.params.position + " max distance (meters): " + req.query.distance)
 
-    if (isNaN(lat) || isNaN(lng))
-        return res.status(400).json({message: "COORDINATES NOT VALID!"});
-    
-    let userPosition = {
-        latitude: lat,
-        longitude: lng
-    }
-
-    let trashcanList = await Trashcan.find({});
-    trashcanList = trashcanList.filter(element => {
-        let trashcanPosition =  {
-            latitude: parseFloat(element.latitude),
-            longitude: parseFloat(element.longitude)
+        if (isNaN(lat) || isNaN(lng))
+            return res.status(400).json({message: "COORDINATES NOT VALID!"});
+        
+        let userPosition = {
+            latitude: lat,
+            longitude: lng
         }
-        return geolib.getDistance(userPosition, trashcanPosition) < req.query.distance;
-    });
-    
-    res.status(200).json(trashcanList);
+
+        let trashcanList = await Trashcan.find({});
+        trashcanList = trashcanList.filter(element => {
+            let trashcanPosition =  {
+                latitude: parseFloat(element.latitude),
+                longitude: parseFloat(element.longitude)
+            }
+            return geolib.getDistance(userPosition, trashcanPosition) < req.query.distance;
+        });
+        
+        res.status(200).json(trashcanList);
+    }else if (req.query.type)
+        next();
+    else
+        return res.status(400).json({error: true, message: "NON E' STATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
+router.get("/:position", async (req, res) => {
+    const [userLat, userLng] = req.params.position.split(',').map(Number);
+    let trashcanList = await Trashcan.find({});
+    if (LOG_MODE >= 1) console.log("Get closest trashcan near: " + req.params.position + " of type: " + req.query.type)
+
+    let smallestDistance = Number.MAX_SAFE_INTEGER;
+    let nearestTrashcan = null;
+    trashcanList.forEach(element => {
+        if (LOG_MODE >= 3) console.log("trashcan: " + element.trashcanType + " target: " + req.query.type + " cond: " + (element.trashcanType == req.query.type))
+        if (element.trashcanType == req.query.type) {
+            let lat = parseFloat(element.latitude);
+            let lng = parseFloat(element.longitude);
+
+            let distance = geolib.getDistance(
+                { latitude: userLat, longitude: userLng },
+                { latitude: lat, longitude: lng }
+            );
+
+            if (distance < smallestDistance)
+            {
+                nearestTrashcan = element;
+                smallestDistance = distance;
+            }
+        }
+    });
+
+    if (nearestTrashcan) {
+        if (LOG_MODE >= 2) console.log("Nearest trashcan: "+nearestTrashcan)
+        res.status(200).json(nearestTrashcan);
+    }
+    else {
+        if (LOG_MODE >= 2) console.warn("No trashcan found.");
+        res.status(404).send();
+    }
+})
+
 router.post("",  async (req, res) => {
-    console.log("post trashcan request from user "+req.loggedUser.email)
+    //if (LOG_MODE >= 1) console.log("post trashcan request from user "+req.loggedUser.email)
 
 	let trashcan = new Trashcan({
         latitude: req.body.latitude,
@@ -54,53 +98,16 @@ router.post("",  async (req, res) => {
     
     let trashcanId = trashcan._id;
 
-    console.log('Trashcan saved successfully');
+    if (LOG_MODE >= 1) console.log('Trashcan saved successfully');
 
     res.location("trashcans/" + trashcanId).status(201).send();
 });
 
 router.delete('/:id', async (req, res) => {
     await Trashcan.deleteOne({ _id: req.params.id });
-    console.log('trashcan removed')
+    if (LOG_MODE >= 1) console.log('trashcan removed')
     res.status(204).send()
 });
-
-router.get("/:typeAndPosition", async (req, res) => {
-    let userLat = parseFloat(req.params.position.latitude.$numberDecimal);
-    let userLng = parseFloat(req.params.position.longitude.$numberDecimal);
-    let trashcanList = await Trashcan.find({});
-
-
-    let smallestDistance = -1;
-    let nearestTrashcan;
-    trashcanList.forEach(element => {
-        if (element.trashcanType == req.params.type) {
-            let lat = parseFloat(element.latitude.$numberDecimal);
-            let lng = parseFloat(element.longitude.$numberDecimal);
-
-
-            let distance = geolib.getDistance(
-                { userLat, userLng },
-                { lat, lng }
-            );
-
-            if (distance < smallestDistance || smallestDistance == -1)
-            {
-                nearestTrashcan = element;
-                smallestDistance = distance;
-            }
-        }
-    });
-
-    if (nearestTrashcan) {
-        console.log("Nearest trashcan: "+nearestTrashcan)
-        res.status(200).json(nearestTrashcan);
-    }
-    else {
-        console.log("No trashcan found.");
-        res.status(404);
-    }
-})
 
 
 module.exports = router;

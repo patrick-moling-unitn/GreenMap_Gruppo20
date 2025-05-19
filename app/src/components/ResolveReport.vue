@@ -1,10 +1,10 @@
-<template>
-  <div class="mb-4 d-flex flex-wrap gap-2">
+<template class="flex-div">
+  <div class="mb-4 flex-wrap gap-2">
     <div>
       <button type="button" class="btn btn-danger" @click="deleteAllReports">Delete all reports</button>
       <button type="button" class="btn btn-primary" @click="getAllReports">Get all reports</button>
       <button type="button" class="btn btn-secondary" @click="getPersonalReports">Get personal reports</button>
-      <div class="input-group mb-3" style="padding: 5px;">
+      <div class="input-group mb-3" style="padding: 5px; max-width: 50%;">
         <input type="text" class="form-control" v-model="selectedId" placeholder="Resolve report [id]" aria-label="Resolve report" aria-describedby="button-addon">
         <select class="form-select" id="button-addon" v-model="selectedResolutionType">
           <option selected disabled value="">Resolution type...</option>
@@ -45,6 +45,14 @@
     <h2 v-else>Nessun report da mostrare</h2>
   </div>
 </template>
+
+<style>
+  .flex-div {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+
 <script template>
 import TokenManager from '@/tokenManager'
 import ApiManager from '@/apiManager'

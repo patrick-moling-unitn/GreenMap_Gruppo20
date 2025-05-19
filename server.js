@@ -23,7 +23,8 @@ const app = express()
 app.use(CORS())
 app.use(express.json());
 
-app.post(API_V+"/trashcans", requestValidator) //TEST: devi essere autenticato per inviare un cestino
+//app.post(API_V+"/trashcans", requestValidator) //TEST: devi essere autenticato per inviare un cestino
+
 app.use(API_V+"/reports", requestValidator) //TEST: devi essere autenticato per inviare un report
 app.get(API_V+"/login", requestValidator) //TEST: devi essere amministratore per ottenere gli utenti
 app.delete(API_V+"/login", requestValidator) //TEST: devi essere amministratore per eliminare gli utenti
