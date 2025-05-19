@@ -130,6 +130,7 @@ EventBus.on('apiVersionRequest', sendApiVersion)
     <div v-else-if="TEST_MODE || administrator">
       <a href="#/">Home</a> |
       <a href="#/resolveReport">Resolve Report</a> |
+      <a href="#/manageUsers">Manage Users</a> |
       <a href="#/logout">Logout</a>
     </div>
     <div v-else>
@@ -139,10 +140,7 @@ EventBus.on('apiVersionRequest', sendApiVersion)
       <a href="#/todo">View Profile</a> |
       <a href="#/logout">Logout</a>
     </div>
-    <div v-if="TEST_MODE || isAdministrator()">
-      <a href="#/resolveReport">Resolve Report</a>
-      <a href="#/manageUsers">Manage Users</a>
-    </div>
+
   </header>
   <body class="body-div">
     <KeepAlive>
