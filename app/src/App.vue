@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import Register from './components/Register.vue'
 import Todo from './components/Todo.vue'
+import ResolveReport from './components/ResolveReport.vue'
 import Login from './components/Login.vue'
 import Logout from './components/Logout.vue'
 import OpenStreethMap from './components/OpenStreethMap.vue'
@@ -11,12 +12,14 @@ import EventBus from './EventBus';
 
 const API_VERSION = "/api/v1"
 const authToken = ref('')
+const TEST_MODE =true
 
 const routes = {
   '/': OpenStreethMap,
   '/register': Register,
   '/login': Login,
   '/logout': Logout,
+  '/resolveReport': ResolveReport,
   '/todo': Todo
 }
 
@@ -107,6 +110,9 @@ EventBus.on('apiVersionRequest', sendApiVersion)
       <a href="#/todo">Issue Report</a> |
       <a href="#/todo">Compile Questionnaire</a> |
       <a href="#/logout">Logout</a>
+    </div>
+    <div v-if="TEST_MODE || isAdministrator()">
+      <a href="#/resolveReport">Resolve Report</a>
     </div>
   </header>
   <body class="body-div">

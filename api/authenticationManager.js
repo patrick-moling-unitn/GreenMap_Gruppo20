@@ -6,43 +6,53 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
+const TEST_MODE=false;
+
+router.get('/me', (req, res) => {
+    res.json(req.loggedUser);
+});
 
 router.get("/", async (req, res) => {
-    console.log("get all authenticated users request")
-    let userList = await AuthenticatedUser.find({});
-    userList = userList.map((user) => {
-        return {
-            self: '/authenticatedUser/' + user.id,
-            passwordHash: user.passwordHash,
-            email: user.email,
-            banned: user.banned,
-            administrator: user.administrator,
-            points: user.points,
-            lastReportIssueDate: user.lastReportIssueDate
-        };
-    });
-    res.status(200).json(userList);
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        console.log("get all authenticated users request")
+        let userList = await AuthenticatedUser.find({});
+        userList = userList.map((user) => {
+            return {
+                self: '/authenticatedUser/' + user.id,
+                passwordHash: user.passwordHash,
+                email: user.email,
+                banned: user.banned,
+                administrator: user.administrator,
+                points: user.points,
+                lastReportIssueDate: user.lastReportIssueDate
+            };
+        });
+        res.status(200).json(userList);
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.put("/:id", async (req, res) => {
     console.log("ban authenticated user request")
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        let authenticatedUser;
+        try{
+            authenticatedUser = await AuthenticatedUser.findById(req.params.id);
+        }catch(err){
+            return res.status(400).json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
+        }
+        
+        authenticatedUser.banned = req.body.banned;
+        
+        try{
+            authenticatedUser.save();
+        }catch(err){
+            return res.status(500).json(err);
+        }
 
-    let authenticatedUser;
-    try{
-        authenticatedUser = await AuthenticatedUser.findById(req.params.id);
-    }catch(err){
-        return res.status(400).json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
-    }
-    
-    authenticatedUser.banned = req.body.banned;
-    
-    try{
-        authenticatedUser.save();
-    }catch(err){
-        return res.status(500).json(err);
-    }
-
-    res.status(200).json(authenticatedUser);
+        res.status(200).json(authenticatedUser);
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.post("/",  async (req, res) => {
@@ -62,9 +72,12 @@ router.post("/",  async (req, res) => {
 });
 
 router.delete('/', async (req, res) => {
-    await AuthenticatedUser.deleteMany({})
-    console.log('all authenticated users removed');
-    res.status(204).json({message: "UTENTI AUTENTICATI CANCELLATI"});
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        await AuthenticatedUser.deleteMany({isSystem:false})
+        console.log('all authenticated users removed');
+        res.status(204).json({message: "UTENTI AUTENTICATI CANCELLATI"});
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 

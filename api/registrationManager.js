@@ -12,18 +12,22 @@ const MIN_USER_PASSWORD_LENGTH = 8;
 const SALT_ROUNDS = Number(process.env.HASHING_SALT_ROUNDS);
 const USERNAME = process.env.EMAIL_USER;
 const PASSWORD = process.env.EMAIL_PASS;
+const TEST_MODE = false;
 
 router.get("/", async (req, res) => {
-    console.log("get all registering user request")
-    let usersList = await RegisteringUser.find({});
-    usersList = usersList.map((user) => {
-        return {
-            self: '/users/' + user._id,
-            email: user.email,
-            passwordHash: user.passwordHash
-        };
-    });
-    res.status(200).json(usersList);
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        console.log("get all registering user request")
+        let usersList = await RegisteringUser.find({});
+        usersList = usersList.map((user) => {
+            return {
+                self: '/users/' + user._id,
+                email: user.email,
+                passwordHash: user.passwordHash
+            };
+        });
+        res.status(200).json(usersList);
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.post("/",  async (req, res, next) => {
@@ -112,15 +116,21 @@ router.post("/",  async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-    await AuthenticatedUser.deleteOne({ _id: req.params.id });
-    console.log('user removed');
-    res.status(204).json({ _id: req.params.id });
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        await AuthenticatedUser.deleteOne({ _id: req.params.id });
+        console.log('user removed');
+        res.status(204).json({ _id: req.params.id });
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.delete('/', async (req, res) => {
-    await RegisteringUser.deleteMany({})
-    console.log('all registrating users removed');
-    res.status(204).send();
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        await RegisteringUser.deleteMany({})
+        console.log('all registrating users removed');
+        res.status(204).send();
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 module.exports = router;

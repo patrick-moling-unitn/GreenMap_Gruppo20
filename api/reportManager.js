@@ -6,7 +6,7 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 
 const REPORT_RESOLVED_REWARD = 500;
 
-const TEST_MODE = true
+const TEST_MODE = false;
 
 const ISSUE_REPORT_COOLDOWN_MIN = 1_440 //24h
 
@@ -107,52 +107,49 @@ router.put("/:id",  async (req, res, next) => {
 
 //ADD NEW REPORT
 router.post("",  async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
-        console.log("post report request from user "+req.loggedUser.email)
+    console.log("post report request from user "+req.loggedUser.email)
 
-        let user = await AuthenticatedUser.findById(req.loggedUser.id)
-        if (!user) 
-            return res.status(500).json("Non è possibile risalire all'utente autenticato");
-        if (user.banned)
-            return res.status(401).json({error: true, message: "SEI STATO BANNATO E NON PUOI INVIARE REPORT!"});
-        
-        if (user.lastReportIssueDate && !TEST_MODE) { //TEST MODE: ACCESSIBILE IN OGNI CASO
-            let difference = user.lastReportIssueDate.getTime() + ISSUE_REPORT_COOLDOWN_MIN * 60_000 - Date.now()
-            if (difference > 0){
-                let remainingMinutes = difference / 60_000;
-                if (remainingMinutes > 60)
-                    return res.status(400).json({error: true, message: "ULTIMO REPORT INVIATO MENO DI " + 
-                        (ISSUE_REPORT_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + (remainingMinutes / 60).toFixed(0) + " ORE"});
-                else
-                    return res.status(400).json({error: true, message: "ULTIMO REPORT INVIATO MENO DI " + 
-                        (ISSUE_REPORT_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + remainingMinutes.toFixed(0) + " MINUTI"});
-            }
+    let user = await AuthenticatedUser.findById(req.loggedUser.id)
+    if (!user) 
+        return res.status(500).json("Non è possibile risalire all'utente autenticato");
+    if (user.banned)
+        return res.status(401).json({error: true, message: "SEI STATO BANNATO E NON PUOI INVIARE REPORT!"});
+    
+    if (user.lastReportIssueDate && !TEST_MODE) { //TEST MODE: ACCESSIBILE IN OGNI CASO
+        let difference = user.lastReportIssueDate.getTime() + ISSUE_REPORT_COOLDOWN_MIN * 60_000 - Date.now()
+        if (difference > 0){
+            let remainingMinutes = difference / 60_000;
+            if (remainingMinutes > 60)
+                return res.status(400).json({error: true, message: "ULTIMO REPORT INVIATO MENO DI " + 
+                    (ISSUE_REPORT_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + (remainingMinutes / 60).toFixed(0) + " ORE"});
+            else
+                return res.status(400).json({error: true, message: "ULTIMO REPORT INVIATO MENO DI " + 
+                    (ISSUE_REPORT_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + remainingMinutes.toFixed(0) + " MINUTI"});
         }
+    }
 
-        let report = new Report({
-            issuerId: req.loggedUser.id,
-            reportType: req.body.type,
-            reportDescription: req.body.description,
-            latitude: Number(req.body.latitude),
-            longitude: Number(req.body.longitude),
-            resolved: false
-        });
-        
-        try{
-            report = await report.save();
-            user.lastReportIssueDate = new Date(Date.now());
-            console.log(user);
-            await user.save();
-        }catch(err){
-            console.warn(err);
-            return res.status(500).json(err);
-        }
-        
-        let reportId = report._id;
-        console.log('Report saved successfully');
-        res.location("reports/" + reportId).status(201).send();
-    }else
-		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+    let report = new Report({
+        issuerId: req.loggedUser.id,
+        reportType: req.body.type,
+        reportDescription: req.body.description,
+        latitude: Number(req.body.latitude),
+        longitude: Number(req.body.longitude),
+        resolved: false
+    });
+    
+    try{
+        report = await report.save();
+        user.lastReportIssueDate = new Date(Date.now());
+        console.log(user);
+        await user.save();
+    }catch(err){
+        console.warn(err);
+        return res.status(500).json(err);
+    }
+    
+    let reportId = report._id;
+    console.log('Report saved successfully');
+    res.location("reports/" + reportId).status(201).send();
 });
 
 //DELETE REPORT
