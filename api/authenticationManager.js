@@ -8,10 +8,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const TEST_MODE=false;
 
-router.get('/me', (req, res) => {
-    res.json(req.loggedUser);
-});
-
 router.get("/", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         console.log("get all authenticated users request")
@@ -64,7 +60,7 @@ router.post("/",  async (req, res) => {
         if (result == true){
             let payload = {id: authenticatedUser._id, email: authenticatedUser.email, administrator: authenticatedUser.administrator}
             let options = { expiresIn: 86400 } // expires in 24 hours
-            res.status(200).json({authToken: jwt.sign(payload, process.env.JWT_SECRET, options)});
+            res.status(200).json({authToken: jwt.sign(payload, process.env.JWT_SECRET, options), administrator: authenticatedUser.administrator});
         }
         else
             res.status(400).json({message: "PASSWORD ERRATA"});

@@ -7,18 +7,33 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 const REPORT_RESOLVED_REWARD = 500;
 
 const TEST_MODE = false;
+const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 
 const ISSUE_REPORT_COOLDOWN_MIN = 1_440 //24h
+
+const API_V = process.env.API_VERSION;
+
+router.get("/:id", async (req, res) => {
+    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+        if (LOG_MODE >= 1) console.log("get report request")
+        let report = await Report.findById(req.params.id);
+        if (!report)
+            return res.status(400).json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
+
+        res.status(200).json(report);
+    }else
+        return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+});
 
 //GET ALL REPORTS
 router.get("/", async (req, res, next) => {
     if (req.query.type == "all"){
         if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
-            console.log("get all reports request")
+            if (LOG_MODE >= 1) console.log("get all reports request")
             let reportList = await Report.find({});
             reportList = reportList.map((report) => {
                 return {
-                    self: '/reports/' + report.id,
+                    self: API_V + '/reports/' + report.id,
                     issuerId: report.issuerId,
                     reportType: report.reportType,
                     reportDescription: report.reportDescription,
@@ -36,7 +51,7 @@ router.get("/", async (req, res, next) => {
 
 //GET PERSONAL REPORTS
 router.get("/", async (req, res) => {
-    console.log("get all reports request from", req.loggedUser.id)
+    if (LOG_MODE >= 1) console.log("get all reports request from", req.loggedUser.id)
 
     let reportList = await Report.find({issuerId: req.loggedUser.id});
     reportList = reportList.map((report) => {
@@ -57,7 +72,7 @@ router.get("/", async (req, res) => {
 //UPDATE EXISTING REPORT RESOLUTION
 router.put("/:id",  async (req, res, next) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
-        console.log("put report request from user "+req.loggedUser.email)
+        if (LOG_MODE >= 1) console.log("put report request from user "+req.loggedUser.email)
 
         let report;
         try{
@@ -100,14 +115,14 @@ router.put("/:id",  async (req, res, next) => {
     
     let reportId = req.report._id;
 
-    console.log('Report saved successfully');
+    if (LOG_MODE >= 2) console.log('Report saved successfully');
 
     res.location("reports/" + reportId).status(200).send();
 });
 
 //ADD NEW REPORT
 router.post("",  async (req, res) => {
-    console.log("post report request from user "+req.loggedUser.email)
+    if (LOG_MODE >= 1) console.log("post report request from user "+req.loggedUser.email)
 
     let user = await AuthenticatedUser.findById(req.loggedUser.id)
     if (!user) 
@@ -140,15 +155,15 @@ router.post("",  async (req, res) => {
     try{
         report = await report.save();
         user.lastReportIssueDate = new Date(Date.now());
-        console.log(user);
+        if (LOG_MODE >= 3) console.log(user);
         await user.save();
     }catch(err){
-        console.warn(err);
+        if (LOG_MODE >= 3) console.warn(err);
         return res.status(500).json(err);
     }
     
     let reportId = report._id;
-    console.log('Report saved successfully');
+    if (LOG_MODE >= 2) console.log('Report saved successfully');
     res.location("reports/" + reportId).status(201).send();
 });
 
@@ -156,14 +171,14 @@ router.post("",  async (req, res) => {
 router.delete('/:id', async (req, res, next) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
         if (req.query.type == "report"){
-            console.log("delete report request from user "+req.loggedUser.email)
+            if (LOG_MODE >= 1) console.log("delete report request from user "+req.loggedUser.email)
 
             try{
                 await Report.deleteOne({ _id: req.params.id });
             }catch(err){
                 return res.status(400).json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
             }
-            console.log('report removed')
+            if (LOG_MODE >= 2) console.log('report removed')
             res.status(204).send()
         }else 
             next();
@@ -175,7 +190,7 @@ router.delete('/:id', async (req, res, next) => {
 router.delete('/:userId', async (req, res) => { 
     // SOPRA C'E' LA NEXT QUINDI NON SERVE IL CONTROLLO DELLE CREDENZIALI QUI!
     // !- NB: SAPPIAMO GIA' CHE CHI ARRIVA QUA DENTRO E' UN ADMIN -!
-    console.log("delete reports of user " + req.params.userId + " request from user "+req.loggedUser.email)
+    if (LOG_MODE >= 1) console.log("delete reports of user " + req.params.userId + " request from user "+req.loggedUser.email)
     
     try{
         await Report.deleteMany({ issuerId: req.params.userId });
@@ -183,17 +198,17 @@ router.delete('/:userId', async (req, res) => {
         return res.status(400).json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
     }
 
-    console.log('all reports of requested user deleted')
+    if (LOG_MODE >= 2) console.log('all reports of requested user deleted')
     res.status(204).send()
 });
 
 //DELETE ALL REPORTS
 router.delete('/', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
-        console.log("delete all report request from user "+req.loggedUser.email)
+        if (LOG_MODE >= 1) console.log("delete all report request from user "+req.loggedUser.email)
 
         await Report.deleteMany({});
-        console.log('all reports removed')
+        if (LOG_MODE >= 2) console.log('all reports removed')
         res.status(204).send()
     }else
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
