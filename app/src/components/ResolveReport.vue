@@ -1,9 +1,9 @@
 <template>
   <div class="mb-4 d-flex flex-wrap gap-2">
     <div>
-      <button type="button" class="btn btn-danger" @click="deleteAllReports">Delete all reports TEST</button>
-      <button type="button" class="btn btn-primary" @click="getAllReports">Get all reports TEST</button>
-      <button type="button" class="btn btn-secondary" @click="getPersonalReports">Get personal reports TEST</button>
+      <button type="button" class="btn btn-danger" @click="deleteAllReports">Delete all reports</button>
+      <button type="button" class="btn btn-primary" @click="getAllReports">Get all reports</button>
+      <button type="button" class="btn btn-secondary" @click="getPersonalReports">Get personal reports</button>
       <div class="input-group mb-3" style="padding: 5px;">
         <input type="text" class="form-control" v-model="selectedId" placeholder="Resolve report [id]" aria-label="Resolve report" aria-describedby="button-addon">
         <select class="form-select" id="button-addon" v-model="selectedResolutionType">
@@ -15,7 +15,7 @@
         <button class="btn btn-outline-success" type="button" id="button-addon" @click="handleReportResolution">Resolve</button>
       </div>
     </div>
-    <div class="container">
+    <div class="container" v-if="this.reports.length > 0">
     <h2 class="mb-4">Report ricevuti</h2>
     <table class="table table-bordered table-hover">
       <thead class="table-primary">
@@ -42,6 +42,7 @@
       </tbody>
     </table>
     </div>
+    <h2 v-else>Nessun report da mostrare</h2>
   </div>
 </template>
 <script template>
@@ -68,7 +69,7 @@ export default{
         if (!response.error){
           console.log("Got personal reports: ")
           console.log(response)
-          this.reports=response;
+          this.reports = response;
         }else
           alert(response.message)
       });

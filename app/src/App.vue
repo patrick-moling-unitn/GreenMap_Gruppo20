@@ -11,8 +11,9 @@ import OpenStreethMap from './components/OpenStreethMap.vue'
 import EventBus from './EventBus';
 
 const API_VERSION = "/api/v1"
+const administrator = ref(false)
 const authToken = ref('')
-const TEST_MODE =true
+const TEST_MODE = false
 
 const routes = {
   '/': OpenStreethMap,
@@ -24,6 +25,14 @@ const routes = {
 }
 
 const currentPath = ref(window.location.hash)
+
+function requiresAdministrator(path)
+{
+  if (path == "/resolveReport")
+    return true;
+
+  return false;
+}
 
 function requiresAuthentication(path)
 {
@@ -41,35 +50,46 @@ function requiresLogout(path)
   return false;
 }
 
-window.addEventListener('hashchange', () => {
+function calculateCurrentPath(){
   let requireAuth = requiresAuthentication(window.location.hash.slice(1)),
+      requiresAdmin = requiresAdministrator(window.location.hash.slice(1)),
       requireLogout = requiresLogout(window.location.hash.slice(1));
       
   if (requireAuth && !authToken.value){
     console.log(window.location.hash + " requires authentication: " + requireAuth + " authenticated: "+authToken.value)
     window.location.hash = "#/login"
+  }else if (requiresAdmin && !administrator.value){
+    console.log(window.location.hash + " requires admin: " + requiresAdmin + " adminstrator: "+administrator.value)
+    window.location.hash = "#/"
   }else if (requireLogout && authToken.value){
     console.log(window.location.hash + " requires logout: " + requireLogout + " authenticated: "+authToken.value)
     window.location.hash = "#/logout"
   }
     
   currentPath.value = window.location.hash
+}
+
+window.addEventListener('hashchange', () => {
+  calculateCurrentPath();
 })
 
 const currentView = computed(() => {
+  calculateCurrentPath();
   let path = currentPath.value.slice(1);
   return routes[path || '/'] || NotFound
 })
 
-const loginHandler = function(recievedToken) {
-  console.log(`User logged in and has the following auth token: ${recievedToken}`)
-  authToken.value = recievedToken;
+const loginHandler = function(data) {
+  console.log(`User logged in and has the following auth token: ${data.token} and admin value: ${data.admin}`)
+  administrator.value = data.admin;
+  authToken.value = data.token;
   window.location.hash = "#/"
   alert("Logged in")
 }
 
 const logoutHandler = function() {
   console.log(`User logged out`)
+  administrator.value = false;
   authToken.value = null;
   window.location.hash = "#/"
   alert("Logged out")
@@ -105,14 +125,17 @@ EventBus.on('apiVersionRequest', sendApiVersion)
       <a href="#/register">Register</a> |
       <a href="#/login">Login</a>
     </div>
-    <div v-else>
+    <div v-else-if="TEST_MODE || administrator">
       <a href="#/">Home</a> |
-      <a href="#/todo">Issue Report</a> |
-      <a href="#/todo">Compile Questionnaire</a> |
+      <a href="#/resolveReport">Resolve Report</a> |
       <a href="#/logout">Logout</a>
     </div>
-    <div v-if="TEST_MODE || isAdministrator()">
-      <a href="#/resolveReport">Resolve Report</a>
+    <div v-else>
+      <a href="#/">Home</a> |
+      <a href="#/todo">Compile Questionnaire</a> |
+      <a href="#/todo">Get Discount</a> |
+      <a href="#/todo">View Profile</a> |
+      <a href="#/logout">Logout</a>
     </div>
   </header>
   <body class="body-div">
