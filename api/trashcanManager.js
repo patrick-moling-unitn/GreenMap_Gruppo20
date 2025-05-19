@@ -68,40 +68,37 @@ router.delete('/:id', async (req, res) => {
 router.get("/:typeAndPosition", async (req, res) => {
     let userLat = parseFloat(req.params.position.latitude.$numberDecimal);
     let userLng = parseFloat(req.params.position.longitude.$numberDecimal);
+    let trashcanList = await Trashcan.find({});
 
 
-    let smallestTheta = 4.0; //Larger than PI
+    let smallestDistance = -1;
     let nearestTrashcan;
     trashcanList.forEach(element => {
         if (element.trashcanType == req.params.type) {
             let lat = parseFloat(element.latitude.$numberDecimal);
             let lng = parseFloat(element.longitude.$numberDecimal);
-        
-            let dLng = userLng - lng;
 
-            let y = Math.sin(dLng) * Math.cos(lat2);
-            let x = Math.cos(userLat) * Math.sin(lat) - Math.sin(userLat) * Math.cos(lat) * Math.cos(dLng);
 
-            let theta = Math.atan2(y, x);
-            theta += 2 * Math.PI;
-            theta %= 2 * Math.PI;
-            theta = 2 * Math.PI - theta;
+            let distance = geolib.getDistance(
+                { userLat, userLng },
+                { lat, lng }
+            );
 
-            if (theta < smallestTheta)
+            if (distance < smallestDistance || smallestDistance == -1)
             {
                 nearestTrashcan = element;
-                smallestTheta = theta;
+                smallestDistance = distance;
             }
         }
     });
 
-    if (smallestTheta == 4.0) {
-        console.log("No trashcan found.");
-        res.status(404);
-    }
-    else {
+    if (nearestTrashcan) {
         console.log("Nearest trashcan: "+nearestTrashcan)
         res.status(200).json(nearestTrashcan);
+    }
+    else {
+        console.log("No trashcan found.");
+        res.status(404);
     }
 })
 
