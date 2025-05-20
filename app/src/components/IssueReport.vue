@@ -43,7 +43,7 @@
 
 <script template>
 import TokenManager from '@/tokenManager'
-import ApiManager from '@/apiManager'
+import UrlManager from '@/urlManager'
 export default{
   data() {
       return {
@@ -71,7 +71,7 @@ export default{
         this.error = true;
       else{
         $('#issueReportModal').modal('hide');
-        fetch(`http://localhost:${3000}${ApiManager()}/reports`, {
+        fetch(`${UrlManager()}/reports`, {
           method: "POST",
           body: JSON.stringify({
             type: this.report.type,

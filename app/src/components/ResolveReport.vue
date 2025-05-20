@@ -55,7 +55,7 @@
 
 <script template>
 import TokenManager from '@/tokenManager'
-import ApiManager from '@/apiManager'
+import UrlManager from '@/urlManager'
 export default{
   data() {
       return {
@@ -72,7 +72,7 @@ export default{
   },
   methods: {
     getPersonalReports(){
-      fetch(`http://localhost:${3000}${ApiManager()}/reports?type=personal`, {
+      fetch(`${UrlManager()}/reports?type=personal`, {
         method: "GET",
         headers: {
           "Content-type": "application/json; charset=UTF-8",
@@ -98,7 +98,7 @@ export default{
         }
     },
     resolveReport(){
-      fetch(`http://localhost:${3000}${ApiManager()}/reports/${this.selectedId}`, {
+      fetch(`${UrlManager()}/reports/${this.selectedId}`, {
           method: "PUT",
           body: JSON.stringify({
             resolved: true
@@ -122,7 +122,7 @@ export default{
         });
     },
     deleteReport(){
-        fetch(`http://localhost:${3000}${ApiManager()}/reports/${this.selectedId}?type=report`, {
+        fetch(`${UrlManager()}/reports/${this.selectedId}?type=report`, {
           method: "DELETE",
           headers: {
             "Content-type": "application/json; charset=UTF-8",
@@ -142,7 +142,7 @@ export default{
         });
     },
     banUser(issuerId = this.selectedId){
-      fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers/${issuerId}`, {
+      fetch(`${UrlManager()}/authenticatedUsers/${issuerId}`, {
         method: "PUT",
         body: JSON.stringify({
           banned: true
@@ -166,7 +166,7 @@ export default{
       });
     },
     deleteUserReports(){
-      fetch(`http://localhost:${3000}${ApiManager()}/reports/${this.selectedId}?type=userReports`, {
+      fetch(`${UrlManager()}/reports/${this.selectedId}?type=userReports`, {
         method: "DELETE",
         headers: {
           "Content-type": "application/json; charset=UTF-8",
@@ -186,7 +186,7 @@ export default{
       });
     },
     deleteAllReports(){
-      fetch(`http://localhost:${3000}${ApiManager()}/reports`, {
+      fetch(`${UrlManager()}/reports`, {
         method: "DELETE",
         headers: {
           "Content-type": "application/json; charset=UTF-8",
@@ -206,7 +206,7 @@ export default{
       });
     },
     getAllReports(){
-      fetch(`http://localhost:${3000}${ApiManager()}/reports?type=all`, {
+      fetch(`${UrlManager()}/reports?type=all`, {
         method: "GET",
         headers: {
           "Content-type": "application/json; charset=UTF-8",

@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import ApiManager from '@/apiManager'
+import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
 export default {
     data() {
@@ -21,7 +21,7 @@ export default {
     },
     methods: {
         verifyCode() {
-            fetch(`http://localhost:${3000}${ApiManager()}/registeringUsers`, {
+            fetch(`${UrlManager()}/registeringUsers`, {
                 method: "POST",
                 body: JSON.stringify({
                     id: this.userId,

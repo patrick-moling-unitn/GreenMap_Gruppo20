@@ -45,7 +45,7 @@
 
 <script template>
 import TokenManager from '@/tokenManager'
-import ApiManager from '@/apiManager'
+import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
 
 export default{
@@ -80,7 +80,7 @@ export default{
             latitude: this.position.lat,
             longitude: this.position.lng
         }
-        fetch(`http://localhost:${3000}${ApiManager()}/trashcans`, {
+        fetch(`${UrlManager()}/trashcans`, {
           method: "POST",
           body: JSON.stringify(trashcan),
           headers: {

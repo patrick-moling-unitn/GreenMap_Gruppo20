@@ -23,7 +23,7 @@
 import GeolocalizationManager from '../geolocalization';
 import { onActivated, onDeactivated } from 'vue'
 import TokenManager from '@/tokenManager'
-import ApiManager from '@/apiManager'
+import UrlManager from '@/urlManager'
 import IssueReport from './IssueReport.vue'
 import AddTrashcan from './AddTrashcan.vue';
 import EventBus from '@/EventBus'
@@ -59,7 +59,7 @@ export default
       if (!this.selectedTrashcanType){
         alert("Seleziona un tipo di cestino da ricercare!")
       }else{
-        fetch(`http://localhost:${3000}${ApiManager()}/trashcans/${this.currentPosition.lat},${this.currentPosition.lng}
+        fetch(`${UrlManager()}/trashcans/${this.currentPosition.lat},${this.currentPosition.lng}
              ?type=${this.selectedTrashcanType}`)
           .then(response => {
             if (!response.ok)
@@ -251,7 +251,7 @@ export default
     }
 
     function requestAllTrashcans(){
-      fetch(`http://localhost:${3000}${ApiManager()}/trashcans/${SELF.currentPosition.lat},${SELF.currentPosition.lng}
+      fetch(`${UrlManager()}/trashcans/${SELF.currentPosition.lat},${SELF.currentPosition.lng}
              ?distance=${MAX_TRASHCAN_VIEW_DISTANCE}`)
         .then(response => response.json())
         .then(trashcans => { 
@@ -315,7 +315,7 @@ export default
     }
 
     function addNewTrashcan(geolocalizedPosition){
-      fetch(`http://localhost:${3000}${ApiManager()}/trashcans`, {
+      fetch(`${UrlManager()}/trashcans`, {
         method: "POST",
         body: JSON.stringify({
           latitude: geolocalizedPosition.lat + (Math.random() - Math.random())/100,

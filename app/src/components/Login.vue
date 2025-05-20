@@ -19,7 +19,7 @@
 
 <script>
 import EventBus from '@/EventBus';
-import ApiManager from '@/apiManager'
+import UrlManager from '@/urlManager'
 export default {
     data() {
         return {
@@ -32,7 +32,7 @@ export default {
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
-            fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers`, {
+            fetch(`${UrlManager()}/authenticatedUsers`, {
                 method: "POST",
                 body: JSON.stringify({
                     email: this.form.email,

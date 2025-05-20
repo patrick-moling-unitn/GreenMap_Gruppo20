@@ -12,7 +12,10 @@ import ManageTrashcans from './components/ManageTrashcans.vue'
 
 import EventBus from './EventBus';
 
-const API_VERSION = "/api/v1"
+const API_VERSION = process.env.API_VERSION || "/api/v1"
+const BASE_URL = process.env.SERVER_URL || "http://localhost:3000"
+const SERVER_URL = String(BASE_URL) + String(API_VERSION)
+
 const administrator = ref(false)
 const authToken = ref('')
 
@@ -124,15 +127,16 @@ const sendAuthToken = function(currentToken) {
     EventBus.emit('authToken', authToken.value)
 }
 
-const sendApiVersion = function() {
-  EventBus.emit('apiVersion', API_VERSION)
+const sendServerUrl = function() {
+  console.log("emit ", SERVER_URL)
+  EventBus.emit('serverUrl', SERVER_URL)
 }
 
 EventBus.on('loggedin', loginHandler)
 EventBus.on('loggedout', logoutHandler)
 EventBus.on('registered', registrationHandler)
 EventBus.on('authTokenRequest', sendAuthToken)
-EventBus.on('apiVersionRequest', sendApiVersion)
+EventBus.on('serverUrlRequest', sendServerUrl)
 </script>
 
 <template>

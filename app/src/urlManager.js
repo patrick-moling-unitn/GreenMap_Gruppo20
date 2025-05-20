@@ -3,11 +3,11 @@
 // appunto App.vue invocando a sua volta un'evento risposta ed inviando la versione API
 import EventBus from './EventBus'
 
-let apiVersion = null;
-const updateApiVersion = (newApiVersion) => apiVersion = newApiVersion
-EventBus.on('apiVersion', updateApiVersion)
+let serverUrl = null;
+const updateServerUrl = (newServerUrl) => serverUrl = newServerUrl
+EventBus.on('serverUrl', updateServerUrl)
 
 export default function getApiVersion(){
-    if (!apiVersion) EventBus.emit('apiVersionRequest')
-    return apiVersion;
+    if (!serverUrl) EventBus.emit('serverUrlRequest')
+    return serverUrl;
 }

@@ -27,7 +27,7 @@
 
 <script default>
 import TokenManager from '@/tokenManager'
-import ApiManager from '@/apiManager'
+import UrlManager from '@/urlManager'
 
 export default {
     data() {
@@ -39,7 +39,7 @@ export default {
     methods : {
         getAllTrashcans(){
             console.log('Dati richiesti');
-            fetch(`http://localhost:${3000}${ApiManager()}/trashcans`, {
+            fetch(`${UrlManager()}/trashcans`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
@@ -64,7 +64,7 @@ export default {
         },
         deleteTrashcan(trashcanId){
             console.log("delete: "+trashcanId)
-            fetch(`http://localhost:${3000}${ApiManager()}/trashcans/${trashcanId}`, {
+            fetch(`${UrlManager()}/trashcans/${trashcanId}`, {
             method: "DELETE",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
