@@ -92,15 +92,12 @@ export default{
     },
     deleteUser(userEmail){
         console.log('Dati inviati');
-        fetch(`${UrlManager()}/authenticatedUsers`,{
+        fetch(`${UrlManager()}/authenticatedUsers/${userEmail}`,{
             method: "DELETE",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
                 "x-access-token": TokenManager()
-            },
-            body: JSON.stringify({
-                email: userEmail,
-            })
+            }
         })
         .then(response => console.log(response))
         .then(() => this.showUsers());

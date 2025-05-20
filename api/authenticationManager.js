@@ -89,6 +89,8 @@ router.post("/",  async (req, res) => {
     let authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
     if(!authenticatedUser)
         return res.status(400).json({message: "EMAIL INSERITA INESISTENTE"});
+    if(authenticatedUser.banned)
+        return res.status(400).json({message: "UTENTE BANDITO"});
 
     await bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
         if (result == true){
@@ -102,10 +104,10 @@ router.post("/",  async (req, res) => {
     });
 });
 
-router.delete('/', async (req, res) => {
+router.delete('/:email', async (req, res) => {
         if (LOG_MODE >= 1) console.log("Delete authenticated user request!")
     if (req.loggedUser.administrator == true || TEST_MODE){
-        await AuthenticatedUser.deleteOne({isSystem:false, email: req.body.email})
+        await AuthenticatedUser.deleteOne({isSystem:false, email: req.params.email})
         if (LOG_MODE >= 2) console.log("Authenticated user deleted!")
         res.status(204).json({message: "UTENTE CANCELLATO"});
     }else
