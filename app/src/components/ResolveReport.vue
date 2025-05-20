@@ -32,12 +32,12 @@
       <tbody> 
         <tr v-for="report in reports">
           <td>{{ report.issuerId }}</td>
-          <td>{{ report.reportType }}</td>
+          <td>{{ reportTypes[report.reportType]}}</td>
           <td>{{ report.reportDescription }}</td>
           <td>{{ report.latitude?.$numberDecimal }}</td>
           <td>{{ report.longitude?.$numberDecimal }}</td>
           <td>{{ report.resolved ? 'Sì' : 'No' }}</td>
-          <td><a :href="report.self" class="btn btn-sm btn-outline-primary">Vai</a></td>
+          <td><button type="button" class="btn btn-danger" @click="banUser(report.issuerId)">Ban</button></td>
         </tr>
       </tbody>
     </table>
@@ -61,7 +61,13 @@ export default{
       return {
           selectedId: '',
           selectedResolutionType: '',
-          reports: []
+          reports: [],
+          reportTypes: {
+            '1': "Trashcan location suggestion",
+            '2': "Trashcan position missing",
+            '3': "Trash out of place",
+            '4': "Trashcan full"
+          }
       }
   },
   methods: {
@@ -135,8 +141,8 @@ export default{
             alert(response.message)
         });
     },
-    banUser(){
-      fetch(`http://localhost:${3000}${ApiManager()}/login/${this.selectedId}`, {
+    banUser(issuerId = this.selectedId){
+      fetch(`http://localhost:${3000}${ApiManager()}/login/${issuerId}`, {
         method: "PUT",
         body: JSON.stringify({
           banned: true
@@ -217,6 +223,9 @@ export default{
           alert(response.message)
       });
     },
+    mounted(){
+      this.getAllReports()
+    }
   }
 }
 </script>
