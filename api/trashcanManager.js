@@ -7,17 +7,19 @@ const TEST_MODE = false;
 const LOG_MODE = 3; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 
 router.get("/", async (req, res) => {
-    if (LOG_MODE >= 1) console.log("get all trashcans request")
-    let trashcanList = await Trashcan.find({});
-    trashcanList = trashcanList.map((trashcan) => {
-        return {
-            self: '/trashcans/' + trashcan.id,
-            latitude: trashcan.latitude,
-            longitude: trashcan.longitude,
-            trashcanType: trashcan.trashcanType
-        };
-    });
-    res.status(200).json(trashcanList);
+    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+        if (LOG_MODE >= 1) console.log("get all trashcans request")
+        let trashcanList = await Trashcan.find({});
+        trashcanList = trashcanList.map((trashcan) => {
+            return {
+                self: '/trashcans/' + trashcan.id,
+                latitude: trashcan.latitude,
+                longitude: trashcan.longitude,
+                trashcanType: trashcan.trashcanType
+            };
+        });
+        res.status(200).json(trashcanList);
+    }
 });
 
 router.get("/:position", async (req, res, next) => {
@@ -86,27 +88,31 @@ router.get("/:position", async (req, res) => {
 })
 
 router.post("",  async (req, res) => {
-    //if (LOG_MODE >= 1) console.log("post trashcan request from user "+req.loggedUser.email)
+    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+        //if (LOG_MODE >= 1) console.log("post trashcan request from user "+req.loggedUser.email)
 
-	let trashcan = new Trashcan({
-        latitude: req.body.latitude,
-        longitude: req.body.longitude,
-        trashcanType: req.body.trashcanType
-    });
-    
-	trashcan = await trashcan.save();
-    
-    let trashcanId = trashcan._id;
+        let trashcan = new Trashcan({
+            latitude: req.body.latitude,
+            longitude: req.body.longitude,
+            trashcanType: req.body.trashcanType
+        });
+        
+        trashcan = await trashcan.save();
+        
+        let trashcanId = trashcan._id;
 
-    if (LOG_MODE >= 1) console.log('Trashcan saved successfully');
+        if (LOG_MODE >= 1) console.log('Trashcan saved successfully');
 
-    res.location("trashcans/" + trashcanId).status(201).send();
+        res.location("trashcans/" + trashcanId).status(201).send();
+    }
 });
 
 router.delete('/:id', async (req, res) => {
-    await Trashcan.deleteOne({ _id: req.params.id });
-    if (LOG_MODE >= 1) console.log('trashcan removed')
-    res.status(204).send()
+    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+        await Trashcan.deleteOne({ _id: req.params.id });
+        if (LOG_MODE >= 1) console.log('trashcan removed')
+        res.status(204).send()
+    }
 });
 
 

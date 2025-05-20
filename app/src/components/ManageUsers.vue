@@ -65,6 +65,9 @@ export default{
         users: []
       }
   },
+  mounted(){
+    this.showUsers();
+  },
   methods: {
     showUsers(){
         this.$nextTick(() => {
