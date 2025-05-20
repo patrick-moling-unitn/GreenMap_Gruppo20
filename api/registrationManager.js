@@ -12,15 +12,19 @@ const MIN_USER_PASSWORD_LENGTH = 8;
 const SALT_ROUNDS = Number(process.env.HASHING_SALT_ROUNDS);
 const USERNAME = process.env.EMAIL_USER;
 const PASSWORD = process.env.EMAIL_PASS;
+
+const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE = false;
+
+const API_V = process.env.API_VERSION;
 
 router.get("/", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
-        console.log("get all registering user request")
+        if (LOG_MODE >= 1) console.log("Get all registering user request!")
         let usersList = await RegisteringUser.find({});
         usersList = usersList.map((user) => {
             return {
-                self: '/users/' + user._id,
+                self: API_V + '/registeringUsers/' + user._id,
                 email: user.email,
                 passwordHash: user.passwordHash
             };
@@ -67,9 +71,9 @@ router.post("/",  async (req, res, next) => {
         };
         transporter.sendMail(mailOptions, function(error, info){
             if (error) {
-                console.log(error);
+                if (LOG_MODE >= 1) console.warn(error);
             } else {
-                console.log('Email sent: ' + info.response);
+                if (LOG_MODE >= 1) console.log('Email sent: ' + info.response);
             }
         });
         try{
@@ -109,7 +113,8 @@ router.post("/",  async (req, res) => {
     await RegisteringUser.deleteOne({_id: req.body.id});
     try{
         await user.save();
-        return res.location("user/" + user.id).status(201).send();
+        if (LOG_MODE >= 1) console.log('Registering user created!');
+        return res.location(API_V + '/registeringUsers/' + user.id).status(201).send();
     }catch(err){
         return res.status(500).json(err);
     }
@@ -118,7 +123,7 @@ router.post("/",  async (req, res) => {
 router.delete('/:id', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         await AuthenticatedUser.deleteOne({ _id: req.params.id });
-        console.log('user removed');
+        if (LOG_MODE >= 1) console.log('Registering user removed!');
         res.status(204).json({ _id: req.params.id });
     }else
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
@@ -127,7 +132,7 @@ router.delete('/:id', async (req, res) => {
 router.delete('/', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         await RegisteringUser.deleteMany({})
-        console.log('all registrating users removed');
+        if (LOG_MODE >= 1) console.log('All registering users removed!');
         res.status(204).send();
     }else
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});

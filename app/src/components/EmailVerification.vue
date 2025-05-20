@@ -21,7 +21,7 @@ export default {
     },
     methods: {
         verifyCode() {
-            fetch(`http://localhost:${3000}${ApiManager()}/register`, {
+            fetch(`http://localhost:${3000}${ApiManager()}/registeringUsers`, {
                 method: "POST",
                 body: JSON.stringify({
                     id: this.userId,

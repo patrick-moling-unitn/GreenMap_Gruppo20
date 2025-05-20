@@ -15,6 +15,8 @@ import EventBus from './EventBus';
 const API_VERSION = "/api/v1"
 const administrator = ref(false)
 const authToken = ref('')
+
+const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE = false
 
 const routes = {
@@ -60,13 +62,13 @@ function calculateCurrentPath(){
       requireLogout = requiresLogout(window.location.hash.slice(1));
       
   if (requireAuth && !authToken.value){
-    console.log(window.location.hash + " requires authentication: " + requireAuth + " authenticated: "+authToken.value)
+    if (LOG_MODE >= 1) console.log(window.location.hash + " requires authentication: " + requireAuth + " authenticated: "+authToken.value)
     window.location.hash = "#/login"
   }else if (requiresAdmin && !administrator.value){
-    console.log(window.location.hash + " requires admin: " + requiresAdmin + " adminstrator: "+administrator.value)
+    if (LOG_MODE >= 1) console.log(window.location.hash + " requires admin: " + requiresAdmin + " adminstrator: "+administrator.value)
     window.location.hash = "#/"
   }else if (requireLogout && authToken.value){
-    console.log(window.location.hash + " requires logout: " + requireLogout + " authenticated: "+authToken.value)
+    if (LOG_MODE >= 1) console.log(window.location.hash + " requires logout: " + requireLogout + " authenticated: "+authToken.value)
     window.location.hash = "#/logout"
   }
     
@@ -95,7 +97,7 @@ function parseJwt (token) {
 
 const loginHandler = function(newAuthToken) {
   let data = parseJwt(newAuthToken);
-  console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
+  if (LOG_MODE >= 1) console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
   administrator.value = data.administrator;
   authToken.value = newAuthToken;
   window.location.hash = "#/"
@@ -103,7 +105,7 @@ const loginHandler = function(newAuthToken) {
 }
 
 const logoutHandler = function() {
-  console.log(`User logged out`)
+  if (LOG_MODE >= 2) console.log(`User logged out`)
   administrator.value = false;
   authToken.value = null;
   window.location.hash = "#/"
@@ -111,13 +113,13 @@ const logoutHandler = function() {
 }
 
 const registrationHandler = function() {
-  console.log(`User registered`)
+  if (LOG_MODE >= 2) console.log(`User registered`)
   window.location.hash = "#/login"
   alert("Registered")
 }
 
 const sendAuthToken = function(currentToken) {
-  console.log("New auth token: " + (currentToken !== authToken.value))
+  if (LOG_MODE >= 2) console.log("New auth token: " + (currentToken !== authToken.value))
   if (currentToken !== authToken.value)
     EventBus.emit('authToken', authToken.value)
 }

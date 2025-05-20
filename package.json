@@ -4,6 +4,7 @@
   "description": "Prima versione dell'applicazione GreenMap",
   "main": "server.js",
   "scripts": {
+    "build-all": "npm install && cd app && npm install && npm run build",
     "start": "node server.js",
     "dev": "node -r dotenv/config server.js",
     "test": "echo \"Error: no test specified\" && exit 1"

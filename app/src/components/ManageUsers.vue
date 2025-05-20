@@ -72,7 +72,7 @@ export default{
     showUsers(){
         this.$nextTick(() => {
             console.log('Dati richiesti');
-            fetch(`http://localhost:${3000}${ApiManager()}/login?administrator=${this.administrator}&banned=${this.banned}&email=${this.email}&lastReportDate=${this.lastReportDate}&points=${this.points}`, {
+            fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers?administrator=${this.administrator}&banned=${this.banned}&email=${this.email}&lastReportDate=${this.lastReportDate}&points=${this.points}`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
@@ -92,7 +92,7 @@ export default{
     },
     deleteUser(userEmail){
         console.log('Dati inviati');
-        fetch(`http://localhost:${3000}${ApiManager()}/login`,{
+        fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers`,{
             method: "DELETE",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
@@ -107,7 +107,7 @@ export default{
     },
     banUnbanUser(userEmail){
         console.log('Dati inviati');
-        fetch(`http://localhost:${3000}${ApiManager()}/login`,{
+        fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers`,{
             method: "PUT",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
@@ -124,7 +124,7 @@ export default{
     },
     promoteDemoteUser(userEmail){
         console.log('Dati inviati');
-        fetch(`http://localhost:${3000}${ApiManager()}/login`,{
+        fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers`,{
             method: "PUT",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",

@@ -32,7 +32,7 @@ export default {
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
-            fetch(`http://localhost:${3000}${ApiManager()}/login`, {
+            fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers`, {
                 method: "POST",
                 body: JSON.stringify({
                     email: this.form.email,

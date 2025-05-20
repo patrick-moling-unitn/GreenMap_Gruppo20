@@ -142,7 +142,7 @@ export default{
         });
     },
     banUser(issuerId = this.selectedId){
-      fetch(`http://localhost:${3000}${ApiManager()}/login/${issuerId}`, {
+      fetch(`http://localhost:${3000}${ApiManager()}/authenticatedUsers/${issuerId}`, {
         method: "PUT",
         body: JSON.stringify({
           banned: true

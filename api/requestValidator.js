@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 
+const LOG_MODE = 0; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
+
 const requestValidator = function(req, res, next) {
 	let token = req.query.token || req.headers['x-access-token'];
 
@@ -7,13 +9,15 @@ const requestValidator = function(req, res, next) {
 		return res.status(401).send({error: true, message: 'Authentication token missing'});
 	}
 
-    //console.log("Validating: "+token)
+    if (LOG_MODE >= 2) console.log("Validating AuthToken before request forwarding: "+token)
 
 	jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {			
-		if (err)
-			return res.status(403).send({error: true, message: 'Failed to authenticate token.'});		
+		if (err){
+    		if (LOG_MODE >= 2) console.warn("Error while validating token: "+err)
+			return res.status(403).send({error: true, message: 'Failed to authenticate token.'});	
+		}	
 		else {
-    		//console.log("req.loggedUser: "+decoded)
+    		if (LOG_MODE >= 1) console.log("Decoded user from AuthToken: "+decoded)
 			req.loggedUser = decoded;
 			next();
 		}

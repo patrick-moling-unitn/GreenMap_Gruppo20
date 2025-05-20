@@ -27,18 +27,23 @@ app.get(API_V+"/trashcans", requestValidator) //Devi essere autenticato per visu
 app.post(API_V+"/trashcans", requestValidator) //Devi essere autenticato per aggiungere un cestino
 app.delete(API_V+"/trashcans/:id", requestValidator) //Devi essere autenticato per rimuovere un cestino
 
-app.use(API_V+"/reports", requestValidator) //TEST: devi essere autenticato per inviare un report
-app.get(API_V+"/login", requestValidator) //TEST: devi essere amministratore per ottenere gli utenti
-app.delete(API_V+"/login", requestValidator) //TEST: devi essere amministratore per eliminare gli utenti
-app.put(API_V+"/login", requestValidator) //TEST: devi essere amministratore per bandire gli utenti
-app.put(API_V+"/login/:id", requestValidator) //TEST: devi essere amministratore per bandire gli utenti per id
-app.get(API_V+"/reports", requestValidator) //TEST: devi essere amministratore per ottenere gli utenti registrandi
-app.delete(API_V+"/reports", requestValidator) //TEST: devi essere amministratore per bandire gli utenti registrandi
+app.use(API_V+"/reports", requestValidator) //Devi essere autenticato per interagire con l'API reportManager
+
+app.get(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per ottenere gli utenti
+app.delete(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per eliminare gli utenti
+app.put(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per bandire gli utenti
+app.put(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amministratore per bandire gli utenti per id
+
+app.get(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per ottenere tutti gli utenti in registrazione
+app.delete(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per cancellare tutti gli utenti in registrazione
+app.delete(API_V+"/registeringUsers/:id", requestValidator) //Devi essere amministratore per cancellare un utente in registrazione per id
+
+
 
 app.use(API_V+"/reports", reportManager)
 app.use(API_V+"/trashcans", trashcanManager)
-app.use(API_V+"/login", authenticationManager)
-app.use(API_V+"/register", registrationManager)
+app.use(API_V+"/authenticatedUsers", authenticationManager)
+app.use(API_V+"/registeringUsers", registrationManager)
 
 const path = __dirname + '/app/dist/';
 console.log(path)

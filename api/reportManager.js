@@ -45,8 +45,10 @@ router.get("/", async (req, res, next) => {
             res.status(200).json(reportList);
         }else
 		    return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
-    }else
+    }else if (req.query.type == "personal")
         next();
+    else
+        return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
 //GET PERSONAL REPORTS
@@ -89,35 +91,38 @@ router.put("/:id",  async (req, res, next) => {
 });
 
 router.put("/:id",  async (req, res, next) => {
-    if (req.report.resolved == req.body.resolved)
-        return res.status(400).json({error: true, message: "IL REPORT E' GIA' STATO RISOLTO"});
-    req.report.resolved = req.body.resolved;
+    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+        if (req.report.resolved == req.body.resolved)
+            return res.status(400).json({error: true, message: "IL REPORT E' GIA' STATO RISOLTO"});
+        req.report.resolved = req.body.resolved;
 
-    if (req.report.resolved){
-        let authenticatedUser = await AuthenticatedUser.findById(req.report.issuerId);
-        if(authenticatedUser){
-            authenticatedUser.points += REPORT_RESOLVED_REWARD
-            try{
-                await authenticatedUser.save();
-            }catch(err){
-                return res.status(500).json(err);
+        if (req.report.resolved){
+            let authenticatedUser = await AuthenticatedUser.findById(req.report.issuerId);
+            if(authenticatedUser){
+                authenticatedUser.points += REPORT_RESOLVED_REWARD
+                try{
+                    await authenticatedUser.save();
+                }catch(err){
+                    return res.status(500).json(err);
+                }
             }
+            else
+                return res.status(400).json({error: true, message: "NON ESISTE PROPRIETARIO DEL REPORT"});
         }
-        else
-            return res.status(400).json({error: true, message: "NON ESISTE PROPRIETARIO DEL REPORT"});
-    }
-    
-    try{
-        req.report = await req.report.save();
-    }catch(err){
-        return res.status(500).json(err);
-    }
-    
-    let reportId = req.report._id;
+        
+        try{
+            req.report = await req.report.save();
+        }catch(err){
+            return res.status(500).json(err);
+        }
+        
+        let reportId = req.report._id;
 
-    if (LOG_MODE >= 2) console.log('Report saved successfully');
+        if (LOG_MODE >= 2) console.log('Report saved successfully');
 
-    res.location("reports/" + reportId).status(200).send();
+        res.location(API_V + "reports/" + reportId).status(200).send();
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 //ADD NEW REPORT
@@ -180,8 +185,10 @@ router.delete('/:id', async (req, res, next) => {
             }
             if (LOG_MODE >= 2) console.log('report removed')
             res.status(204).send()
-        }else 
+        }else if (req.query.type == "userReports")
             next();
+        else
+            return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
     }else
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });

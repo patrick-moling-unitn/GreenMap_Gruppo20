@@ -39,7 +39,7 @@ router.get("/:position", async (req, res, next) => {
 
         let trashcanList = await Trashcan.find({});
         trashcanList = trashcanList.filter(element => {
-            let trashcanPosition =  {
+            let trashcanPosition = {
                 latitude: parseFloat(element.latitude),
                 longitude: parseFloat(element.longitude)
             }
@@ -50,7 +50,7 @@ router.get("/:position", async (req, res, next) => {
     }else if (req.query.type)
         next();
     else
-        return res.status(400).json({error: true, message: "NON E' STATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
 router.get("/:position", async (req, res) => {
@@ -91,7 +91,7 @@ router.get("/:position", async (req, res) => {
 
 router.post("",  async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
-        //if (LOG_MODE >= 1) console.log("post trashcan request from user "+req.loggedUser.email)
+        if (LOG_MODE >= 1) console.log("Post trashcan request from user "+req.loggedUser.email)
 
         let trashcan = new Trashcan({
             latitude: req.body.latitude,
@@ -103,7 +103,7 @@ router.post("",  async (req, res) => {
         
         let trashcanId = trashcan._id;
 
-        if (LOG_MODE >= 1) console.log('Trashcan saved successfully');
+        if (LOG_MODE >= 1) console.log('Trashcan saved successfully!');
 
         res.location(API_V + "trashcans/" + trashcanId).status(201).send();
     }
@@ -112,7 +112,7 @@ router.post("",  async (req, res) => {
 router.delete('/:id', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
         await Trashcan.deleteOne({ _id: req.params.id });
-        if (LOG_MODE >= 1) console.log('trashcan removed')
+        if (LOG_MODE >= 1) console.log('Trashcan removed!')
         res.status(204).send()
     }
 });

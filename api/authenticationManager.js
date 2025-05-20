@@ -6,30 +6,28 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 const bcrypt = require('bcrypt');
 
 const jwt = require('jsonwebtoken');
+
+const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE=false;
+
+const API_V = process.env.API_VERSION;
 
 router.get("/", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
-        console.log("get all authenticated users request")
-        const {administrator, banned, email, lastReportDate, points}= req.query;
+        if (LOG_MODE >= 1) console.log("Get all authenticated users request!")
+        const {administrator, banned, email, lastReportDate, points} = req.query;
         let query = {};
-            query.email = { $regex: email};
-        if (banned !== '') {
-            query.banned = banned;
-        }
-        if (administrator !== '') {
-            query.administrator = administrator;
-        }
-        if(lastReportDate !== ''){
-            query.lastReportDate = lastReportDate;
-        }
-        if (points !== '') {
-            query.points = Number(points);
-        }
+        query.email = { $regex: email};
+
+        if (banned !== '') query.banned = banned;
+        if (administrator !== '') query.administrator = administrator;
+        if (lastReportDate !== '') query.lastReportDate = lastReportDate;
+        if (points !== '') query.points = Number(points);
+
         let userList = await AuthenticatedUser.find(query);
             userList = userList.map((user) => {
             return {
-                self: '/authenticatedUser/' + user.id,
+                self: API_V + '/authenticatedUsers/' + user.id,
                 passwordHash: user.passwordHash,
                 email: user.email,
                 banned: user.banned,
@@ -43,7 +41,7 @@ router.get("/", async (req, res) => {
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 router.put("/:id", async (req, res) => {
-    console.log("ban authenticated user request")
+    if (LOG_MODE >= 1) console.log("Ban authenticated user request!")
     if (req.loggedUser.administrator == true || TEST_MODE){
         let authenticatedUser;
         try{
@@ -63,6 +61,7 @@ router.put("/:id", async (req, res) => {
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 router.put("/", async (req, res) => {
+    if (LOG_MODE >= 1) console.log("Ban/Unban and Promote/Demote authenticated user request!")
     if (req.loggedUser.administrator == true || TEST_MODE){
         let authenticatedUser;
         try{
@@ -86,6 +85,7 @@ router.put("/", async (req, res) => {
 });
 
 router.post("/",  async (req, res) => {
+    if (LOG_MODE >= 1) console.log("Authentication request!")
     let authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
     if(!authenticatedUser)
         return res.status(400).json({message: "EMAIL INSERITA INESISTENTE"});
@@ -103,9 +103,10 @@ router.post("/",  async (req, res) => {
 });
 
 router.delete('/', async (req, res) => {
+        if (LOG_MODE >= 1) console.log("Delete authenticated user request!")
     if (req.loggedUser.administrator == true || TEST_MODE){
         await AuthenticatedUser.deleteOne({isSystem:false, email: req.body.email})
-        console.log('user removed');
+        if (LOG_MODE >= 2) console.log("Authenticated user deleted!")
         res.status(204).json({message: "UTENTE CANCELLATO"});
     }else
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
