@@ -12,15 +12,25 @@ import ManageTrashcans from './components/ManageTrashcans.vue'
 
 import EventBus from './EventBus';
 
-const API_VERSION = process.env.API_VERSION || "/api/v1"
-const BASE_URL = process.env.SERVER_URL || "http://localhost:3000"
-const SERVER_URL = String(BASE_URL) + String(API_VERSION)
-
 const administrator = ref(false)
 const authToken = ref('')
 
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE = false
+
+let API_VERSION = "/api/v1"
+let BASE_URL = "http://localhost:3000"
+
+if (import.meta.env.MODE === "production") {
+  API_VERSION = import.meta.env.VITE_API_VERSION
+  BASE_URL = import.meta.env.VITE_SERVER_URL
+  if (LOG_MODE >= 1) {
+    console.warn("!-- Ambiente di produzione --!")
+    console.warn("Se stai sviluppando funzionalità in locale fai partire il server usando 'npm run dev' anzichè build")
+  }
+}
+
+const SERVER_URL = String(BASE_URL) + String(API_VERSION)
 
 const routes = {
   '/': OpenStreethMap,
