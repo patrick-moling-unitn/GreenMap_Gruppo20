@@ -9,58 +9,284 @@ servers:
     description: Optional server description, e.g. Main (production) server
 
 paths:
-  /login:
+  /authenticatedUser:
     get:
-      summary: Returns a list of all authenticated users.
-      description: Optional extended description in CommonMark or HTML.
+      summary: Returns a filtered list of all authenticated users. (admin only)
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          example: "user@example.com"
+        - in: query
+          name: banned
+          schema:
+            type: string
+          example: "false"
+        - in: query
+          name: administrator
+          schema:
+            type: string
+          example: "true"
+        - in: query
+          name: lastReportDate
+          schema:
+            type: string
+            format: date
+          example: "2025-05-19T15:53:30.784Z"
+        - in: query
+          name: points
+          schema:
+            type: integer
+          example: "0"
       responses:
         "200": # status code
           description: A JSON array of AuthenticatedUser objects
           content:
             application/json:
               schema:
-                type: object 
-                properties:
-                    passwordHash:
-                      type: string
-                    email:
-                      type: string
-                    banned:
-                      type: boolean
-                    administrator:
-                      type: boolean
-                    points:
-                      type: integer
+                type: array
+                items:
+                  type: object 
+                  properties:
+                      passwordHash:
+                        type: string
+                      email:
+                        type: string
+                      banned:
+                        type: boolean
+                      administrator:
+                        type: boolean
+                      points:
+                        type: integer
+                      lastReportIssueDate:
+                        type: string
+                        format: date
                 example: # Sample data
-                  passwordHash: "DfajfkajioFUWAopa"
-                  email: "example@email.com"
+                  self: /authenticatedUser/abc123
+                  passwordHash: "$2a$10$abcdehashedpw"
+                  email: "user1@example.com"
                   banned: false
-                  administrator: false
-                  points: 0
+                  administrator: true
+                  points: 5
+                  lastReportIssueDate: "2025-05-19T15:53:30.784Z"
+        "401":
+            description: Unauthorized
+            content:
+              application/json:
+                examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+    put:
+      summary: Update admin or ban status of a user by email (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                editBan:
+                  type: boolean
+                editAdmin:
+                  type: boolean
+            example:
+              email: "user1@example.com"
+              editBan: true
+              editAdmin: false
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              example:
+                _id: "abc123"
+                email: "user1@example.com"
+                banned: true
+                administrator: true
+                points: 5
+        '400':
+          description: Invalid user
+          content:
+            application/json:
+              example:
+                error: true
+                message: "ID UTENTE INSERITO INESISTENTE"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Database error"
     post:
       summary: Returns a JWT token if the login is successful.
       description: Optional extended description in CommonMark or HTML.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+            example:
+              email: "user@example.com"
+              password: "securepassword"
       responses:
         "200": # status code
           description: A JSON containing the JWT token
           content:
             application/json:
               schema:
-                type: string 
+                type: object
+                properties:
+                  authToken:
+                    type: string
               example: # Sample data
                 authToken: "KvNopad-ffoPF+FJgkfjfv"
-    delete:
-      summary: Deletes all authenticated users.
-      description: Optional extended description in CommonMark or HTML.
-      responses:
-        "204": # status code
-          description: A JSON confirming the deletion of the users
+        "400":
+          description: Invalid credentials
           content:
             application/json:
-              schema:
-                type: string 
-              example: # Sample data
-                authToken: "UTENTI AUTENTICATI CANCELLATI"
+              examples:
+                UserNotFound:
+                  summary: User not existing
+                  value:
+                    error: "EMAIL INSERITA INESISTENTE"
+                UserBanned:
+                  summary: User banned
+                  value:
+                    error: "UTENTE BANDITO"
+                WrongPassword:
+                  summary: Wrong user credentials
+                  value:
+                    error: "PASSWORD ERRATA"
+  /authenticatedUser/{email}:
+    delete:
+      summary: Delete a user by email (admin only)
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+          example: "user@example.com"
+      responses:
+        '204':
+          description: User deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+  /authenticatedUser/{id}:
+    put:
+      summary: Ban a user by ID (admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          example: "abc123"
+      responses:
+        '200':
+          description: User banned
+          content:
+            application/json:
+              example:
+                _id: "abc123"
+                email: "user@example.com"
+                banned: true
+                administrator: false
+                points: 3
+        '400':
+          description: Invalid user ID
+          content:
+            application/json:
+              example:
+                error: true
+                message: "ID UTENTE INSERITO INESISTENTE"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Database error"
   /register:
     get:
       summary: Returns a list of all registering users.
@@ -85,11 +311,411 @@ paths:
                         expireDate:
                           type: string
                 example: # Sample data
+                  self: "/v1/registeringUsers/abc123"
                   passwordHash: "DfajfkajioFUWAopa"
                   email: "example@email.com"
                   verificationCode:
                     code: 123456
                     expireDate: "21/05/2025 23:59:59"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+    post:
+      summary: Register a new user or complete registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                id:
+                  type: string
+                code:
+                  type: string
+            example:
+              email: "user@example.com"
+              password: "securePassword"
+      responses:
+        "200":
+          description: Registration step succeeded
+          content:
+            application/json:
+              example:
+                id: "abc123"
+        "201":
+          description: User successfully registered
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/v1/registeringUsers/abc123"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                alreadyRegistering:
+                  summary: Email already in process
+                  value:
+                    error: "already sent request"
+                alreadyExisting:
+                  summary: Email already exists
+                  value:
+                    error: "email already existing"
+                tooShort:
+                  summary: Password too short
+                  value:
+                    error: "password too short"
+                wrongCode:
+                  summary: Wrong verification code
+                  value:
+                    error: "wrong code"
+                timeExpired:
+                  summary: Verification time expired
+                  value:
+                    error: "time expired"
+                notFound:
+                  summary: User ID not found
+                  value:
+                    error: "user not existing"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
+    delete:
+      summary: Delete all registering users (admin only)
+      responses:
+        "204":
+          description: All registering users deleted
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+  /registeringUser/{id}:
+    delete:
+      summary: Delete a registering user by ID (admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Registering user deleted
+          content:
+            application/json:
+              example:
+                _id: "abc123"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."  
+  /reports:
+    get:
+      summary: Get reports
+      description: Retrieve all reports or personal reports based on query parameter.
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [all, personal]
+          required: true
+          description: Type of reports to retrieve
+      responses:
+        "200":
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportResponse'
+        "400":
+          description: Bad request
+        "401":
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."  
+    post:
+      summary: Create a new report
+      description: Add a new report for the logged-in user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewReport'
+      responses:
+        "201":
+          description: Report created
+        "400":
+          description: Cooldown not expired or other error
+          content:
+            application/json:
+              examples:
+                    TooManyReportsH:
+                      summary: Report already sent
+                      value:
+                        error: "ULTIMO REPORT INVIATO MENO DI 10 ORE FA. RIPROVA FRA: 2 ORE"
+                    TooManyReportsM:
+                      summary: Report already sent
+                      value:
+                        error: "ULTIMO REPORT INVIATO MENO DI 10 ORE FA. RIPROVA FRA: 20 MINUTI"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserBanned:
+                    summary: User is not banned
+                    value:
+                      error: "SEI STATO BANNATO E NON PUOI INVIARE REPORT!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."  
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
+
+    delete:
+      summary: Delete all reports (admin only)
+      responses:
+        "204":
+          description: All reports deleted
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+
+  /reports/{id}:
+    get:
+      summary: Get report by ID (admin only)
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Report found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        "400":
+          description: Invalid ID
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+
+    put:
+      summary: Update report resolution (admin only)
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resolved:
+                  type: boolean
+      responses:
+        "200":
+          description: Report updated
+        "400":
+          description: Already resolved or invalid ID
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
+    delete:
+      summary: Delete specific report (admin only)
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [report]
+      responses:
+        "204":
+          description: Report deleted
+        "400":
+          description: Invalid ID or missing query
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+  /reports/{userId}:
+    delete:
+      summary: Delete all reports of a user (admin only)
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [userReports]
+      responses:
+        "204":
+          description: All user reports deleted
+        "400":
+          description: Invalid user ID
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
   /trashcans:
     get:
       summary: Returns a list of all trashcans.
@@ -100,31 +726,197 @@ paths:
           content:
             application/json:
               schema:
-                type: object 
-                properties:
-                    latitude:
-                      type: number
-                    longitude:
-                      type: number
-                    trashcanType:
-                      type: integer
-                example: # Sample data
-                  latitude: 46.06146267294853
-                  longitude: 11.117831247229145
-                  trashcanType: 2
-    get:
-      summary: Returns the nearest trashcan of the specified type.
+                type: array
+                items:
+                  type: object 
+                  properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                      trashcanType:
+                        type: integer
+              example: # Sample data
+                latitude: 46.06146267294853
+                longitude: 11.117831247229145
+                trashcanType: 2
+    post:
+      summary: Add a new trashcan
+      description: Accessible by administrators or in test mode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - latitude
+                - longitude
+                - trashcanType
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                trashcanType:
+                  type: string
+            example:
+              latitude: 45.4642
+              longitude: 9.1900
+              trashcanType: "plastic"
       responses:
-        "200": #success status code
-          description: A trashcan object.
+        "201":
+          description: Trashcan created
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/v1/trashcans/abc123"
+
+  /trashcans/{id}:
+    delete:
+      summary: Delete a trashcan by ID (admin only)
+      description: Accessible by administrators or in test mode
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Trashcan deleted
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+
+  /trashcans/{position}:
+    get:
+      summary: Retrieve trashcans near a position or the closest of a type
+      description: Depending on the query parameters, returns either nearby trashcans or the nearest of a type
+      parameters:
+        - in: path
+          name: position
+          required: true
+          schema:
+            type: string
+          description: Coordinates as "lat,lng"
+        - in: query
+          name: distance
+          required: false
+          schema:
+            type: number
+          description: Distance in meters for filtering nearby trashcans
+        - in: query
+          name: type
+          required: false
+          schema:
+            type: string
+          description: Type of trashcan to find the nearest one
+      responses:
+        "200":
+          description: Trashcans found
           content:
             application/json:
               schema:
-                type: object 
-                properties:
-                    latitude:
-                      type: number
-                    longitude:
-                      type: number
-                    trashcanType:
-                      type: integer
+                oneOf:
+                  - type: array
+                    items:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                        longitude:
+                          type: number
+                        trashcanType:
+                          type: string
+                  - type: object
+                    properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                      trashcanType:
+                        type: string
+        "400":
+          description: Invalid input or missing query parameter
+          content:
+            application/json:
+              examples:
+                invalidCoordinates:
+                  summary: Coordinates not valid
+                  value:
+                    message: "COORDINATES NOT VALID!"
+                missingParameter:
+                  summary: Missing query parameter
+                  value:
+                    error: true
+                    message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"
+        "404":
+          description: No matching trashcan found
+components:
+  schemas:
+    NewReport:
+      type: object
+      required:
+        - type
+        - description
+        - latitude
+        - longitude
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+
+    Report:
+      type: object
+      properties:
+        _id:
+          type: string
+        issuerId:
+          type: string
+        reportType:
+          type: string
+        reportDescription:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        resolved:
+          type: boolean
+
+    ReportResponse:
+      type: object
+      properties:
+        self:
+          type: string
+        issuerId:
+          type: string
+        reportType:
+          type: string
+        reportDescription:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        resolved:
+          type: boolean
+    
