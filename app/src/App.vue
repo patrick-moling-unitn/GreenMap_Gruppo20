@@ -81,10 +81,21 @@ const currentView = computed(() => {
   return routes[path || '/'] || NotFound
 })
 
-const loginHandler = function(data) {
-  console.log(`User logged in and has the following auth token: ${data.token} and admin value: ${data.admin}`)
-  administrator.value = data.admin;
-  authToken.value = data.token;
+function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
+const loginHandler = function(newAuthToken) {
+  let data = parseJwt(newAuthToken);
+  console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
+  administrator.value = data.administrator;
+  authToken.value = newAuthToken;
   window.location.hash = "#/"
   alert("Logged in")
 }

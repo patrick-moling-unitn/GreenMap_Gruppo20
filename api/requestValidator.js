@@ -7,12 +7,13 @@ const requestValidator = function(req, res, next) {
 		return res.status(401).send({error: true, message: 'Authentication token missing'});
 	}
 
-    //console.log(token)
+    //console.log("Validating: "+token)
 
 	jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {			
 		if (err)
 			return res.status(403).send({error: true, message: 'Failed to authenticate token.'});		
 		else {
+    		//console.log("req.loggedUser: "+decoded)
 			req.loggedUser = decoded;
 			next();
 		}

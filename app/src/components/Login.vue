@@ -52,7 +52,7 @@ export default {
             })
             .then(data => {
               if (data && data.authToken){
-                EventBus.emit('loggedin', { token: data.authToken, admin: data.administrator });
+                EventBus.emit('loggedin', data.authToken);
                 this.form.email = '';
                 this.form.password = '';
               }

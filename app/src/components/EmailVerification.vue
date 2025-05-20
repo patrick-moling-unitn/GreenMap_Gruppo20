@@ -1,7 +1,7 @@
 <template>
   <h1>Verify email</h1>
   <form @submit.prevent="verifyCode">
-    <p>UserId ricevuto: {{ userId }}</p>
+    <p>Inserisci il codice che hai ricevuto sulla tua email</p>
     <input name="code" v-model="this.code" type="text"/>
     <button type="submit">Confirm Code</button>
   </form>
