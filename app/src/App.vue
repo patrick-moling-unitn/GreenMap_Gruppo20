@@ -32,7 +32,7 @@ const currentPath = ref(window.location.hash)
 
 function requiresAdministrator(path)
 {
-  if (path == "/resolveReport")
+  if (path == "/resolveReport" || path == "/manageUsers" || path == "/manageTrashcans")
     return true;
 
   return false;
@@ -158,7 +158,7 @@ EventBus.on('apiVersionRequest', sendApiVersion)
   </header>
   <body class="body-div">
     <KeepAlive>
-      <component :is="currentView"/>
+      <component :is="currentView" :admin="administrator"/>
     </KeepAlive>
   </body>
 </template>

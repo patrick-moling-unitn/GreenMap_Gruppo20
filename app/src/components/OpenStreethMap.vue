@@ -1,6 +1,7 @@
 <template>
-    <IssueReport :position="this.reportPosition" :formattedPosition="this.formattedReportPosition"></IssueReport>
-    <div id="map"></div>
+    <AddTrashcan v-if="admin" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></AddTrashcan>
+    <IssueReport v-else :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></IssueReport>
+    <div id="map" tabindex="0"></div>
     <div class="d-flex" style="align-items: center;">
       <div class="input-group" style="padding: 5px; max-width: 350px">
         <select class="form-select" id="button-addon" v-model="selectedTrashcanType">
@@ -13,7 +14,7 @@
         </select>
         <button class="btn btn-outline-primary" type="button" id="button-addon" @click="searchClosestTrashcan">Find</button>
       </div>
-      <button class="btn btn-primary" type="button" v-if="this.geolocalized" 
+      <button id="showGPSPosition" class="btn btn-primary" type="button" v-if="this.geolocalized" 
         @click="showGPSposition">Show GPS position</button>
     </div>
 </template>
@@ -24,15 +25,21 @@ import { onActivated, onDeactivated } from 'vue'
 import TokenManager from '@/tokenManager'
 import ApiManager from '@/apiManager'
 import IssueReport from './IssueReport.vue'
+import AddTrashcan from './AddTrashcan.vue';
+import EventBus from '@/EventBus'
 
 export default
 {
   components: {
-    IssueReport
+    IssueReport,
+    AddTrashcan
+  },
+  props: {
+    admin: false
   },
   data() {
       return {
-          reportPosition: {
+          mapClickPosition: {
             lat: '',
             lng: ''
           },
@@ -164,10 +171,12 @@ export default
     
     map.on('click', (event) => {
       console.log("Map clicked: " + event.latlng)
-      this.reportPosition.lat = event.latlng.lat
-      this.reportPosition.lng = event.latlng.lng
+      this.mapClickPosition.lat = event.latlng.lat
+      this.mapClickPosition.lng = event.latlng.lng
       this.formattedReportPosition = "{ "+event.latlng.lat.toFixed(4) + ", " + event.latlng.lng.toFixed(4)+" }"
-      $('#issueReportModal').modal('show');
+
+      if (this.admin) $('#addTrashcanModal').modal('show');
+      else $('#issueReportModal').modal('show');
     });
     
     map.on('moveend', () => {
@@ -178,6 +187,9 @@ export default
             
         requestAllTrashcans();
     });
+
+    
+    EventBus.on("trashcanAdded", requestAllTrashcans)
 
     this.searchTrashcanCallback = (trashcan) => {
       console.log(trashcan);

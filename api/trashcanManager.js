@@ -4,7 +4,9 @@ const router = express.Router();
 const geolib = require("geolib");
 
 const TEST_MODE = false;
-const LOG_MODE = 3; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
+const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
+
+const API_V = process.env.API_VERSION;
 
 router.get("/", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
@@ -12,7 +14,7 @@ router.get("/", async (req, res) => {
         let trashcanList = await Trashcan.find({});
         trashcanList = trashcanList.map((trashcan) => {
             return {
-                self: '/trashcans/' + trashcan.id,
+                self: API_V + '/trashcans/' + trashcan.id,
                 latitude: trashcan.latitude,
                 longitude: trashcan.longitude,
                 trashcanType: trashcan.trashcanType
@@ -103,7 +105,7 @@ router.post("",  async (req, res) => {
 
         if (LOG_MODE >= 1) console.log('Trashcan saved successfully');
 
-        res.location("trashcans/" + trashcanId).status(201).send();
+        res.location(API_V + "trashcans/" + trashcanId).status(201).send();
     }
 });
 
