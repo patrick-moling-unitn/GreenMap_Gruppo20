@@ -29,6 +29,7 @@ app.use(API_V+"/reports", requestValidator) //TEST: devi essere autenticato per 
 app.get(API_V+"/login", requestValidator) //TEST: devi essere amministratore per ottenere gli utenti
 app.delete(API_V+"/login", requestValidator) //TEST: devi essere amministratore per eliminare gli utenti
 app.put(API_V+"/login", requestValidator) //TEST: devi essere amministratore per bandire gli utenti
+app.put(API_V+"/login/:id", requestValidator) //TEST: devi essere amministratore per bandire gli utenti per id
 app.get(API_V+"/reports", requestValidator) //TEST: devi essere amministratore per ottenere gli utenti registrandi
 app.delete(API_V+"/reports", requestValidator) //TEST: devi essere amministratore per bandire gli utenti registrandi
 

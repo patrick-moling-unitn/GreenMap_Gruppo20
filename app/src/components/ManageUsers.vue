@@ -77,58 +77,68 @@ export default{
                 }
             })
             .then(response => response.json())
-            .then(users => this.users=users);
+            .then(users => {
+              if(users){
+                console.log(users)
+                this.users=users
+              }
+              else
+                return
+            });
         })
     },
     deleteUser(userEmail){
         console.log('Dati inviati');
         fetch(`http://localhost:${3000}${ApiManager()}/login`,{
-            body: JSON.stringify({
-                email: userEmail,
-            }),
             method: "DELETE",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
                 "x-access-token": TokenManager()
-            }
+            },
+            body: JSON.stringify({
+                email: userEmail,
+            })
         })
-        .then(response => console.log(response));
-        this.showUsers();
+        .then(response => console.log(response))
+        .then(() => this.showUsers());
     },
     banUnbanUser(userEmail){
         console.log('Dati inviati');
         fetch(`http://localhost:${3000}${ApiManager()}/login`,{
+            method: "PUT",
+            headers: {
+                "Content-type": "application/json; charset=UTF-8",
+                "x-access-token": TokenManager()
+            },
             body: JSON.stringify({
                 email: userEmail,
                 editAdmin: false,
                 editBan: true
-            }),
-            method: "PUT",
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-                "x-access-token": TokenManager()
-            }
+            })
         })
-        .then(response => console.log(response));
-        this.showUsers();
+        .then(response => console.log(response))
+        .then(() => this.showUsers());
     },
     promoteDemoteUser(userEmail){
         console.log('Dati inviati');
         fetch(`http://localhost:${3000}${ApiManager()}/login`,{
-            body: JSON.stringify({
-                email: userEmail,
-                editAdmin: true,
-                editBan: false
-            }),
             method: "PUT",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
                 "x-access-token": TokenManager()
-            }
+            },
+            body: JSON.stringify({
+                email: userEmail,
+                editAdmin: true,
+                editBan: false
+            })
         })
-        .then(response => console.log(response));
-        this.showUsers();
+        .then(response => console.log(response))
+        .then(() => this.showUsers());
     }
+  },
+  mounted(){
+    this.showUsers()
   }
 }
 </script>

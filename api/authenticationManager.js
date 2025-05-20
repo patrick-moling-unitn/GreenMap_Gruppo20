@@ -12,7 +12,6 @@ router.get("/", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         console.log("get all authenticated users request")
         const {administrator, banned, email, lastReportDate, points}= req.query;
-        console.log(req.query);
         let query = {};
             query.email = { $regex: email};
         if (banned !== '') {
@@ -43,19 +42,37 @@ router.get("/", async (req, res) => {
     }else
 		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
-
-router.put("/", async (req, res) => {
+router.put("/:id", async (req, res) => {
     console.log("ban authenticated user request")
     if (req.loggedUser.administrator == true || TEST_MODE){
         let authenticatedUser;
         try{
-            authenticatedUser = await AuthenticatedUser.find(req.email);
+            authenticatedUser = await AuthenticatedUser.findOne({isSystem:false, _id: req.params.id});
         }catch(err){
             return res.status(400).json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
         }
-        if(req.editBan)
+            authenticatedUser.banned = true;
+        try{
+            authenticatedUser.save();
+        }catch(err){
+            return res.status(500).json(err);
+        }
+
+        res.status(200).json(authenticatedUser);
+    }else
+		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+});
+router.put("/", async (req, res) => {
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        let authenticatedUser;
+        try{
+            authenticatedUser = await AuthenticatedUser.findOne({isSystem:false, email: req.body.email});
+        }catch(err){
+            return res.status(400).json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
+        }
+        if(req.body.editBan)
             authenticatedUser.banned = !authenticatedUser.banned;
-        if(req.editAdmin)
+        if(req.body.editAdmin)
             authenticatedUser.administrator = !authenticatedUser.administrator;
         try{
             authenticatedUser.save();
@@ -87,7 +104,7 @@ router.post("/",  async (req, res) => {
 
 router.delete('/', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
-        await AuthenticatedUser.deleteOne({isSystem:false, email: req.email})
+        await AuthenticatedUser.deleteOne({isSystem:false, email: req.body.email})
         console.log('user removed');
         res.status(204).json({message: "UTENTE CANCELLATO"});
     }else
