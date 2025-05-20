@@ -6,6 +6,11 @@
   font-weight: normal;
 }
 
+.alert-icon {
+  width: 24px;
+  height: 24px;
+}
+
 a,
 .green {
   text-decoration: none;

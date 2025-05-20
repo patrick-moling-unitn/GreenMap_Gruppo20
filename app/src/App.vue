@@ -7,6 +7,7 @@ import Login from './components/Login.vue'
 import Logout from './components/Logout.vue'
 import OpenStreethMap from './components/OpenStreethMap.vue'
 import ManageUsers from './components/ManageUsers.vue'
+import ManageTrashcans from './components/ManageTrashcans.vue'
 //import NotFound from './NotFound.vue'
 
 import EventBus from './EventBus';
@@ -23,6 +24,7 @@ const routes = {
   '/logout': Logout,
   '/resolveReport': ResolveReport,
   '/manageUsers' : ManageUsers,
+  '/manageTrashcans': ManageTrashcans,
   '/todo': Todo
 }
 
@@ -30,7 +32,7 @@ const currentPath = ref(window.location.hash)
 
 function requiresAdministrator(path)
 {
-  if (path == "/resolveReport")
+  if (path == "/resolveReport" || path == "/manageUsers" || path == "/manageTrashcans")
     return true;
 
   return false;
@@ -141,6 +143,7 @@ EventBus.on('apiVersionRequest', sendApiVersion)
     <div v-else-if="TEST_MODE || administrator">
       <a href="#/">Home</a> |
       <a href="#/resolveReport">Resolve Report</a> |
+      <a href="#/manageTrashcans">Manage Trashcans</a> |
       <a href="#/manageUsers">Manage Users</a> |
       <a href="#/logout">Logout</a>
     </div>
@@ -155,7 +158,7 @@ EventBus.on('apiVersionRequest', sendApiVersion)
   </header>
   <body class="body-div">
     <KeepAlive>
-      <component :is="currentView"/>
+      <component :is="currentView" :admin="administrator"/>
     </KeepAlive>
   </body>
 </template>
