@@ -5,6 +5,7 @@ const reportManager = require('./api/reportManager')
 const trashcanManager = require('./api/trashcanManager')
 const authenticationManager = require('./api/authenticationManager')
 const registrationManager = require('./api/registrationManager')
+const questionnaireManager = require('./api/questionnaireManager')
 const requestValidator = require('./api/requestValidator');
 
 const AuthenticatedUser = require('./models/authenticatedUser')
@@ -38,10 +39,13 @@ app.get(API_V+"/registeringUsers/", requestValidator) //Devi essere amministrato
 app.delete(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per cancellare tutti gli utenti in registrazione
 app.delete(API_V+"/registeringUsers/:id", requestValidator) //Devi essere amministratore per cancellare un utente in registrazione per id
 
+app.use(API_V+"/questionnaires/", requestValidator) //Devi essere autenticato per poter interagire con qualsiasi API dei questionari
+
 app.use(API_V+"/reports", reportManager)
 app.use(API_V+"/trashcans", trashcanManager)
 app.use(API_V+"/authenticatedUsers", authenticationManager)
 app.use(API_V+"/registeringUsers", registrationManager)
+app.use(API_V+"/questionnaires", questionnaireManager)
 
 const path = __dirname + '/app/dist/';
 console.log(path)

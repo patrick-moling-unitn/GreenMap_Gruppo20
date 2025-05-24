@@ -10,6 +10,7 @@ import ManageUsers from './components/ManageUsers.vue'
 import ManageTrashcans from './components/ManageTrashcans.vue'
 import AccountDetails from './components/AccountDetails.vue'
 import CookiePopup from './components/CookiePopup.vue'
+import CompileQuestionnaire from './components/CompileQuestionnaire.vue'
 //import NotFound from './NotFound.vue'
 
 import EventBus from './EventBus';
@@ -53,6 +54,7 @@ const routes = {
   '/manageUsers' : ManageUsers,
   '/manageTrashcans': ManageTrashcans,
   '/accountDetails' : AccountDetails,
+  '/compileQuestionnaire': CompileQuestionnaire,
   '/todo': Todo
   
 }
@@ -93,7 +95,7 @@ function calculateCurrentPath(){
     window.location.hash = "#/login"
   }else if (requiresAdmin && !administrator.value){
     if (LOG_MODE >= 1) console.log(window.location.hash + " requires admin: " + requiresAdmin + " adminstrator: "+administrator.value)
-    window.location.hash = "#/"
+    returnToHomePage();
   }else if (requireLogout && authToken.value){
     if (LOG_MODE >= 1) console.log(window.location.hash + " requires logout: " + requireLogout + " authenticated: "+authToken.value)
     window.location.hash = "#/logout"
@@ -122,7 +124,11 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
-const loginHandler = function(newAuthToken) {
+function returnToHomePage(){
+  window.location.hash = "#/"
+}
+
+const loginHandler = function(newAuthToken, automaticLogin) {
   let data = parseJwt(newAuthToken);
   if (LOG_MODE >= 1) console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
   administrator.value = data.administrator;
@@ -131,8 +137,8 @@ const loginHandler = function(newAuthToken) {
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
     CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn);
 
-  window.location.hash = "#/"
-  alert("Logged in")
+  returnToHomePage();
+  if (!automaticLogin) alert("Logged in")
 }
 
 const logoutHandler = function() {
@@ -143,7 +149,7 @@ const logoutHandler = function() {
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
     CookieManagerClass.deleteCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
 
-  window.location.hash = "#/"
+  returnToHomePage();
   alert("Logged out")
 }
 
@@ -176,6 +182,7 @@ const updateCookiesConsent = function(hasConsent){
 EventBus.on('loggedin', loginHandler)
 EventBus.on('loggedout', logoutHandler)
 EventBus.on('registered', registrationHandler)
+EventBus.on('questionnaireSent', returnToHomePage)
 EventBus.on('cookieConsentUpdated', updateCookiesConsent)
 
 //Richieste eseguite dai componenti VueJS
@@ -189,9 +196,8 @@ if (LOG_MODE >= 1 && hasCookieConsent != null) console.log("Accepted cookies: " 
 
 if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME) != null){
   let authTokenCookie = CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
-  if (LOG_MODE >= 1)  
-    console.log("AuthTokenCookie: ", authTokenCookie);
-  loginHandler(authTokenCookie);
+  if (LOG_MODE >= 2) console.log("AuthTokenCookie: ", authTokenCookie);
+  loginHandler(authTokenCookie, true);
 }
 </script>
 
@@ -211,7 +217,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
     </div>
     <div v-else>
       <a href="#/">Home</a> |
-      <a href="#/todo">Compile Questionnaire</a> |
+      <a href="#/compileQuestionnaire">Compile Questionnaire</a> |
       <a href="#/todo">Get Discount</a> |
       <a href="#/accountDetails">View Profile</a> |
       <a href="#/logout">Logout</a>
@@ -219,7 +225,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
 
   </header>
   <body class="body-div">
-    <KeepAlive>
+    <KeepAlive include="OpenStreethMap">
       <component :is="currentView" :admin="administrator"/>
     </KeepAlive>
     <CookiePopup v-if="!askedCookieConsent"></CookiePopup>
