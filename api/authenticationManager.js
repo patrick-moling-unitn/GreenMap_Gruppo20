@@ -94,8 +94,9 @@ router.post("/",  async (req, res) => {
 
     await bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
         if (result == true){
-            let payload = {id: authenticatedUser._id, email: authenticatedUser.email, administrator: authenticatedUser.administrator}
-            let options = { expiresIn: 86400 } // expires in 24 hours
+            let options = { expiresIn: 24 * 60 * 60_000 } // expires in 24 hours
+            let payload = {id: authenticatedUser._id, email: authenticatedUser.email, 
+                administrator: authenticatedUser.administrator, expiresIn: options.expiresIn}
             //console.log(jwt.sign(payload, process.env.JWT_SECRET, options))
             res.status(200).json({ authToken: jwt.sign(payload, process.env.JWT_SECRET, options) });
         }

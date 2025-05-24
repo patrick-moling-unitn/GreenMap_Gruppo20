@@ -8,18 +8,29 @@ import Logout from './components/Logout.vue'
 import OpenStreethMap from './components/OpenStreethMap.vue'
 import ManageUsers from './components/ManageUsers.vue'
 import ManageTrashcans from './components/ManageTrashcans.vue'
+import CookiePopup from './components/CookiePopup.vue'
 //import NotFound from './NotFound.vue'
 
 import EventBus from './EventBus';
+import CookieManager from './cookieManager'
 
+const askedCookieConsent = ref(false)
 const administrator = ref(false)
 const authToken = ref('')
+
+const AUTHENTICATION_TOKEN_COOKIE_NAME = "AuthenticationToken"
+const COOKIES_CONSENT_LOCAL_STORAGE_NAME = "CookiesConsent"
+
+const CookieManagerClass = new CookieManager();
 
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE = false
 
 let API_VERSION = "/api/v1"
 let BASE_URL = "http://localhost:3000"
+
+if (LOG_MODE >= 2)  
+  console.log(import.meta.env.MODE)
 
 if (import.meta.env.MODE === "production") {
   API_VERSION = import.meta.env.VITE_API_VERSION
@@ -31,6 +42,18 @@ if (import.meta.env.MODE === "production") {
 }
 
 const SERVER_URL = String(BASE_URL) + String(API_VERSION)
+
+let hasCookieConsent = localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME)
+askedCookieConsent.value = hasCookieConsent != null
+
+if (LOG_MODE >= 1 && hasCookieConsent != null) console.log("Accepted cookies: " + hasCookieConsent);
+
+if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME) != null){
+  let authTokenCookie = CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
+  if (LOG_MODE >= 1)  
+    console.log("AuthTokenCookie: ", authTokenCookie);
+  authToken.value = authTokenCookie;
+}
 
 const routes = {
   '/': OpenStreethMap,
@@ -113,6 +136,10 @@ const loginHandler = function(newAuthToken) {
   if (LOG_MODE >= 1) console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
   administrator.value = data.administrator;
   authToken.value = newAuthToken;
+  
+  if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
+    CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn);
+
   window.location.hash = "#/"
   alert("Logged in")
 }
@@ -121,6 +148,10 @@ const logoutHandler = function() {
   if (LOG_MODE >= 2) console.log(`User logged out`)
   administrator.value = false;
   authToken.value = null;
+
+  if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
+    CookieManagerClass.deleteCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
+
   window.location.hash = "#/"
   alert("Logged out")
 }
@@ -138,13 +169,25 @@ const sendAuthToken = function(currentToken) {
 }
 
 const sendServerUrl = function() {
-  console.log("emit ", SERVER_URL)
+  if (LOG_MODE >= 1) console.log("Server URL: ", SERVER_URL)
   EventBus.emit('serverUrl', SERVER_URL)
 }
 
+const updateCookiesConsent = function(hasConsent){
+  localStorage.setItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME, hasConsent);
+  askedCookieConsent.value = true;
+
+  if (!hasConsent)
+    CookieManagerClass.deleteCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
+}
+
+//Richieste (indirettamente) eseguite dall'utente
 EventBus.on('loggedin', loginHandler)
 EventBus.on('loggedout', logoutHandler)
 EventBus.on('registered', registrationHandler)
+EventBus.on('cookieConsentUpdated', updateCookiesConsent)
+
+//Richieste eseguite dai componenti VueJS
 EventBus.on('authTokenRequest', sendAuthToken)
 EventBus.on('serverUrlRequest', sendServerUrl)
 </script>
@@ -176,6 +219,7 @@ EventBus.on('serverUrlRequest', sendServerUrl)
     <KeepAlive>
       <component :is="currentView" :admin="administrator"/>
     </KeepAlive>
+    <CookiePopup v-if="!askedCookieConsent"></CookiePopup>
   </body>
 </template>
 

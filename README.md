@@ -17,7 +17,8 @@ In questa repository è presente
 
 Come avviare il server
 + navigare nella directory del progetto *.../GreenMap_Gruppo20*
-+ inserire il comando *npm run build-dev* per installare tutte i moduli Node + VueJS richiesti e fare la (dev) build dell'App.
++ [**per la prima build**] inserire il comando *npm run build-dev* per installare tutte i moduli Node + VueJS richiesti e fare la (dev) build dell'App.
++ [**per le build successive**] inserire il comando *npm run build-test* dentro la cartella **/app** per fare la (dev) build dell'App.
 + inserire il comando *touch .env* per creare il file di configurazione
 + è necessario copiare il contenuto del file *.env.example*, incollarlo nel file *.env* e compilare il campo **DATABASE_URL** inserendo le proprie credenziali.
 + inserire il comando *npm run dev* per avviare il servizio backend del server.
