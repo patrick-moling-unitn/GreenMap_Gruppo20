@@ -10,6 +10,7 @@ import ManageUsers from './components/ManageUsers.vue'
 import ManageTrashcans from './components/ManageTrashcans.vue'
 import AccountDetails from './components/AccountDetails.vue'
 import CookiePopup from './components/CookiePopup.vue'
+import CompileQuestionnaire from './components/CompileQuestionnaire.vue'
 //import NotFound from './NotFound.vue'
 
 import EventBus from './EventBus';
@@ -53,6 +54,7 @@ const routes = {
   '/manageUsers' : ManageUsers,
   '/manageTrashcans': ManageTrashcans,
   '/accountDetails' : AccountDetails,
+  '/compileQuestionnaire': CompileQuestionnaire,
   '/todo': Todo
   
 }
@@ -122,7 +124,7 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
-const loginHandler = function(newAuthToken) {
+const loginHandler = function(newAuthToken, automaticLogin) {
   let data = parseJwt(newAuthToken);
   if (LOG_MODE >= 1) console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
   administrator.value = data.administrator;
@@ -132,7 +134,7 @@ const loginHandler = function(newAuthToken) {
     CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn);
 
   window.location.hash = "#/"
-  alert("Logged in")
+  if (!automaticLogin) alert("Logged in")
 }
 
 const logoutHandler = function() {
@@ -189,9 +191,8 @@ if (LOG_MODE >= 1 && hasCookieConsent != null) console.log("Accepted cookies: " 
 
 if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME) != null){
   let authTokenCookie = CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
-  if (LOG_MODE >= 1)  
-    console.log("AuthTokenCookie: ", authTokenCookie);
-  loginHandler(authTokenCookie);
+  if (LOG_MODE >= 2) console.log("AuthTokenCookie: ", authTokenCookie);
+  loginHandler(authTokenCookie, true);
 }
 </script>
 
@@ -211,7 +212,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
     </div>
     <div v-else>
       <a href="#/">Home</a> |
-      <a href="#/todo">Compile Questionnaire</a> |
+      <a href="#/compileQuestionnaire">Compile Questionnaire</a> |
       <a href="#/todo">Get Discount</a> |
       <a href="#/accountDetails">View Profile</a> |
       <a href="#/logout">Logout</a>
