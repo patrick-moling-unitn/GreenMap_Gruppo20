@@ -107,8 +107,7 @@ router.post("/",  async (req, res) => {
         administrator: false,
         points: 0,
         banned: false,
-        passwordHash: newuser.passwordHash,
-        lastReportIssueDate: null
+        passwordHash: newuser.passwordHash
     });
     await RegisteringUser.deleteOne({_id: req.body.id});
     try{

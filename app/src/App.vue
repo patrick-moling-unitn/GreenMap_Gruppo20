@@ -95,7 +95,7 @@ function calculateCurrentPath(){
     window.location.hash = "#/login"
   }else if (requiresAdmin && !administrator.value){
     if (LOG_MODE >= 1) console.log(window.location.hash + " requires admin: " + requiresAdmin + " adminstrator: "+administrator.value)
-    window.location.hash = "#/"
+    returnToHomePage();
   }else if (requireLogout && authToken.value){
     if (LOG_MODE >= 1) console.log(window.location.hash + " requires logout: " + requireLogout + " authenticated: "+authToken.value)
     window.location.hash = "#/logout"
@@ -124,6 +124,10 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
+function returnToHomePage(){
+  window.location.hash = "#/"
+}
+
 const loginHandler = function(newAuthToken, automaticLogin) {
   let data = parseJwt(newAuthToken);
   if (LOG_MODE >= 1) console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
@@ -133,7 +137,7 @@ const loginHandler = function(newAuthToken, automaticLogin) {
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
     CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn);
 
-  window.location.hash = "#/"
+  returnToHomePage();
   if (!automaticLogin) alert("Logged in")
 }
 
@@ -145,7 +149,7 @@ const logoutHandler = function() {
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
     CookieManagerClass.deleteCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
 
-  window.location.hash = "#/"
+  returnToHomePage();
   alert("Logged out")
 }
 
@@ -178,6 +182,7 @@ const updateCookiesConsent = function(hasConsent){
 EventBus.on('loggedin', loginHandler)
 EventBus.on('loggedout', logoutHandler)
 EventBus.on('registered', registrationHandler)
+EventBus.on('questionnaireSent', returnToHomePage)
 EventBus.on('cookieConsentUpdated', updateCookiesConsent)
 
 //Richieste eseguite dai componenti VueJS
@@ -220,7 +225,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
 
   </header>
   <body class="body-div">
-    <KeepAlive>
+    <KeepAlive include="OpenStreethMap">
       <component :is="currentView" :admin="administrator"/>
     </KeepAlive>
     <CookiePopup v-if="!askedCookieConsent"></CookiePopup>

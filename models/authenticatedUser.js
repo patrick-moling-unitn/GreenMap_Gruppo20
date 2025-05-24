@@ -8,6 +8,7 @@ module.exports = mongoose.model('AuthenticatedUser', new Schema({
     banned: Boolean, //Non ci serve sapere se è autenticato visto che possiede un authToken
     administrator: Boolean,
     points: Schema.Types.Int32,
-    lastReportIssueDate: Date,
+    lastReportIssueDate: {type: Date, default: null},
+    lastQuestionnaireCompilationDate: {type: Date, default: null},
     isSystem: {type: Boolean, default: false}
 }));

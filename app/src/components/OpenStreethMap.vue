@@ -30,6 +30,7 @@ import EventBus from '@/EventBus'
 
 export default
 {
+  name: 'OpenStreethMap',
   components: {
     IssueReport,
     AddTrashcan

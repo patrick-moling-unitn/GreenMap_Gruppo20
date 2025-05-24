@@ -1,7 +1,8 @@
 @import './base.css';
 
 .primary-color{
-  background-color: #c2daff;
+  background-color: #ddeaff;
+  border-radius: 25px;
 }
 
 #app {
