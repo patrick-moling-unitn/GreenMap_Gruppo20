@@ -44,18 +44,6 @@ if (import.meta.env.MODE === "production") {
 
 const SERVER_URL = String(BASE_URL) + String(API_VERSION)
 
-let hasCookieConsent = localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME)
-askedCookieConsent.value = hasCookieConsent != null
-
-if (LOG_MODE >= 1 && hasCookieConsent != null) console.log("Accepted cookies: " + hasCookieConsent);
-
-if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME) != null){
-  let authTokenCookie = CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
-  if (LOG_MODE >= 1)  
-    console.log("AuthTokenCookie: ", authTokenCookie);
-  authToken.value = authTokenCookie;
-}
-
 const routes = {
   '/': OpenStreethMap,
   '/register': Register,
@@ -193,6 +181,18 @@ EventBus.on('cookieConsentUpdated', updateCookiesConsent)
 //Richieste eseguite dai componenti VueJS
 EventBus.on('authTokenRequest', sendAuthToken)
 EventBus.on('serverUrlRequest', sendServerUrl)
+
+let hasCookieConsent = localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME)
+askedCookieConsent.value = hasCookieConsent != null
+
+if (LOG_MODE >= 1 && hasCookieConsent != null) console.log("Accepted cookies: " + hasCookieConsent);
+
+if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME) != null){
+  let authTokenCookie = CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
+  if (LOG_MODE >= 1)  
+    console.log("AuthTokenCookie: ", authTokenCookie);
+  loginHandler(authTokenCookie);
+}
 </script>
 
 <template>
