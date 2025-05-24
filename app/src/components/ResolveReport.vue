@@ -3,17 +3,6 @@
     <div>
       <button type="button" class="btn btn-danger" @click="deleteAllReports">Delete all reports</button>
       <button type="button" class="btn btn-primary" @click="getAllReports">Get all reports</button>
-      <button type="button" class="btn btn-secondary" @click="getPersonalReports">Get personal reports</button>
-      <div class="input-group mb-3" style="padding: 5px; max-width: 50%;">
-        <input type="text" class="form-control" v-model="selectedId" placeholder="Resolve report [id]" aria-label="Resolve report" aria-describedby="button-addon">
-        <select class="form-select" id="button-addon" v-model="selectedResolutionType">
-          <option selected disabled value="">Resolution type...</option>
-          <option value="resolve">Reward user</option>
-          <option value="delete">Delete report</option>
-          <option value="ban">Ban user</option>
-        </select>
-        <button class="btn btn-outline-success" type="button" id="button-addon" @click="handleReportResolution">Resolve</button>
-      </div>
     </div>
     <div class="container" v-if="this.reports.length > 0">
     <h2 class="mb-4">Report ricevuti</h2>
@@ -26,18 +15,26 @@
           <th>Latitudine</th>
           <th>Longitudine</th>
           <th>Risolto</th>
-          <th>Link</th>
+          <th>Risolvi</th>
         </tr>
       </thead>
       <tbody> 
         <tr v-for="report in reports">
           <td>{{ report.issuerId }}</td>
           <td>{{ reportTypes[report.reportType]}}</td>
-          <td>{{ report.reportDescription }}</td>
-          <td>{{ report.latitude?.$numberDecimal }}</td>
-          <td>{{ report.longitude?.$numberDecimal }}</td>
+          <td style="max-width: 200px; word-wrap: break-word; white-space: normal;">{{ report.reportDescription }}</td>
+          <td>{{ parseFloat(report.latitude?.$numberDecimal).toFixed(2)  }}</td>
+          <td>{{ parseFloat(report.longitude?.$numberDecimal).toFixed(2)  }}</td>
           <td>{{ report.resolved ? 'Sì' : 'No' }}</td>
-          <td><button type="button" class="btn btn-danger" @click="banUser(report.issuerId)">Ban</button></td>
+          <td>
+            <select class="form-select w-100 p-3" id="button-addon" v-model="selectedReportType[report.self]">
+              <option selected disabled value="">Resolution type...</option>
+              <option value="resolve">Reward user</option>
+              <option value="delete">Delete report</option>
+              <option value="ban">Ban user</option>
+            </select>
+            <button class="btn btn-outline-success" type="button" id="button-addon" @click="handleRowReportResolution(report.self, report.issuerId)">Resolve</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -59,8 +56,7 @@ import UrlManager from '@/urlManager'
 export default{
   data() {
       return {
-          selectedId: '',
-          selectedResolutionType: '',
+          selectedReportType: {},
           reports: [],
           reportTypes: {
             '1': "Trashcan location suggestion",
@@ -88,17 +84,21 @@ export default{
           alert(response.message)
       });
     },
-    handleReportResolution(){
-        console.log(this.selectedId)
-        switch (this.selectedResolutionType){
-          case "resolve": this.resolveReport(); break;
-          case "delete": this.deleteReport(); break;
-          case "ban": this.banUser(); this.deleteUserReports(); break;
-          default: alert("Please enter a valid resolution method");
-        }
+    handleRowReportResolution(self, issuerId){
+        console.log(self)
+        let reportId= self.split("/").pop();
+        if(this.selectedReportType[self])
+          switch (this.selectedReportType[self]){
+            case "resolve": this.resolveReport(reportId); break;
+            case "delete": this.deleteReport(reportId); break;
+            case "ban": this.banUser(issuerId); this.deleteUserReports(issuerId); break;
+            default: alert("Please enter a valid resolution method");
+          }
+        else
+          alert("Please enter a valid resolution method");
     },
-    resolveReport(){
-      fetch(`${UrlManager()}/reports/${this.selectedId}`, {
+    resolveReport(reportId){
+      fetch(`${UrlManager()}/reports/${reportId}`, {
           method: "PUT",
           body: JSON.stringify({
             resolved: true
@@ -121,8 +121,8 @@ export default{
             alert(response.message)
         });
     },
-    deleteReport(){
-        fetch(`${UrlManager()}/reports/${this.selectedId}?type=report`, {
+    deleteReport(reportId){
+        fetch(`${UrlManager()}/reports/${reportId}?type=report`, {
           method: "DELETE",
           headers: {
             "Content-type": "application/json; charset=UTF-8",
@@ -141,7 +141,7 @@ export default{
             alert(response.message)
         });
     },
-    banUser(issuerId = this.selectedId){
+    banUser(issuerId){
       fetch(`${UrlManager()}/authenticatedUsers/${issuerId}`, {
         method: "PUT",
         body: JSON.stringify({
@@ -165,8 +165,8 @@ export default{
           alert(response.message)
       });
     },
-    deleteUserReports(){
-      fetch(`${UrlManager()}/reports/${this.selectedId}?type=userReports`, {
+    deleteUserReports(issuerId){
+      fetch(`${UrlManager()}/reports/${issuerId}?type=userReports`, {
         method: "DELETE",
         headers: {
           "Content-type": "application/json; charset=UTF-8",
@@ -224,6 +224,9 @@ export default{
       });
     },
     mounted(){
+      this.getAllReports()
+    },
+    activated(){
       this.getAllReports()
     }
   }
