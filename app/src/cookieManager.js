@@ -16,8 +16,8 @@ export default class CookieManager {
             const cookies = document.cookie.split(";");
             for (let i=0; i < cookies.length; i++)
                 if (cookies[i].startsWith(cookieName)){
-                    let startPoint = cookies[i].indexOf(cookieName + "=");
-                    return cookies[i].substring(startPoint, cookies[i].length)
+                    let startPoint = cookies[i].indexOf("=");
+                    return cookies[i].substring(startPoint + 1, cookies[i].length)
                 }
         }
         return null;
