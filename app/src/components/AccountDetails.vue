@@ -7,9 +7,6 @@
                 <strong>YOUR REPORTS</strong>
                 </div>
                 <div class="mb-4 flex-wrap gap-2">
-                    <div>
-                        <button type="button" class="btn btn-secondary" @click="getPersonalReports">Update personal reports</button>
-                    </div>
                     <div class="table-responsive" v-if="this.reports.length > 0">
                     <table class="table table-bordered table-hover">
                     <thead class="table-primary">
@@ -35,15 +32,29 @@
                     <h2 v-else>Nessun report da mostrare</h2>
                 </div>
             </div>
-
             <!-- Colonna Destra -->
             <div class="col-md-6 d-flex flex-column p-3">
-                <div class="border mb-2 p-4 text-center">
-                <h2>Your points</h2>
-                <button type="button" class="btn btn-secondary" @click="getPersonalPoints">Update personal points</button>
-                <p>{{this.points}}</p>
+                <!-- Sezione punti -->
+                <div class="border rounded p-4 text-center">
+                    <strong>YOUR POINTS</strong>
+                    <p class="display-6 fw-semibold mb-0">{{ user.points }}</p>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" :style="{ width: user.points*100/this.MAX_POINTS + '%' }" :aria-valuenow="user.points" aria-valuemin="0" aria-valuemax="5000">
+                        {{ user.points*100/this.MAX_POINTS }}%
+                        </div>
+                    </div>
                 </div>
-                <div class="flex-fill border"></div>
+
+                <!-- Sezione account -->
+                <div class="border rounded p-4 text-center">
+                    <strong>YOUR ACCOUNT</strong>
+                    <div class="text-center">
+                    <p class="mb-2"><strong>Email:</strong> {{ user.email }}</p>
+                    <p class="mb-0">
+                        <strong>Last Report:</strong> {{ user.lastReportIssueDate || 'N/A' }}
+                    </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -62,14 +73,15 @@ import UrlManager from '@/urlManager'
 export default{
   data() {
       return {
-          points: "",
+          user: {points:"", email:"", lastReportIssueDate: ""},
           reports: [],
           reportTypes: {
             '1': "Trashcan location suggestion",
             '2': "Trashcan position missing",
             '3': "Trash out of place",
             '4': "Trashcan full"
-          }
+          },
+          MAX_POINTS: 5000
       }
   },
   methods: {
@@ -88,7 +100,7 @@ export default{
             alert(response.message)
         });
     },
-    getPersonalPoints(){
+    getPersonalData(){
         fetch(`${UrlManager()}/authenticatedUsers`, {
             method: "GET",
             headers: {
@@ -98,7 +110,9 @@ export default{
         }).then(response => response.json())
         .then(response => { 
             if (!response.error){
-            this.points = response.points;
+            this.user.points = response.points
+            this.user.email = response.email
+            this.user.lastReportIssueDate = response.lastReportIssueDate
             }else
             alert(response.message)
         });
@@ -106,7 +120,11 @@ export default{
   },
   mounted(){
     this.getPersonalReports()
-    this.getPersonalPoints()
+    this.getPersonalData()
+  },
+  activated(){
+    this.getPersonalReports()
+    this.getPersonalData()
   }
 }
 </script>
