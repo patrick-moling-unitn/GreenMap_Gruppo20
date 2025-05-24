@@ -42,9 +42,9 @@
           <td>{{ user.email }}</td>
           <td>{{ user.lastReportIssueDate }}</td>
           <td>{{ user.points }}</td>
-          <td><button type="button" class="btn btn-danger" @click="banUnbanUser(user.email)">Ban/Unban</button></td>
-          <td><button type="button" class="btn btn-danger" @click="deleteUser(user.email)">Delete</button></td>
-          <td><button type="button" class="btn btn-success" @click="promoteDemoteUser(user.email)">Promote/Demote</button></td>
+          <td><button type="button" class="btn btn-danger" @click="banUnbanUser(user.id)">Ban/Unban</button></td>
+          <td><button type="button" class="btn btn-danger" @click="deleteUser(user.id)">Delete</button></td>
+          <td><button type="button" class="btn btn-success" @click="promoteDemoteUser(user.id)">Promote/Demote</button></td>
         </tr>
       </tbody>
     </table>
@@ -90,9 +90,9 @@ export default{
             });
         })
     },
-    deleteUser(userEmail){
+    deleteUser(userID){
         console.log('Dati inviati');
-        fetch(`${UrlManager()}/authenticatedUsers/${userEmail}`,{
+        fetch(`${UrlManager()}/authenticatedUsers/${userID}`,{
             method: "DELETE",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
@@ -102,7 +102,7 @@ export default{
         .then(response => console.log(response))
         .then(() => this.showUsers());
     },
-    banUnbanUser(userEmail){
+    banUnbanUser(userID){
         console.log('Dati inviati');
         fetch(`${UrlManager()}/authenticatedUsers`,{
             method: "PUT",
@@ -111,7 +111,7 @@ export default{
                 "x-access-token": TokenManager()
             },
             body: JSON.stringify({
-                email: userEmail,
+                id: userID,
                 editAdmin: false,
                 editBan: true
             })
@@ -119,7 +119,7 @@ export default{
         .then(response => console.log(response))
         .then(() => this.showUsers());
     },
-    promoteDemoteUser(userEmail){
+    promoteDemoteUser(userID){
         console.log('Dati inviati');
         fetch(`${UrlManager()}/authenticatedUsers`,{
             method: "PUT",
@@ -128,7 +128,7 @@ export default{
                 "x-access-token": TokenManager()
             },
             body: JSON.stringify({
-                email: userEmail,
+                id: userID,
                 editAdmin: true,
                 editBan: false
             })

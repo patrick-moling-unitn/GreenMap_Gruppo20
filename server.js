@@ -38,8 +38,6 @@ app.get(API_V+"/registeringUsers/", requestValidator) //Devi essere amministrato
 app.delete(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per cancellare tutti gli utenti in registrazione
 app.delete(API_V+"/registeringUsers/:id", requestValidator) //Devi essere amministratore per cancellare un utente in registrazione per id
 
-
-
 app.use(API_V+"/reports", reportManager)
 app.use(API_V+"/trashcans", trashcanManager)
 app.use(API_V+"/authenticatedUsers", authenticationManager)

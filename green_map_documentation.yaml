@@ -90,70 +90,6 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token."
-    put:
-      summary: Update admin or ban status of a user by email (admin only)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                editBan:
-                  type: boolean
-                editAdmin:
-                  type: boolean
-            example:
-              email: "user1@example.com"
-              editBan: true
-              editAdmin: false
-      responses:
-        '200':
-          description: User updated
-          content:
-            application/json:
-              example:
-                _id: "abc123"
-                email: "user1@example.com"
-                banned: true
-                administrator: true
-                points: 5
-        '400':
-          description: Invalid user
-          content:
-            application/json:
-              example:
-                error: true
-                message: "ID UTENTE INSERITO INESISTENTE"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                  UserNotAdmin:
-                    summary: User is not administrator
-                    value:
-                      error: "Requesting user is not an administrator!"
-                  UserNotAuthenticated:
-                    summary: User does not have an authentication token
-                    value:
-                      error: "Authentication token missing"
-        '403':
-          description: Failed to authenticate token
-          content:
-            application/json:
-              example:
-                error: true
-                message: "Failed to authenticate token."
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              example:
-                error: true
-                message: "Database error"
     post:
       summary: Returns a JWT token if the login is successful.
       description: Optional extended description in CommonMark or HTML.
@@ -200,16 +136,16 @@ paths:
                   summary: Wrong user credentials
                   value:
                     error: "PASSWORD ERRATA"
-  /authenticatedUser/{email}:
+  /authenticatedUser/{id}:
     delete:
-      summary: Delete a user by email (admin only)
+      summary: Delete a user by id (admin only)
       parameters:
         - in: path
-          name: email
+          name: id
           required: true
           schema:
             type: string
-          example: "user@example.com"
+          example: "abc123"
       responses:
         '204':
           description: User deleted
@@ -233,7 +169,6 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token."
-  /authenticatedUser/{id}:
     put:
       summary: Ban a user by ID (admin only)
       parameters:

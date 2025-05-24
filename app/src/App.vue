@@ -8,6 +8,7 @@ import Logout from './components/Logout.vue'
 import OpenStreethMap from './components/OpenStreethMap.vue'
 import ManageUsers from './components/ManageUsers.vue'
 import ManageTrashcans from './components/ManageTrashcans.vue'
+import AccountDetails from './components/AccountDetails.vue'
 //import NotFound from './NotFound.vue'
 
 import EventBus from './EventBus';
@@ -40,7 +41,9 @@ const routes = {
   '/resolveReport': ResolveReport,
   '/manageUsers' : ManageUsers,
   '/manageTrashcans': ManageTrashcans,
+  '/accountDetails' : AccountDetails,
   '/todo': Todo
+  
 }
 
 const currentPath = ref(window.location.hash)
@@ -55,7 +58,7 @@ function requiresAdministrator(path)
 
 function requiresAuthentication(path)
 {
-  if (path == "/logout")
+  if (path == "/logout" || path == "/accountDetails")
     return true;
 
   return false;
@@ -167,7 +170,7 @@ EventBus.on('serverUrlRequest', sendServerUrl)
       <a href="#/">Home</a> |
       <a href="#/todo">Compile Questionnaire</a> |
       <a href="#/todo">Get Discount</a> |
-      <a href="#/todo">View Profile</a> |
+      <a href="#/accountDetails">View Profile</a> |
       <a href="#/logout">Logout</a>
     </div>
 
