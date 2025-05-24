@@ -37,9 +37,13 @@ router.get("/", async (req, res) => {
             };
         });
         res.status(200).json(userList);
-    }else
-		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+    }else{
+        if (LOG_MODE >= 1) console.log("Get user request!")
+        let user = await AuthenticatedUser.findOne({_id:req.loggedUser.id});
+        res.status(200).json(user);
+    }
 });
+
 router.put("/:id", async (req, res) => {
     if (LOG_MODE >= 1) console.log("Ban authenticated user request!")
     if (req.loggedUser.administrator == true || TEST_MODE){
@@ -65,7 +69,7 @@ router.put("/", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         let authenticatedUser;
         try{
-            authenticatedUser = await AuthenticatedUser.findOne({isSystem:false, email: req.body.email});
+            authenticatedUser = await AuthenticatedUser.findOne({isSystem:false, _id: req.body.id});
         }catch(err){
             return res.status(400).json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
         }
@@ -105,10 +109,10 @@ router.post("/",  async (req, res) => {
     });
 });
 
-router.delete('/:email', async (req, res) => {
+router.delete('/:id', async (req, res) => {
         if (LOG_MODE >= 1) console.log("Delete authenticated user request!")
     if (req.loggedUser.administrator == true || TEST_MODE){
-        await AuthenticatedUser.deleteOne({isSystem:false, email: req.params.email})
+        await AuthenticatedUser.deleteOne({isSystem:false, _id: req.params.id})
         if (LOG_MODE >= 2) console.log("Authenticated user deleted!")
         res.status(204).json({message: "UTENTE CANCELLATO"});
     }else

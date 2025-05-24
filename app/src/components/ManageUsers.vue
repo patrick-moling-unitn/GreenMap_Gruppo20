@@ -42,9 +42,9 @@
           <td>{{ user.email }}</td>
           <td>{{ user.lastReportIssueDate }}</td>
           <td>{{ user.points }}</td>
-          <td><button type="button" class="btn btn-danger" @click="banUnbanUser(user.email)">Ban/Unban</button></td>
-          <td><button type="button" class="btn btn-danger" @click="deleteUser(user.email)">Delete</button></td>
-          <td><button type="button" class="btn btn-success" @click="promoteDemoteUser(user.email)">Promote/Demote</button></td>
+          <td><button type="button" class="btn btn-danger" @click="banUnbanUser(user.self)">Ban/Unban</button></td>
+          <td><button type="button" class="btn btn-danger" @click="deleteUser(user.self)">Delete</button></td>
+          <td><button type="button" class="btn btn-success" @click="promoteDemoteUser(user.self)">Promote/Demote</button></td>
         </tr>
       </tbody>
     </table>
@@ -90,9 +90,9 @@ export default{
             });
         })
     },
-    deleteUser(userEmail){
-        console.log('Dati inviati');
-        fetch(`${UrlManager()}/authenticatedUsers/${userEmail}`,{
+    deleteUser(self){
+        let userID= self.split("/").pop();
+        fetch(`${UrlManager()}/authenticatedUsers/${userID}`,{
             method: "DELETE",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
@@ -102,8 +102,8 @@ export default{
         .then(response => console.log(response))
         .then(() => this.showUsers());
     },
-    banUnbanUser(userEmail){
-        console.log('Dati inviati');
+    banUnbanUser(self){
+        let userID= self.split("/").pop();
         fetch(`${UrlManager()}/authenticatedUsers`,{
             method: "PUT",
             headers: {
@@ -111,7 +111,7 @@ export default{
                 "x-access-token": TokenManager()
             },
             body: JSON.stringify({
-                email: userEmail,
+                id: userID,
                 editAdmin: false,
                 editBan: true
             })
@@ -119,8 +119,8 @@ export default{
         .then(response => console.log(response))
         .then(() => this.showUsers());
     },
-    promoteDemoteUser(userEmail){
-        console.log('Dati inviati');
+    promoteDemoteUser(self){
+        let userID= self.split("/").pop();
         fetch(`${UrlManager()}/authenticatedUsers`,{
             method: "PUT",
             headers: {
@@ -128,7 +128,7 @@ export default{
                 "x-access-token": TokenManager()
             },
             body: JSON.stringify({
-                email: userEmail,
+                id: userID,
                 editAdmin: true,
                 editBan: false
             })
