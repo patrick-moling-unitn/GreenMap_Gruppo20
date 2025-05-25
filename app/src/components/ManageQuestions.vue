@@ -1,4 +1,5 @@
 <template>
+    <div class="questions-body">
     <h1>Manage Questions</h1>
     
     <div class="secondary-color p-4 mt-4" v-for="(question, index) in questions" :key="index">
@@ -35,10 +36,30 @@
         </div>
     </div>
     <div class="d-flex secondary-color p-4 mt-4">
+        <div v-if="loadingQuestions" class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div v-else>
         <button type="button" class="btn btn-success" @click="addNewQuestion()">Add New Question</button>
         <button type="button" class="btn btn-primary ms-2" @click="getAllQuestions()">Get All Questions</button>
+        </div>
+    </div>
     </div>
 </template>
+
+<style>
+@media (min-width: 1024px) {
+  .questions-body {
+    margin-right: 20%;
+  }
+}
+@media (max-width: 1024px) {
+  .questions-body {
+    margin-left: 5%;
+    margin-right: 5%;
+  }
+}
+</style>
 
 <script default>
 import UrlManager from '@/urlManager'
@@ -50,7 +71,8 @@ import QuestionType from '@enum/questionType.esm';
             return {
                 DEFAULT_NEW_OPTION_TEXT: "New Option",
                 DEFAULT_NEW_QUESTION_TEXT: "New Question",
-                questions: []
+                questions: [],
+                loadingQuestions: false
             }
         },
         mounted() {
@@ -127,8 +149,14 @@ import QuestionType from '@enum/questionType.esm';
             },
             deleteSelectedQuestion(questionIndex){
                 let deletionQuestion = this.questions[questionIndex];
+                
+                if (deletionQuestion.questionId != null)
+                    this.deleteQuestion(deletionQuestion, questionIndex);
+                else
+                    this.questions.splice(questionIndex, 1);
+            },
+            deleteQuestion(deletionQuestion, questionIndex){
                 deletionQuestion.loading = true;
-                console.log(deletionQuestion.questionId)
                 fetch(`${UrlManager()}/questionnaires/${deletionQuestion.questionId}?type=question`, {
                     method: "DELETE",
                     headers: {
@@ -143,6 +171,7 @@ import QuestionType from '@enum/questionType.esm';
                 }).then(response => {
                     if (response)
                         alert(response.message)
+                }).finally(() => {
                     deletionQuestion.loading = false;
                 });
             },
@@ -171,6 +200,7 @@ import QuestionType from '@enum/questionType.esm';
                     }
                     else
                         alert(response.message)
+                }).finally(() => {
                     newQuestion.loading = false;
                 });
             },
@@ -199,10 +229,12 @@ import QuestionType from '@enum/questionType.esm';
                 }).then(response => {
                     if (response)
                         alert(response.message)
+                }).finally(() => {
                     updatingQuestion.loading = false;
                 });
             },
             getAllQuestions(){
+                this.loadingQuestions = true;
                 fetch(`${UrlManager()}/questionnaires?type=question`, {
                     method: "GET",
                     headers: {
@@ -222,8 +254,9 @@ import QuestionType from '@enum/questionType.esm';
                         });
                     }else
                         alert(response.message)
-                });
-                
+                }).finally(() => {
+                    this.loadingQuestions = false;
+                })
             }
         }
     }

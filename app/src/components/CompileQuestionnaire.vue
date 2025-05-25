@@ -2,16 +2,17 @@
     <div class="questionnaire-body">
     <h1>Compile Questionnaire</h1>
     
+    <div v-if="questions.length > 0">
     <div class="primary-color p-4 mt-4">
-    <div v-for="(question, index) in simulatedQuestions" :key="index" :class="index == 0 ? '' : 'mt-4'">
-        <div id="openEndedQuestion" v-if="question.type=='open'">
+    <div v-for="(question, index) in questions" :key="index" :class="index == 0 ? '' : 'mt-4'">
+        <div id="openEndedQuestion" v-if="question.questionType==0"> <!-- OPEN_ENDED -->
             <p>{{ question.question }}</p>
 
             <div class="input-group">
             <textarea class="form-control" v-model="submittedAnswers[index].answer" aria-label="With textarea"></textarea>
             </div>
         </div>
-        <div id="ratingScaleQuestion" v-else-if="question.type=='rating'">
+        <div id="ratingScaleQuestion" v-else-if="question.questionType==2"> <!-- RATING_SCALE -->
             <p>{{ question.question }}</p>
             <div>
                 <div class="form-check form-check-inline" v-for="option in ratingQuestionOptions">
@@ -20,7 +21,7 @@
                 </div>
             </div>
         </div>
-        <div id="dichotomousQuestion" v-else-if="question.type=='dichotomous'">
+        <div id="dichotomousQuestion" v-else-if="question.questionType==3"> <!-- DICHOTOMOUS -->
             <p>{{ question.question }}</p>
             <div class="form-check" v-for="option in dichotomousQuestionOptions">
             <input class="form-check-input" v-model="submittedAnswers[index].answer" type="radio" :name="'radio'+question.questionId" :id="'radioDefault'+question.questionId" :value="option">
@@ -29,7 +30,7 @@
             </label>
             </div>
         </div>
-        <div id="closeEndedQuestion" v-else-if="question.type=='closed'">
+        <div id="closeEndedQuestion" v-else-if="question.questionType==1"> <!-- CLOSE_ENDED -->
             <p>{{ question.question }}</p>
             <div class="form-check" v-for="option in question.options">
             <input class="form-check-input" v-model="submittedAnswers[index].answer" type="radio" :name="'radio'+question.questionId" :id="'radio'+question.questionId" :value="option">
@@ -41,6 +42,11 @@
     </div>
     </div>
     <button type="button" class="btn btn-outline-primary m-4 align-self-start" @click="submitQuestionnaire">Submit Questionnaire</button>
+    </div>
+    <div v-else-if="loadingQuestionnaire" class="spinner-border mt-4 mb-4" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <h5 v-else class="mt-4 mb-4">No questionnaires available at the moment</h5>
     </div>
 </template>
 
@@ -63,6 +69,7 @@ import isGibberish from 'is-gibberish';
 import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
 import EventBus from '@/EventBus'
+import QuestionType from '@enum/questionType.esm';
 
     export default {
         mounted(){
@@ -75,6 +82,7 @@ import EventBus from '@/EventBus'
                     }
                 })
             */
+            this.requestQuestionnaire();
         },
         data() {
             return {
@@ -83,31 +91,52 @@ import EventBus from '@/EventBus'
                 LOG_LEVEL: 1, //0: NONE, 1: MIN, 2: MID, 3: HIGH
                 dichotomousQuestionOptions: ["Yes", "No"],
                 ratingQuestionOptions: [1,2,3,4,5,6,7,8,9,10],
-                submittedAnswers: [ 
-                    { questionId: "testquestionid1", answer: "", gibberishLevel: ""},
-                    { questionId: "testquestionid2", answer: "", gibberishLevel: ""},
-                    { questionId: "testquestionid3", answer: "", gibberishLevel: ""},
-                    { questionId: "testquestionid4", answer: "", gibberishLevel: ""},
-                    { questionId: "testquestionid5", answer: "", gibberishLevel: ""},
-                    { questionId: "testquestionid6", answer: "", gibberishLevel: ""},
-                    { questionId: "testquestionid7", answer: "", gibberishLevel: ""},
-                    { questionId: "testquestionid8", answer: "", gibberishLevel: ""},
-                ],
-                simulatedQuestions: [ 
-                    { questionId: "testquestionid1", question: "If you could improve the city. What is the first thing you would do?", type: "open" }, // What a lovely day to...
-                    { questionId: "testquestionid2", question: "What is the most valuable thing a city should have in your opinion?", type: "open"}, // What a lovely day to...
-                    { questionId: "testquestionid3", question: "How often happens that you need a trashcan type that is too far?", type: "rating"}, // 1 to 10
-                    { questionId: "testquestionid4", question: "Rate the current city's level of cleanliness", type: "rating"}, // 1 to 10
-                    { questionId: "testquestionid5", question: "Did you throw trash on the ground because there where no trashcans nearby?", type: "dichotomous"}, // TRUE/FALSE
-                    { questionId: "testquestionid6", question: "Do you usually do recycling collection?", type: "dichotomous"}, // TRUE/FALSE
-                    { questionId: "testquestionid7", question: "What trashcan type do you need more?", type: "closed", // A/B/C 
-                        options: ["Paper", "Plastic", "Residue", "Glass", "Organic"]},
-                    { questionId: "testquestionid8", question: "Which of the following is a key area of improvement you think the city should focus on?", type: "closed",  // A/B/C
-                        options: ["Garbage collection", "City's security", "Trashcan placement", "Trashcan maintenance"]},
-                ]
+                submittedAnswers: [],
+                questions: [],
+                loadingQuestionnaire: false,
             }
         },
         methods: {
+            addNewQuestion(newQuestionId, newQuestion, newQuestionType, newOptions){
+                let question = { questionId: newQuestionId, question: newQuestion, 
+                    questionType: newQuestionType, options: newOptions }
+
+                this.questions.push(question);
+            },
+            addNewAnswer(newQuestionId){
+                let answer = { questionId: newQuestionId, answer: '', gibberishLevel: ''}
+                this.submittedAnswers.push(answer);
+            },
+            requestQuestionnaire(){
+                this.loadingQuestionnaire = true;
+                fetch(`${UrlManager()}/questionnaires?type=questionnaire`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "x-access-token": TokenManager()
+                }
+                }).then(response => {
+                    return response.json()
+                }).then(response => {
+                    if (!response.error){
+                        this.submittedAnswers = []
+                        this.questions = []
+                        response.forEach(element => {
+                            let resourceUrl = element.self.split('/');
+                            resourceUrl = resourceUrl[resourceUrl.length-1];
+                            this.addNewQuestion(resourceUrl, element.question, element.questionType, element.options)
+                            this.addNewAnswer(resourceUrl)
+                        });
+                        /* submitterId: Schema.Types.ObjectId,
+                        questionId: Schema.Types.ObjectId,
+                        answer: String,
+                        gibberishLevel: Schema.Types.Decimal128 */
+                    }else
+                        alert(response.message)
+                }).finally(() =>{
+                    this.loadingQuestionnaire = false;
+                });
+            },
             submitQuestionnaire(){
                 if (this.LOG_LEVEL >= 2)
                     for (let i = 0; i < this.submittedAnswers.length; i++){
@@ -124,7 +153,7 @@ import EventBus from '@/EventBus'
 
                 if (validResponses){
                     this.submittedAnswers.forEach(element => {
-                        if (this.getQuestionWith(element.questionId).type == "open") 
+                        if (this.getQuestionWith(element.questionId).questionType == QuestionType.OPEN_ENDED) 
                             element.gibberishLevel = 1 - isGibberish(element.answer, this.GIBBERISH_OPTIONS);
                         else
                             element.gibberishLevel = 0;
@@ -161,10 +190,6 @@ import EventBus from '@/EventBus'
                     alert("You didn't answer all the questions!")
             },
             sendAnswers(submittedAnswers){
-                submittedAnswers.forEach(element => {
-                    element.questionId = null; // PER IL MOMENTO NON ESISTE NESSUNA QUESTION ID!!!
-                });
-                console.warn("Deleted all questions ID! CompileQuestionnaire.vue; Line 167");
                 fetch(`${UrlManager()}/questionnaires?type=questionnaire`, {
                     method: "POST",
                     body: JSON.stringify({
@@ -187,9 +212,9 @@ import EventBus from '@/EventBus'
                 });
             },
             getQuestionWith(questionId){
-                for (let i=0; i < this.simulatedQuestions.length; i++)
-                    if (this.simulatedQuestions[i].questionId == questionId)
-                        return this.simulatedQuestions[i];
+                for (let i=0; i < this.questions.length; i++)
+                    if (this.questions[i].questionId == questionId)
+                        return this.questions[i];
             }
         }
     }

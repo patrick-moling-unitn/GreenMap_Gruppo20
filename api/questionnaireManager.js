@@ -6,17 +6,59 @@ const QuestionType = require('../enums/questionType.cjs')
 const Question = require('../models/question');
 const Answer = require('../models/answer');
 
-const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
+const LOG_MODE = 2; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE=true;
 
-const QUESTIONNAIRE_SUBMITTED_REWARD = 500;
+const QUESTIONNAIRE_SUBMITTED_REWARD = 1000;
+const QUESTIONNAIRE_MIN_QUESTION_COUNT = 4;
 
 const QUESTIONNAIRE_SUBMISSION_COOLDOWN_MIN = 1_440 //24h
 
 const API_V = process.env.API_VERSION;
 
 router.get("/", async (req, res, next) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){
+    if (req.query.type == "questionnaire"){
+        let start = new Date(Date.now());
+        if (LOG_MODE >= 2) console.log("[Get questionnaire] request started at "+ (start.getSeconds() * 1000 + start.getMilliseconds()))
+        let questionList = await Question.find({}),
+        answeredQuestionList = await Answer.find({submitterId: req["loggedUser"].id});
+
+        questionList = questionList.filter(question => {
+            let submitted = false;
+            answeredQuestionList.forEach(answered => {
+                if (String(answered.questionId) == String(question._id)) submitted = true;
+            });
+            if (!submitted) return question;
+        })
+
+        if (LOG_MODE >= 2){
+            let finish = new Date(Date.now());
+            console.log("[Get questionnaire] request finished at "+(finish.getSeconds() * 1000 + finish.getMilliseconds()));
+            console.warn("Query speed: "+(finish - start)+"ms");
+        }
+
+        if (questionList.length >= QUESTIONNAIRE_MIN_QUESTION_COUNT){
+            let iterationCount = 0
+            while (questionList.length > QUESTIONNAIRE_MIN_QUESTION_COUNT && iterationCount < 999){
+                questionList.splice(Math.floor(Math.random() * questionList.length), 1)
+                iterationCount++;
+            }
+            if (iterationCount >= 999) 
+                return res.status(500).json({error: true, message: "Something went wrong while choosing random questions! More than 999 iterations!"});
+            else{
+                questionList = questionList.map(element => {
+                    return {
+                        self: API_V + '/questionnaires/' + element._id,
+                        question: element.question,
+                        questionType: element.questionType,
+                        options: element.options,
+                    };
+                });
+                return res.status(200).json(questionList);
+            }
+        }else
+            return res.status(400).json({error: true, message: "You have compiled all the available questions. Please come back later!"});
+    }else if (req.loggedUser.administrator == true || TEST_MODE){
         if (req.query.type == "answer"){
             if (LOG_MODE >= 1) console.log("Get all submitted answers request!")
 
@@ -66,7 +108,7 @@ router.post("/",  async (req, res, next) => {
 
         let user = await AuthenticatedUser.findById(req['loggedUser'].id);
         if (user) {
-            if (user.lastQuestionnaireCompilationDate) {
+            if (user.lastQuestionnaireCompilationDate && !TEST_MODE) {
                 let difference = user.lastQuestionnaireCompilationDate.getTime() + QUESTIONNAIRE_SUBMISSION_COOLDOWN_MIN * 60_000 - Date.now()
                 if (difference > 0){
                     let remainingMinutes = difference / 60_000;
@@ -77,12 +119,13 @@ router.post("/",  async (req, res, next) => {
                         return res.status(400).json({error: true, message: "ULTIMO QUESTIONARIO INVIATO MENO DI " + 
                             (QUESTIONNAIRE_SUBMISSION_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + remainingMinutes.toFixed(0) + " MINUTI"});
                 }
-            }
+            }else if (TEST_MODE)
+                console.warn("Bypassato il check sul lastQuestionnaireCompilationDate!!!");
 
             let submittedAnswers = req.body.answers;
             for (let i=0; i < submittedAnswers.length; i++){
-                let answer = new Answer({
-                    submitterId: user.id,
+                var answer = new Answer({ //let qui non funziona. Problemi di allocazione di memoria!!! var OBBLIGATORIO
+                    submitterId: user._id,
                     questionId: submittedAnswers[i].questionId,
                     answer: submittedAnswers[i].answer,
                     gibberishLevel: submittedAnswers[i].gibberishLevel
@@ -182,7 +225,8 @@ router.delete("/:questionId",  async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
 
         try {
-            await Question.deleteOne({ _id: req.params.questionId})
+            await Question.deleteOne({ _id: req.params.questionId })
+            await Answer.deleteMany({ questionId: req.params.questionId }) //cancella le risposte a cascata
         } catch(err) {
             return res.status(500).json({error: true, message: "An error occurred while deleting the question ",err});
         }
