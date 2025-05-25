@@ -57,7 +57,6 @@ export default {
                         latitude: Number(element.latitude.$numberDecimal).toFixed(4),
                         longitude: Number(element.latitude.$numberDecimal).toFixed(4)
                     }
-                    console.log("Element id: "+element._id)
                     this.trashcans.push(trashcan);
                 });
             });

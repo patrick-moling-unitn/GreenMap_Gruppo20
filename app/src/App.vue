@@ -10,6 +10,7 @@ import ManageUsers from './components/ManageUsers.vue'
 import ManageTrashcans from './components/ManageTrashcans.vue'
 import AccountDetails from './components/AccountDetails.vue'
 import CookiePopup from './components/CookiePopup.vue'
+import ManageQuestions from './components/ManageQuestions.vue'
 import CompileQuestionnaire from './components/CompileQuestionnaire.vue'
 import AnswerVisualization from './components/AnswerVisualization.vue'
 
@@ -58,6 +59,7 @@ const routes = {
   '/accountDetails' : AccountDetails,
   '/compileQuestionnaire': CompileQuestionnaire,
   '/answerVisualization' : AnswerVisualization,
+  '/manageQuestions': ManageQuestions,
   '/todo': Todo
   
 }
@@ -215,6 +217,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
       <a href="#/">Home</a> |
       <a href="#/resolveReport">Resolve Report</a> |
       <a href="#/manageTrashcans">Manage Trashcans</a> |
+      <a href="#/manageQuestions">Manage Questionnaire's Questions</a> |
       <a href="#/manageUsers">Manage Users</a> |
       <a href="#/logout">Logout</a>
     </div>
