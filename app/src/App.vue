@@ -11,6 +11,8 @@ import ManageTrashcans from './components/ManageTrashcans.vue'
 import AccountDetails from './components/AccountDetails.vue'
 import CookiePopup from './components/CookiePopup.vue'
 import CompileQuestionnaire from './components/CompileQuestionnaire.vue'
+import AnswerVisualization from './components/AnswerVisualization.vue'
+
 //import NotFound from './NotFound.vue'
 
 import EventBus from './EventBus';
@@ -55,6 +57,7 @@ const routes = {
   '/manageTrashcans': ManageTrashcans,
   '/accountDetails' : AccountDetails,
   '/compileQuestionnaire': CompileQuestionnaire,
+  '/answerVisualization' : AnswerVisualization,
   '/todo': Todo
   
 }
