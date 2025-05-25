@@ -164,8 +164,8 @@ import EventBus from '@/EventBus'
                 submittedAnswers.forEach(element => {
                     element.questionId = null; // PER IL MOMENTO NON ESISTE NESSUNA QUESTION ID!!!
                 });
-                console.warn("Deleted all questions ID! CompileQuestionnaire.vue; Line 140");
-                fetch(`${UrlManager()}/questionnaires`, {
+                console.warn("Deleted all questions ID! CompileQuestionnaire.vue; Line 167");
+                fetch(`${UrlManager()}/questionnaires?type=questionnaire`, {
                     method: "POST",
                     body: JSON.stringify({
                         answers: submittedAnswers
