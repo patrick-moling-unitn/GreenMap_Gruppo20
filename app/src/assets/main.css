@@ -5,6 +5,16 @@
   border-radius: 25px;
 }
 
+.secondary-color{
+  background-color: #bfd7fd;
+  border-radius: 25px;
+}
+
+.tertiary-color{
+  background-color: #a7c8fd;
+  border-radius: 25px;
+}
+
 #app {
   max-width: 1280px;
   margin: 0 auto;

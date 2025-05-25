@@ -15,19 +15,43 @@ const QUESTIONNAIRE_SUBMISSION_COOLDOWN_MIN = 1_440 //24h
 
 const API_V = process.env.API_VERSION;
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
-        if (LOG_MODE >= 1) console.log("Get all submitted answers request!")
+        if (req.query.type == "answer"){
+            if (LOG_MODE >= 1) console.log("Get all submitted answers request!")
 
-        let answerList = await Answer.find({});
-        res.status(200).json(answerList);
+            let answerList = await Answer.find({});
+            res.status(200).json(answerList);
+        }else if (req.query.type == "question"){
+            next();
+        }else
+            return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
     }else
         return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
+//GET ALL QUESTIONS
+router.get("/", async (req, res) => {
+    // SOPRA C'E' LA NEXT QUINDI NON SERVE IL CONTROLLO DELLE CREDENZIALI QUI!
+    // !- NB: SAPPIAMO GIA' CHE CHI ARRIVA QUA DENTRO E' UN ADMIN -!
+    if (LOG_MODE >= 1) console.log("Get all questions request!")
+
+    let questionsList = await Question.find({});
+    questionsList = questionsList.map((element) => {
+        return {
+            self: API_V + '/questionnaires/' + element._id,
+            question: element.question,
+            questionType: element.questionType,
+            options: element.options
+        };
+    });
+    res.status(200).json(questionsList);
+});
+
+//GET ALL ANSWERS TO A CERTAIN QUESTION
 router.get("/:questionId", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
-        if (LOG_MODE >= 1) console.log("Get all submitted answers for certain questionId request!")
+        if (LOG_MODE >= 1) console.log("Get all submitted answers to a specific question request!")
 
         let answerList = await Answer.find({questionId: req.params.questionId});
         res.status(200).json(answerList);
@@ -76,7 +100,7 @@ router.post("/",  async (req, res, next) => {
                 user.points += QUESTIONNAIRE_SUBMITTED_REWARD;
                 await user.save();
 
-                return res.status(200).send();
+                return res.location(API_V+"/questionnaires/"+answer._id+"?type=answer").status(201).send();
             } catch (err){
                 return res.status(500).json({error: true, message: "Couldn't save user: " + err});
             }
@@ -91,22 +115,22 @@ router.post("/",  async (req, res, next) => {
         return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
+function getOptionsFromQuestion(question){
+    if (question.questionType == QuestionType.CLOSE_ENDED){
+        if (question.options)
+            return question.options;
+        else
+            return res.status(400).json({error: true, message: ("NON E' STATO PASSATO",
+                "L'ARRAY DI OPTION ALLA QUESTION DI TIPO",question.questionType,"!")});
+    }
+    return null;
+}
+
 //Chi arriva qua è un amministratore (verificato) che vuole inserire una nuova domanda
 router.post("/",  async (req, res) => {
     let submittedQuestion = req.body.question;
     if (submittedQuestion){
-        let options = null;
-        console.log(QuestionType.OPEN_ENDED)
-        console.log(QuestionType.CLOSE_ENDED)
-        console.log(QuestionType.RATING_SCALE)
-        console.log(QuestionType.DICHOTOMOUS)
-        if (submittedQuestion.questionType == QuestionType.CLOSE_ENDED){
-            if (submittedQuestion.options)
-                options = submittedQuestion.options
-            else
-                return res.status(400).json({error: true, message: ("NON E' STATO PASSATO",
-                    "L'ARRAY DI OPTION ALLA QUESTION DI TIPO",submittedQuestion.questionType,"!")});
-        }
+        let options = getOptionsFromQuestion(submittedQuestion);
 
         let question = new Question({
             question: submittedQuestion.question,
@@ -117,6 +141,34 @@ router.post("/",  async (req, res) => {
         try {
             await question.save();
             console.log("Question saved successfully");
+            return res.location(API_V+"/questionnaires/"+question._id+"?type=question").status(201).json({id: question._id});
+        } catch(err) {
+            return res.status(500).json({error: true, message: "An error occurred while saving the question ",err});
+        }
+    }
+    else
+        return res.status(400).json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
+});
+
+router.put("/:questionId",  async (req, res) => {
+    let submittedQuestion = req.body.question;
+    if (submittedQuestion){
+        let options = getOptionsFromQuestion(submittedQuestion), 
+            question;
+        
+        try {
+            question = await Question.findById(req.params.questionId);
+        } catch(err) {
+            return res.status(500).json({error: true, message: "An error occurred while getting the question ",err});
+        }
+
+        question.question = submittedQuestion.question;
+        question.questionType = submittedQuestion.questionType;
+        if (options) question.options = options;
+        
+        try {
+            await question.save();
+            console.log("Question updated successfully");
             return res.status(200).send();
         } catch(err) {
             return res.status(500).json({error: true, message: "An error occurred while saving the question ",err});
@@ -124,6 +176,21 @@ router.post("/",  async (req, res) => {
     }
     else
         return res.status(400).json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
+});
+
+router.delete("/:questionId",  async (req, res) => {
+    if (req.loggedUser.administrator == true || TEST_MODE){
+
+        try {
+            await Question.deleteOne({ _id: req.params.questionId})
+        } catch(err) {
+            return res.status(500).json({error: true, message: "An error occurred while deleting the question ",err});
+        }
+
+        if (LOG_MODE >= 1) console.log('Question successfully removed!');
+        res.status(204).send();
+    }else
+        return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.delete("/",  async (req, res) => {
