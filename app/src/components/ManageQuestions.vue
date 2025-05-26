@@ -1,5 +1,5 @@
 <template>
-    <div class="questions-body">
+    <div class="adaptive-margin-body">
     <h1>Manage Questions</h1>
     
     <div class="secondary-color p-4 mt-4" v-for="(question, index) in questions" :key="index">
@@ -46,20 +46,6 @@
     </div>
     </div>
 </template>
-
-<style>
-@media (min-width: 1024px) {
-  .questions-body {
-    margin-right: 20%;
-  }
-}
-@media (max-width: 1024px) {
-  .questions-body {
-    margin-left: 5%;
-    margin-right: 5%;
-  }
-}
-</style>
 
 <script default>
 import UrlManager from '@/urlManager'

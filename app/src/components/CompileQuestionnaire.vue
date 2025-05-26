@@ -1,5 +1,5 @@
 <template>
-    <div class="questionnaire-body">
+    <div class="adaptive-margin-body">
     <h1>Compile Questionnaire</h1>
     
     <div v-if="questions.length > 0">
@@ -49,20 +49,6 @@
     <h5 v-else class="mt-4 mb-4">No questionnaires available at the moment</h5>
     </div>
 </template>
-
-<style>
-@media (min-width: 1024px) {
-  .questionnaire-body {
-    margin-right: 20%;
-  }
-}
-@media (max-width: 1024px) {
-  .questionnaire-body {
-    margin-left: 5%;
-    margin-right: 5%;
-  }
-}
-</style>
 
 <script>
 import isGibberish from 'is-gibberish';
