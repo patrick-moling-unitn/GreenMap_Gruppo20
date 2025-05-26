@@ -34,6 +34,18 @@ a,
   padding: 3px;
 }
 
+@media (min-width: 1024px) {
+  .adaptive-margin-body {
+    margin-right: 20%;
+  }
+}
+@media (max-width: 1024px) {
+  .adaptive-margin-body {
+    margin-left: 5%;
+    margin-right: 5%;
+  }
+}
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
