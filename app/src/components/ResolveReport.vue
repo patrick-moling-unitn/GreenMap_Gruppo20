@@ -53,6 +53,7 @@
 <script template>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
+import usersFunctions from '@/usersFunctions'
 export default{
   data() {
       return {
@@ -67,23 +68,6 @@ export default{
       }
   },
   methods: {
-    getPersonalReports(){
-      fetch(`${UrlManager()}/reports?type=personal`, {
-        method: "GET",
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-          "x-access-token": TokenManager()
-        }
-      }).then(response => response.json())
-      .then(response => { 
-        if (!response.error){
-          console.log("Got personal reports: ")
-          console.log(response)
-          this.reports = response;
-        }else
-          alert(response.message)
-      });
-    },
     handleRowReportResolution(self, issuerId){
         console.log(self)
         let reportId= self.split("/").pop();
@@ -91,7 +75,7 @@ export default{
           switch (this.selectedReportType[self]){
             case "resolve": this.resolveReport(reportId); break;
             case "delete": this.deleteReport(reportId); break;
-            case "ban": this.banUser(issuerId); this.deleteUserReports(issuerId); break;
+            case "ban": this.banUser(issuerId); this.deleteUserReportsWrapper(issuerId); break;
             default: alert("Please enter a valid resolution method");
           }
         else
@@ -165,25 +149,10 @@ export default{
           alert(response.message)
       });
     },
-    deleteUserReports(issuerId){
-      fetch(`${UrlManager()}/reports/${issuerId}?type=userReports`, {
-        method: "DELETE",
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-          "x-access-token": TokenManager()
-        }
-      })
-      .then(response => {
-        if (response.ok){
-          console.log("Deleted all user reports!");
-          this.getAllReports();
-        }else
-          return response.json()
-      })
-      .then(response => { 
-        if (response)
-          alert(response.message)
-      });
+    async deleteUserReportsWrapper(issuerId){
+      const {deleteUserReports} = usersFunctions();
+      await deleteUserReports(issuerId)
+      this.getAllReports();
     },
     deleteAllReports(){
       fetch(`${UrlManager()}/reports`, {

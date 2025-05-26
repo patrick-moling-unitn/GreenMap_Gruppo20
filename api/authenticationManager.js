@@ -40,6 +40,14 @@ router.get("/", async (req, res) => {
     }else{
         if (LOG_MODE >= 1) console.log("Get user request!")
         let user = await AuthenticatedUser.findOne({_id:req.loggedUser.id});
+        user = {
+            self: API_V + '/authenticatedUsers/' + user.id,
+            email: user.email,
+            banned: user.banned,
+            administrator: user.administrator,
+            points: user.points,
+            lastReportIssueDate: user.lastReportIssueDate
+        }
         res.status(200).json(user);
     }
 });
@@ -111,7 +119,7 @@ router.post("/",  async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
         if (LOG_MODE >= 1) console.log("Delete authenticated user request!")
-    if (req.loggedUser.administrator == true || TEST_MODE){
+    if (req.loggedUser.administrator == true || TEST_MODE || req.loggedUser.id == req.params.id ){
         await AuthenticatedUser.deleteOne({isSystem:false, _id: req.params.id})
         if (LOG_MODE >= 2) console.log("Authenticated user deleted!")
         res.status(204).json({message: "UTENTE CANCELLATO"});

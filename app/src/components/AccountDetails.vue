@@ -54,6 +54,12 @@
                         <strong>Last Report:</strong> {{ user.lastReportIssueDate || 'N/A' }}
                     </p>
                     </div>
+                    <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault" v-model="hasCookieConsent" @change="updateCookieConsent">
+                        <label class="form-check-label" for="switchCheckDefault">Accept cookies</label>
+                        <CookiePopup v-if="askForCookie"></CookiePopup>
+                    </div>
+                    <button type="button" class=" mb-2 btn btn-danger" @click="confirmAction('Sei sicuro di voler eliminare l\'utente?', () => deleteUserWrapper(user.self))">Delete your account</button>
                 </div>
             </div>
         </div>
@@ -70,10 +76,18 @@
 <script template>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
+import usersFunctions from '@/usersFunctions'
+import EventBus from '@/EventBus'
+import CookiePopup from './CookiePopup.vue'
+const COOKIES_CONSENT_LOCAL_STORAGE_NAME = "CookiesConsent"
+
 export default{
+  components: {
+    CookiePopup
+  },
   data() {
       return {
-          user: {points:"", email:"", lastReportIssueDate: ""},
+          user: {self: "", points:"", email:"", lastReportIssueDate: ""},
           reports: [],
           reportTypes: {
             '1': "Trashcan location suggestion",
@@ -81,10 +95,16 @@ export default{
             '3': "Trash out of place",
             '4': "Trashcan full"
           },
-          MAX_POINTS: 5000
+          MAX_POINTS: 5000,
+          hasCookieConsent: localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME),
+          askForCookie:false
       }
   },
   methods: {
+    confirmAction(message, onConfirm) {
+        if (window.confirm(message))
+            onConfirm()
+    },
     getPersonalReports(){
         fetch(`${UrlManager()}/reports?type=personal`, {
             method: "GET",
@@ -110,13 +130,38 @@ export default{
         }).then(response => response.json())
         .then(response => { 
             if (!response.error){
-            this.user.points = response.points
-            this.user.email = response.email
-            this.user.lastReportIssueDate = response.lastReportIssueDate
+                this.user.self = response.self
+                this.user.points = response.points
+                this.user.email = response.email
+                this.user.lastReportIssueDate = response.lastReportIssueDate
             }else
             alert(response.message)
         });
+    },
+    async deleteUserWrapper(self){
+        const {deleteUser} = usersFunctions();
+        await deleteUser(self)
+        EventBus.emit('loggedout');
+    },
+    updateCookieConsent(){
+        if(!this.hasCookieConsent)
+            EventBus.emit('cookieConsentUpdated', false)
+        else
+            this.askForCookie=true
+    },
+    syncCookieConsent(){
+        this.hasCookieConsent= localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) ==='true'
+        this.askForCookie=false
+        if(this.hasCookieConsent){
+            //devo creare un nuovo cookie con l'authtoken dell'utente
+        }
     }
+  },
+  created() {
+    EventBus.on('cookieConsentUpdated', this.syncCookieConsent);
+  },
+  beforeUnmount() {
+    EventBus.off('cookieConsentUpdated', this.syncCookieConsent);
   },
   mounted(){
     this.getPersonalReports()

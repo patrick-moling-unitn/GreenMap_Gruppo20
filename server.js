@@ -35,6 +35,8 @@ app.get(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministrat
 app.delete(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per eliminare gli utenti
 app.put(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per bandire gli utenti
 app.put(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amministratore per bandire gli utenti per id
+app.delete(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amministratore per eliminare un utente
+
 
 app.use(API_V+"/answerManager/", requestValidator) //Devi essere amministratore per bandire gli utenti in caso di risposte inappropriate ai questionari.
 
