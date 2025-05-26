@@ -141,9 +141,10 @@ const loginHandler = function(newAuthToken, automaticLogin) {
   
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
     CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn);
-
-  returnToHomePage();
-  if (!automaticLogin) alert("Logged in")
+  if (!automaticLogin) {
+    alert("Logged in")
+    returnToHomePage();
+  }
 }
 
 const logoutHandler = function() {
@@ -181,6 +182,8 @@ const updateCookiesConsent = function(hasConsent){
 
   if (!hasConsent)
     CookieManagerClass.deleteCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
+  else
+    loginHandler(authToken.value, true)
 }
 
 //Richieste (indirettamente) eseguite dall'utente

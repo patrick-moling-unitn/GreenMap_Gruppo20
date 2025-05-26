@@ -7,8 +7,7 @@ const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 
 
 router.delete("/:issuerId", async (req, res) => {
-    if (req.loggedUser.administrator)
-    {
+    if (req.loggedUser.administrator || req.loggedUser.id == req.params.issuerId){
         if (LOG_MODE >= 1) console.log("Delete answers of user " + req.params.issuerId + " and ban that user.");
 
         try {
@@ -16,11 +15,6 @@ router.delete("/:issuerId", async (req, res) => {
         }catch(err){
             return res.status(400).json({error: true, message: "ID not found."});
         }
-
-        let user = await AuthenticatedUser.findOne({_id: req.params.issuerId});
-        user.banned = true;
-        user.save();
-
         return res.status(200).send();
     }
     else

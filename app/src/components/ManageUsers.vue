@@ -43,7 +43,7 @@
           <td>{{ user.lastReportIssueDate }}</td>
           <td>{{ user.points }}</td>
           <td><button type="button" class="btn btn-danger" @click="banUnbanUser(user.self)">Ban/Unban</button></td>
-          <td><button type="button" class="btn btn-danger" @click="deleteUser(user.self)">Delete</button></td>
+          <td><button type="button" class="btn btn-danger" @click="deleteUserWrapper(user.self)">Delete</button></td>
           <td><button type="button" class="btn btn-success" @click="promoteDemoteUser(user.self)">Promote/Demote</button></td>
         </tr>
       </tbody>
@@ -54,6 +54,7 @@
 <script template>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
+import usersFunctions from '@/usersFunctions'
 export default{
   data() {
       return {
@@ -90,56 +91,15 @@ export default{
             });
         })
     },
-    deleteUserReports(userId){
-      fetch(`${UrlManager()}/reports/${userId}?type=userReports`, {
-        method: "DELETE",
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-          "x-access-token": TokenManager()
-        }
-      })
-      .then(response => {
-        if (response.ok){
-          console.log("Deleted all user reports!");
-          this.getAllReports();
-        }else
-          return response.json()
-      })
-      .then(response => { 
-        if (response)
-          alert(response.message)
-      });
+    async deleteUserWrapper(self){
+      const {deleteUser} = usersFunctions();
+      await deleteUser(self);
+      this.showUsers()
     },
-    deleteUser(self){
-        let userID= self.split("/").pop();
-        deleteUserReports(userID)
-        fetch(`${UrlManager()}/authenticatedUsers/${userID}`,{
-            method: "DELETE",
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-                "x-access-token": TokenManager()
-            }
-        })
-        .then(response => console.log(response))
-        .then(() => this.showUsers());
-    },
-    banUnbanUser(self){
-        let userID= self.split("/").pop();
-        deleteUserReports(userID)
-        fetch(`${UrlManager()}/authenticatedUsers`,{
-            method: "PUT",
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-                "x-access-token": TokenManager()
-            },
-            body: JSON.stringify({
-                id: userID,
-                editAdmin: false,
-                editBan: true
-            })
-        })
-        .then(response => console.log(response))
-        .then(() => this.showUsers());
+    async banUnbanUser(self){
+        const {banUnbanUser} = usersFunctions();
+        await banUnbanUser(self)
+        this.showUsers()
     },
     promoteDemoteUser(self){
         let userID= self.split("/").pop();

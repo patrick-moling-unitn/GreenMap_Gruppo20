@@ -174,7 +174,7 @@ router.post("",  async (req, res) => {
 
 //DELETE REPORT
 router.delete('/:id', async (req, res, next) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+    if (req.loggedUser.administrator == true  || (req.query.type == "userReports" && req.loggedUser.id == req.params.id) || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
         if (req.query.type == "report"){
             if (LOG_MODE >= 1) console.log("delete report request from user "+req.loggedUser.email)
 
