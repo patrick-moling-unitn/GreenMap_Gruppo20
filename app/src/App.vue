@@ -218,6 +218,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
       <a href="#/resolveReport">Resolve Report</a> |
       <a href="#/manageTrashcans">Manage Trashcans</a> |
       <a href="#/manageQuestions">Manage Questionnaire's Questions</a> |
+      <a href="#/answerVisualization">View Questionnaire's Answers</a> |
       <a href="#/manageUsers">Manage Users</a> |
       <a href="#/logout">Logout</a>
     </div>

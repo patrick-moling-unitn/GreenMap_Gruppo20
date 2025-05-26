@@ -14,7 +14,7 @@ const USERNAME = process.env.EMAIL_USER;
 const PASSWORD = process.env.EMAIL_PASS;
 
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
-const TEST_MODE = false;
+const TEST_MODE = true;
 
 const API_V = process.env.API_VERSION;
 

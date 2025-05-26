@@ -74,7 +74,7 @@ export default {
               {
                 this.verification.id = data.id;
               }
-            });
+            }).finally(() => { console.log("Richiesta eseguita.") })
         },
         showAllUsers(){
             console.log('Dati richiesti');

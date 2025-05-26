@@ -1,13 +1,13 @@
 <template>
   <div>
-    <button type="button" class="btn btn-primary" @click="getAllAnswers">Get all answers</button>
+    <button type="button" class="btn btn-primary" @click="populateAnswersAndQuestions">Get all answers</button>
     <h2>Answers submitted by users</h2>
 
   </div>
   <div>
     <ol>
-      <li v-for="question in questions">
-            {{question.question}}
+      <li v-for="question in questionAndAnswers">
+            {{question.questionData}}
             <ul>
                 <li v-for="answer in question.answers">
                     {{answer.answer}}
@@ -34,7 +34,7 @@ export default {
 
     data() {
         return {
-            questions: [],
+            questionAndAnswers: [],
 
             submittedAnswers: [
                 { questionId: "1", answer: "answer1" , issuerId: 1 },
@@ -67,20 +67,39 @@ export default {
 
     methods : {
 
-
-        getAllAnswers(){
-            console.log("answers obtained");
-            this.questions = [];
-            this.simulatedQuestions.forEach((q) => {
-                let answers = [];
-
-                this.submittedAnswers.forEach((answer) => {
-                    if (answer.questionId == q.questionId)
-                        answers.push(answer);
-                });
-
-                this.questions.push({ questionData: q.question, answers });
+        getAllAnswersForQuestion(question) {
+            console.log("Getting answers.")
+            let url = question.self.split("/");
+            let id = url[url.length-1];
+            fetch(`${UrlManager()}/questionnaires/${id}`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "x-access-token": TokenManager()
+                }
             })
+            .then(response => response.json())
+            .then(response => {
+                console.log(response);
+                this.questionAndAnswers.push({questionData: question.question, answers: response});
+            });
+        },
+
+        populateAnswersAndQuestions() {
+            console.log("Getting questions.");
+            fetch(`${UrlManager()}/questionnaires?type=question`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "x-access-token": TokenManager()
+                }
+            })
+            .then(response => response.json())
+            .then(response => {
+                response.forEach((element) => {
+                    this.getAllAnswersForQuestion(element);
+                });
+            });
         },
 
 
