@@ -75,7 +75,7 @@ export default{
           switch (this.selectedReportType[self]){
             case "resolve": this.resolveReport(reportId); break;
             case "delete": this.deleteReport(reportId); break;
-            case "ban": this.banUser(issuerId); this.deleteUserReportsWrapper(issuerId); break;
+            case "ban": this.banUserWrapper(issuerId); this.deleteUserReportsWrapper(issuerId); break;
             default: alert("Please enter a valid resolution method");
           }
         else
@@ -125,34 +125,10 @@ export default{
             alert(response.message)
         });
     },
-    banUser(issuerId){
-      fetch(`${UrlManager()}/authenticatedUsers/${issuerId}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          banned: true
-        }),
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-          "x-access-token": TokenManager()
-        }
-      })
-      .then(response => {
-        if (response.ok){
-          console.log("User banned!")
-          this.getAllReports();
-        }
-        else
-          return response.json()
-      })
-      .then(response => { 
-        if (response)
-          alert(response.message)
-      });
-    },
-    async deleteUserReportsWrapper(issuerId){
-      const {deleteUserReports} = usersFunctions();
-      await deleteUserReports(issuerId)
-      this.getAllReports();
+    async banUserWrapper(issuerId){
+        const {banUnbanUser} = usersFunctions();
+        await banUnbanUser(issuerId)
+        this.showUsers()
     },
     deleteAllReports(){
       fetch(`${UrlManager()}/reports`, {
@@ -192,12 +168,12 @@ export default{
           alert(response.message)
       });
     },
-    mounted(){
-      this.getAllReports()
-    },
-    activated(){
-      this.getAllReports()
-    }
+  },
+  mounted(){
+    this.getAllReports()
+  },
+  activated(){
+    this.getAllReports()
   }
 }
 </script>

@@ -1,6 +1,5 @@
 const express = require('express');
 const Answer = require('../models/answer');
-const AuthenticatedUser = require('../models/authenticatedUser');
 const router = express.Router();
 
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
@@ -8,8 +7,7 @@ const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 
 router.delete("/:issuerId", async (req, res) => {
     if (req.loggedUser.administrator || req.loggedUser.id == req.params.issuerId){
-        if (LOG_MODE >= 1) console.log("Delete answers of user " + req.params.issuerId + " and ban that user.");
-
+        if (LOG_MODE >= 1) console.log("Delete answers of user " + req.params.issuerId);
         try {
             await Answer.deleteMany({ userId: req.params.issuerId })
         }catch(err){

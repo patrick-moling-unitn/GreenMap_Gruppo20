@@ -21,10 +21,29 @@ export default function usersFunctions(){
           alert(response.message)
       });
     }
+    const deleteUserAnswers=(userId)=>{
+      fetch(`${UrlManager()}/answers/${userId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+          "x-access-token": TokenManager()
+        }
+      })
+      .then(response => {
+        if (response.ok){
+          console.log("Deleted all user answers!");
+        }else
+          return response.json()
+      })
+      .then(response => { 
+        if (response)
+          alert(response.message)
+      });
+    }
     
-    const deleteUser = (self) =>{
-        let userID= self.split("/").pop();
+    const deleteUser = (userID) =>{
         deleteUserReports(userID)
+        deleteUserAnswers(userID)
         fetch(`${UrlManager()}/authenticatedUsers/${userID}`,{
             method: "DELETE",
             headers: {
@@ -35,9 +54,9 @@ export default function usersFunctions(){
         .then(response => console.log(response))
     }
 
-    const banUnbanUser = (self) =>{
-      let userID= self.split("/").pop();
+    const banUnbanUser = (userID) =>{
       deleteUserReports(userID)
+      deleteUserAnswers(userID)
       fetch(`${UrlManager()}/authenticatedUsers`,{
           method: "PUT",
           headers: {
@@ -52,5 +71,5 @@ export default function usersFunctions(){
       })
       .then(response => console.log(response))
     }
-    return {deleteUser, deleteUserReports, banUnbanUser};
+    return {deleteUser, deleteUserAnswers, deleteUserReports, banUnbanUser };
 }
