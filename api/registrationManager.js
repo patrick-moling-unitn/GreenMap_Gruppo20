@@ -1,6 +1,6 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
+const mailProvider = require('./mailProvider')
 
 const RegisteringUser = require('../models/registeringUser');
 const AuthenticatedUser = require('../models/authenticatedUser');
@@ -10,8 +10,6 @@ const router = express.Router();
 const EMAIL_CODE_EXPIRATION_TIME_MIN=15
 const MIN_USER_PASSWORD_LENGTH = 8;
 const SALT_ROUNDS = Number(process.env.HASHING_SALT_ROUNDS);
-const USERNAME = process.env.EMAIL_USER;
-const PASSWORD = process.env.EMAIL_PASS;
 
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE = true;
@@ -55,27 +53,12 @@ router.post("/",  async (req, res, next) => {
             }
         });
 
-        let transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: USERNAME,
-                pass: PASSWORD
-            }
-            });
         let mailOptions = {
-            from: 'noreply.software.engineering@gmail.com',
-            to: req.body.email,
             subject: '[GreenMap] Verify your email',
             text: 'Your verification code is: '+ reguser.verificationCode.code + '\n' +
                   'The verification code will expire in '+EMAIL_CODE_EXPIRATION_TIME_MIN+' minutes.'
         };
-        transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-                if (LOG_MODE >= 1) console.warn(error);
-            } else {
-                if (LOG_MODE >= 1) console.log('Email sent: ' + info.response);
-            }
-        });
+        mailProvider.sendMail(req.body.email, mailOptions.subject, mailOptions.text);
         try{
             await reguser.save();
             return res.status(200).json({id: reguser._id});

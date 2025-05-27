@@ -80,6 +80,7 @@
 import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
 import QuestionType from '@enum/questionType.esm';
+import QuestionOption from '@enum/questionOption.esm';
 import usersFunctions from '@/usersFunctions'
 
 
@@ -91,8 +92,8 @@ export default {
             GIBBERISH_WARNING_THREESHOLD: .6,
             questionAndAnswers: [],
             loadingQuestions: false,
-            dichotomousQuestionOptions: ["Yes", "No"],
-            ratingQuestionOptions: [1,2,3,4,5,6,7,8,9,10],
+            dichotomousQuestionOptions: QuestionOption.DICHOTOMOUS,
+            ratingQuestionOptions: QuestionOption.RATING_SCALE,
         }
     },
 
@@ -110,7 +111,7 @@ export default {
             question.answers.forEach(element => {
                 if (String(element.answer) == String(response)) count++;
             });
-            return count / question.answers.length * 100
+            return (count / question.answers.length * 100).toFixed(0)
         },
 
         computePercentages(question){ //per ottimizzare i tempi: da considerare in futuro
@@ -168,7 +169,23 @@ export default {
             this.getAllAnswers();
         },
         getAnswersViaEmail() {
-            alert("Work in progress...")
+            this.loadingQuestions = true;
+            fetch(`${UrlManager()}/questionnaires?type=answer&method=email`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "x-access-token": TokenManager()
+                }
+            })
+            .then(response => {
+                //console.log(response);
+                if (response.ok)
+                    alert("Answers sent at your personal email!")
+                else
+                    alert("An error occurred while trying to send the answers!")
+            }).finally(() => {
+                this.loadingQuestions = false;
+            });
         }
     }
 }

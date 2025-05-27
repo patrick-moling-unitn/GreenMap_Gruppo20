@@ -12,8 +12,8 @@
             <option selected disabled value="">Choose a question type...</option>
             <option value="0">Open Ended</option>
             <option value="1">Close Ended</option>
-            <option value="2">Rating Scale (1-10)</option>
-            <option value="3">Dichotomous (True/False)</option>
+            <option value="2">Rating Scale ({{ratingOptions[0]+"-"+ratingOptions[ratingOptions.length-1]}})</option>
+            <option value="3">Dichotomous ({{dichotomousOptions[0]+"/"+dichotomousOptions[1]}})</option>
         </select>
         </div>
 
@@ -51,10 +51,13 @@
 import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
 import QuestionType from '@enum/questionType.esm';
+import QuestionOption from '@enum/questionOption.esm';
 
     export default{
         data() {
             return {
+                dichotomousOptions: QuestionOption.DICHOTOMOUS,
+                ratingOptions: QuestionOption.RATING_SCALE,
                 DEFAULT_NEW_OPTION_TEXT: "New Option",
                 DEFAULT_NEW_QUESTION_TEXT: "New Question",
                 questions: [],

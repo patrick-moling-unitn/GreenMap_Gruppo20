@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const mailProvider = require('./mailProvider')
 
 const AuthenticatedUser = require('../models/authenticatedUser');
+const QuestionOption = require('../enums/questionOption.cjs')
 const QuestionType = require('../enums/questionType.cjs')
 const Question = require('../models/question');
 const Answer = require('../models/answer');
@@ -15,6 +17,16 @@ const QUESTIONNAIRE_MIN_QUESTION_COUNT = 4;
 const QUESTIONNAIRE_SUBMISSION_COOLDOWN_MIN = 1_440 //24h
 
 const API_V = process.env.API_VERSION;
+
+//permette di aggiungere argomenti dinamicamente ad una stringa.
+String.prototype.format = function() {
+    let formatted = this;
+    for (let i = 0; i < arguments.length; i++) {
+        let regexp = new RegExp('\\{' + i + '\\}', 'gi');
+        formatted = formatted.replace(regexp, arguments[i]);
+    }
+    return formatted;
+};
 
 router.get("/", async (req, res, next) => {
     if (req.query.type == "questionnaire"){
@@ -59,11 +71,73 @@ router.get("/", async (req, res, next) => {
         }else
             return res.status(400).json({error: true, message: "You have compiled all the available questions. Please come back later!"});
     }else if (req.loggedUser.administrator == true || TEST_MODE){
-        if (req.query.type == "answer"){
+        if (req.query.type == "answer" && (req.query.method == "email" || req.query.method == "browser") ){
             if (LOG_MODE >= 1) console.log("Get all submitted answers request!")
 
             let answerList = await Answer.find({});
-            res.status(200).json(answerList);
+
+            if (req.query.method == "browser") res.status(200).json(answerList);
+            else{
+                let questionList = await Question.find({})
+                questionList = questionList.map(element => {
+                    let newOptions = element.options, newAnswers = [];
+                    if (element.questionType == QuestionType.DICHOTOMOUS) newOptions = QuestionOption.DICHOTOMOUS
+                    else if (element.questionType == QuestionType.RATING_SCALE) newOptions = QuestionOption.RATING_SCALE
+                    if (newOptions) newOptions.forEach(option => newAnswers.push(0))
+                    return {
+                        _id: element._id,
+                        question: element.question,
+                        questionType: element.questionType,
+                        options: newOptions,
+                        answers: newAnswers,
+                        openAnswers: []
+                    }
+                });
+
+                answerList.forEach(answer => {
+                    let question = questionList.find(element => String(element._id) == String(answer.questionId));
+                    if (question.questionType != QuestionType.OPEN_ENDED){
+                        let optionIndex = question.options.indexOf(answer.answer)
+                        question.answers[optionIndex]++;
+                    }else
+                        question.openAnswers.push(answer.answer)
+                })
+
+                if (LOG_MODE >= 3) console.log(questionList);
+
+                let mailText = 'The following data shows all the questionnaire\'s answers organized by questions' + '\n';
+                let tableLine = "{0}=========================================================================================={1}",
+                    tableHeader = " {0}"+'\n'+
+                                  tableLine.format(">","<")+'\n';
+
+                let questionNumber = 1;
+                questionList.forEach(question => {
+                    mailText += "\n"
+                    mailText += tableHeader.format(questionNumber + ") " + question.question);
+
+                    if (question.questionType != QuestionType.OPEN_ENDED){
+                        let i = 0;
+                        question.answers.forEach(count => {
+                            mailText += " "+question.options[i] +": " + count+"\n"
+                            i++;
+                        });
+                    }else {
+                        question.openAnswers.forEach(answer => {
+                            mailText += " "+answer+"\n"
+                        });
+                    }
+                    mailText += tableLine.format(">","<")+"\n"
+                    questionNumber++;
+                })
+
+                let mailOptions = {
+                    subject: '[GreenMap] Questionnaire\'s answers',
+                    text: mailText
+                };
+                mailProvider.sendMail(req["loggedUser"].email, mailOptions.subject, mailOptions.text);
+
+                res.status(200).send();
+            }
         }else if (req.query.type == "question"){
             next();
         }else
