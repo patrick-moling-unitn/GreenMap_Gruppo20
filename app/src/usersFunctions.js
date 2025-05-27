@@ -41,10 +41,12 @@ export default function usersFunctions(){
       });
     }
     
-    const deleteUser = (userID) =>{
-      return deleteUserReports(userID).then(()=>
-      deleteUserAnswers(userID)).then(()=>{
-        return fetch(`${UrlManager()}/authenticatedUsers/${userID}`,{
+    const deleteUser = (userId) =>{
+      return Promise.all([
+        deleteUserReports(userId),
+        deleteUserAnswers(userId)
+      ]).then(() => {
+        return fetch(`${UrlManager()}/authenticatedUsers/${userId}`,{
             method: "DELETE",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
@@ -54,9 +56,12 @@ export default function usersFunctions(){
       })
     }
 
-    const banUnbanUser = (userID) =>{
-      return deleteUserReports(userID).then(()=>
-      deleteUserAnswers(userID)).then(()=>{
+    const banUnbanUser = (userId) =>{
+      return Promise.all([
+        deleteUserReports(userId),
+        deleteUserAnswers(userId)
+      ])
+      .then(() => {
         return fetch(`${UrlManager()}/authenticatedUsers`,{
             method: "PUT",
             headers: {
@@ -64,7 +69,7 @@ export default function usersFunctions(){
                 "x-access-token": TokenManager()
             },
             body: JSON.stringify({
-                id: userID,
+                id: userId,
                 editAdmin: false,
                 editBan: true
             })
