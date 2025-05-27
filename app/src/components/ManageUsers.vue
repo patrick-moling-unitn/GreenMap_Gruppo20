@@ -42,7 +42,7 @@
           <td>{{ user.email }}</td>
           <td>{{ user.lastReportIssueDate }}</td>
           <td>{{ user.points }}</td>
-          <td><button type="button" class="btn btn-danger" @click="banUnbanUser(user.self)">Ban/Unban</button></td>
+          <td><button type="button" class="btn btn-danger" @click="banUnbanUserWrapper(user.self)">Ban/Unban</button></td>
           <td><button type="button" class="btn btn-danger" @click="deleteUserWrapper(user.self)">Delete</button></td>
           <td><button type="button" class="btn btn-success" @click="promoteDemoteUser(user.self)">Promote/Demote</button></td>
         </tr>
@@ -92,13 +92,15 @@ export default{
         })
     },
     async deleteUserWrapper(self){
+      let userID= self.split("/").pop();
       const {deleteUser} = usersFunctions();
       await deleteUser(self);
       this.showUsers()
     },
-    async banUnbanUser(self){
+    async banUnbanUserWrapper(self){
+        let userID= self.split("/").pop();
         const {banUnbanUser} = usersFunctions();
-        await banUnbanUser(self)
+        banUnbanUser(userID)
         this.showUsers()
     },
     promoteDemoteUser(self){

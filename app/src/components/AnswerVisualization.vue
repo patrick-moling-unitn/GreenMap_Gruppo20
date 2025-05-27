@@ -80,6 +80,7 @@
 import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
 import QuestionType from '@enum/questionType.esm';
+import usersFunctions from '@/usersFunctions'
 
 
 export default {
@@ -97,6 +98,9 @@ export default {
 
     mounted() {
         this.populateAnswersAndQuestions();
+    },
+    activated(){
+        this.populateAnswersAndQuestions()
     },
 
     methods : {
@@ -158,32 +162,11 @@ export default {
                 this.loadingQuestions = false;
             });
         },
-
-
-        banIssuer(issuerId) {
-            console.log("Ban issued.")
-            fetch(`${UrlManager()}/answerManager/${issuerId}`, {
-                method: "DELETE",
-                body: JSON.stringify({
-                    issuerId: issuerId
-                }),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8",
-                    "x-access-token": TokenManager()
-                }
-            })
-            .then(response => {
-              if (!response.ok) {
-                console.log("Errore nella risposta:", response);
-                return;
-              }
-
-              console.log("Successo.");
-              getAllAnswers();
-              return response.json();
-            });
+        async banUnbanUserWrapper(userID){
+            const {banUnbanUser} = usersFunctions();
+            await banUnbanUser(userID)
+            this.getAllAnswers();
         },
-
         getAnswersViaEmail() {
             alert("Work in progress...")
         }

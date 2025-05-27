@@ -139,8 +139,9 @@ export default{
         });
     },
     async deleteUserWrapper(self){
+        let userID= self.split("/").pop();
         const {deleteUser} = usersFunctions();
-        await deleteUser(self)
+        await deleteUser(userID)
         EventBus.emit('loggedout');
     },
     updateCookieConsent(){

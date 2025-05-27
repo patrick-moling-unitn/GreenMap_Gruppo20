@@ -38,7 +38,7 @@ app.put(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amminis
 app.delete(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amministratore per eliminare un utente
 
 
-app.use(API_V+"/answerManager/", requestValidator) //Devi essere amministratore per bandire gli utenti in caso di risposte inappropriate ai questionari.
+app.delete(API_V+"/answers/", requestValidator) //Devi essere amministratore per bandire gli utenti in caso di risposte inappropriate ai questionari.
 
 app.get(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per ottenere tutti gli utenti in registrazione
 app.delete(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per cancellare tutti gli utenti in registrazione
@@ -51,7 +51,7 @@ app.use(API_V+"/trashcans", trashcanManager)
 app.use(API_V+"/authenticatedUsers", authenticationManager)
 app.use(API_V+"/registeringUsers", registrationManager)
 app.use(API_V+"/questionnaires", questionnaireManager)
-app.use(API_V+"/answerManager", answerManager)
+app.use(API_V+"/answers/", answerManager)
 
 const path = __dirname + '/app/dist/';
 console.log(path)

@@ -85,6 +85,12 @@ export default {
                 alert(response.message)
             });
         }
+    },
+    mounted(){
+        this.getAllTrashcans()
+    },
+    activated(){
+        this.getAllTrashcans()
     }
 }
 </script>
