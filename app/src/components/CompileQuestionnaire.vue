@@ -56,6 +56,7 @@ import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
 import EventBus from '@/EventBus'
 import QuestionType from '@enum/questionType.esm';
+import QuestionOption from '@enum/questionOption.esm';
 
     export default {
         mounted(){
@@ -75,8 +76,8 @@ import QuestionType from '@enum/questionType.esm';
                 MAXIMUM_ACCEPTED_GIBBERISH_LEVEL: .8,
                 GIBBERISH_OPTIONS: { returnScore: true, sensitivity: 0.111 },
                 LOG_LEVEL: 1, //0: NONE, 1: MIN, 2: MID, 3: HIGH
-                dichotomousQuestionOptions: ["Yes", "No"],
-                ratingQuestionOptions: [1,2,3,4,5,6,7,8,9,10],
+                dichotomousQuestionOptions: QuestionOption.DICHOTOMOUS,
+                ratingQuestionOptions: QuestionOption.RATING_SCALE,
                 submittedAnswers: [],
                 questions: [],
                 loadingQuestionnaire: false,
