@@ -27,7 +27,7 @@ router.get("/", async (req, res) => {
         let userList = await AuthenticatedUser.find(query);
             userList = userList.map((user) => {
             return {
-                self: API_V + '/authenticatedUsers/' + user.id,
+                self: API_V + '/authenticatedUsers/' + user._id,
                 passwordHash: user.passwordHash,
                 email: user.email,
                 banned: user.banned,
@@ -41,7 +41,7 @@ router.get("/", async (req, res) => {
         if (LOG_MODE >= 1) console.log("Get user request!")
         let user = await AuthenticatedUser.findOne({_id:req.loggedUser.id});
         user = {
-            self: API_V + '/authenticatedUsers/' + user.id,
+            self: API_V + '/authenticatedUsers/' + user._id,
             email: user.email,
             banned: user.banned,
             administrator: user.administrator,

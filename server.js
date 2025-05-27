@@ -7,6 +7,7 @@ const authenticationManager = require('./api/authenticationManager')
 const registrationManager = require('./api/registrationManager')
 const questionnaireManager = require('./api/questionnaireManager')
 const answerManager = require('./api/answerManager')
+const discountManager = require('./api/discountManager')
 const requestValidator = require('./api/requestValidator');
 
 const AuthenticatedUser = require('./models/authenticatedUser')
@@ -24,6 +25,10 @@ const app = express()
 
 app.use(CORS())
 app.use(express.json());
+
+app.get(API_V+"/discounts", requestValidator) //Devi essere autenticato per visualizzare tuti gli sconti
+app.post(API_V+"/discounts", requestValidator) //Devi essere autenticato per aggiungere uno sconto
+app.delete(API_V+"/discounts/:id", requestValidator) //Devi essere autenticato per rimuovere uno sconto
 
 app.get(API_V+"/trashcans", requestValidator) //Devi essere autenticato per visualizzare tuti i cestini
 app.post(API_V+"/trashcans", requestValidator) //Devi essere autenticato per aggiungere un cestino
@@ -52,6 +57,7 @@ app.use(API_V+"/authenticatedUsers", authenticationManager)
 app.use(API_V+"/registeringUsers", registrationManager)
 app.use(API_V+"/questionnaires", questionnaireManager)
 app.use(API_V+"/answers/", answerManager)
+app.use(API_V+"/discounts/", discountManager)
 
 const path = __dirname + '/app/dist/';
 console.log(path)
