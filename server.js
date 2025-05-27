@@ -6,7 +6,6 @@ const trashcanManager = require('./api/trashcanManager')
 const authenticationManager = require('./api/authenticationManager')
 const registrationManager = require('./api/registrationManager')
 const questionnaireManager = require('./api/questionnaireManager')
-const answerManager = require('./api/answerManager')
 const discountManager = require('./api/discountManager')
 const requestValidator = require('./api/requestValidator');
 
@@ -42,9 +41,6 @@ app.put(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministrat
 app.put(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amministratore per bandire gli utenti per id
 app.delete(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amministratore per eliminare un utente
 
-
-app.delete(API_V+"/answers/:id", requestValidator) //Devi essere amministratore per bandire gli utenti in caso di risposte inappropriate ai questionari.
-
 app.get(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per ottenere tutti gli utenti in registrazione
 app.delete(API_V+"/registeringUsers/", requestValidator) //Devi essere amministratore per cancellare tutti gli utenti in registrazione
 app.delete(API_V+"/registeringUsers/:id", requestValidator) //Devi essere amministratore per cancellare un utente in registrazione per id
@@ -56,7 +52,6 @@ app.use(API_V+"/trashcans", trashcanManager)
 app.use(API_V+"/authenticatedUsers", authenticationManager)
 app.use(API_V+"/registeringUsers", registrationManager)
 app.use(API_V+"/questionnaires", questionnaireManager)
-app.use(API_V+"/answers/", answerManager)
 app.use(API_V+"/discounts/", discountManager)
 
 const path = __dirname + '/app/dist/';
