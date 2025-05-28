@@ -12,13 +12,12 @@ const API_V = process.env.API_VERSION;
 router.get("/", async (req, res, next) => {
     if (req.query.type == "all" || req.query.type == "personal" ){
         if (LOG_MODE >= 1) console.log("Get all discounts request!")
-        const {type, amount, isPercentage, discountType, code} = req.query;
+        const {type, amount, isPercentage, discountType} = req.query;
         let query = {};
-        query.redeemedBy = req.query.type == "all"? null : req.loggedUser._id
+        query.redeemedBy = req.query.type == "all"? null : req.loggedUser.id
         if (discountType !== '') query.discountType = discountType;
-        if (amount !== '') query.amount = {$gt: amount};
+        if (amount !== '') query.amount = {$gte: amount};
         if (isPercentage !== '') query.isPercentage = isPercentage;
-        if (code !== '') query.code = code;
         let discountList 
         discountList = await Discount.find(query);
         discountList = discountList.map((discount) => {
@@ -38,35 +37,38 @@ router.get("/", async (req, res, next) => {
 router.get("/", async (req, res) => {
     if (req.query.type == "new"){
         if (LOG_MODE >= 1) console.log("Get discount request!")
-        if(req.loggedUser.points<5000)
+        let user = await AuthenticatedUser.findOne({_id: req.loggedUser.id});
+        if(user.points<5000)
             return res.status(400).json({error: true, message: "Punti insufficienti"});
         const {type, amount, isPercentage, discountType} = req.query;
         let query = {};
-        query.redeemedBy = req.query.type == null
+        query.redeemedBy = null
         if (discountType !== '') query.discountType = discountType;
-        if (amount !== '') query.amount = {$gt: amount};
+        if (amount !== '') query.amount = amount;
         if (isPercentage !== '') query.isPercentage = isPercentage;
         let discount
         try{
             discount = await Discount.findOne(query);
+             if (!discount)
+                return res.status(400).json({error: true, message: "Sconti terminati per questa categoria"});
         }catch(err){
             return res.status(400).json({error: true, message: "Sconti terminati per questa categoria"});
         }
-        let user = await AuthenticatedUser.findOne({_id: req.loggedUser._id});
         user.points = user.points-5000;
         discount.redeemedBy =user._id;
+        const discountTypes= ["Fragrance","Toys","Steam","Amazon","Supermarket"]
         let mailOptions = {
             subject: '[GreenMap] Your redeemed code',
             text: `Your redeemed code is: ${discount.code}\n`+
-                  `The amount is ${discount.amount} ${discount.isPercentage?"%":"€"} valid only for ${discount.discountType}\n`
+                  `The amount is ${discount.amount}${discount.isPercentage?"%":"€"} valid only for ${discountTypes[discount.discountType]}\n`
         };
         try{
+            mailProvider.sendMail(user.email, mailOptions.subject, mailOptions.text);
             user.save();
             discount.save();
-            mailProvider.sendMail(req.body.email, mailOptions.subject, mailOptions.text);
-            res.location(API_V + "/discounts/" + discount._id).status(201).send();    
+            return res.location(API_V + "/discounts/" + discount._id).status(201).send();    
         }catch(err){
-            return res.status(500).json({error: true, message: "Internal server Error"});
+            return res.status(500).json({error: true, message: "Internal server error"});
         }
     }else
         return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});

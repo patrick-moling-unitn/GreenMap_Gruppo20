@@ -50,13 +50,13 @@
                 <option :value='true'>Percent</option>
                 <option :value="false">Euros</option>
             </select></td>
-          <td><input type="text" class="form-control" v-model="searchDiscount.code" @input="getAllDiscounts" placeholder="write"/></td>
+          <td></td>
           <td v-if="admin"><p>-</p></td>
         </tr>
         <tr v-for="discount in discounts">
           <td>{{ discountTypes[discount.discountType] }}</td>
-          <td>{{ discount.amount }}</td>
-          <td>{{ discount.isPercentage }}</td>
+          <td>{{ discount.amount.$numberDecimal }}</td>
+          <td>{{ discount.isPercentage?"%":"€" }}</td>
           <td>{{ discount.code }}</td>
           <td v-if="admin"><button type="button" class="btn btn-danger" @click="deleteDiscount(discount.self)">Delete</button></td>
         </tr>
@@ -90,7 +90,7 @@ export default {
         getAllDiscounts(){
             this.$nextTick(() => {
                 console.log('Dati richiesti');
-                fetch(`${UrlManager()}/discounts?type=${this.access}&discountType=${this.searchDiscount.discountType}&amount=${this.searchDiscount.amount}&isPercentage=${this.searchDiscount.isPercentage}&code=${this.searchDiscount.code}`, {
+                fetch(`${UrlManager()}/discounts?type=${this.access}&discountType=${this.searchDiscount.discountType}&amount=${this.searchDiscount.amount}&isPercentage=${this.searchDiscount.isPercentage}`, {
                     method: "GET",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8",
