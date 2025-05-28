@@ -6,5 +6,6 @@ module.exports = mongoose.model('Discount', new Schema({
     redeemedBy: {type: Schema.Types.ObjectId, default: null},
     discountType: Schema.Types.Int32,
     amount: Schema.Types.Decimal128,
-    code: String
+    isPercentage: Boolean,
+    code: {type: String, unique: true}
 }));

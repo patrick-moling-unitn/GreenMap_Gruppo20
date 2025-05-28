@@ -22,7 +22,7 @@ export default function usersFunctions(){
       });
     }
     const deleteUserAnswers=(userId)=>{
-      return fetch(`${UrlManager()}/answers/${userId}`, {
+      return fetch(`${UrlManager()}/answers/${userId}?type=userAnswers`, {
         method: "DELETE",
         headers: {
           "Content-type": "application/json; charset=UTF-8",

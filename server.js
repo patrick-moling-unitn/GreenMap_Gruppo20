@@ -52,7 +52,7 @@ app.use(API_V+"/trashcans", trashcanManager)
 app.use(API_V+"/authenticatedUsers", authenticationManager)
 app.use(API_V+"/registeringUsers", registrationManager)
 app.use(API_V+"/questionnaires", questionnaireManager)
-app.use(API_V+"/discounts/", discountManager)
+app.use(API_V+"/discounts", discountManager)
 
 const path = __dirname + '/app/dist/';
 console.log(path)

@@ -11,6 +11,7 @@ import ManageTrashcans from './components/ManageTrashcans.vue'
 import AccountDetails from './components/AccountDetails.vue'
 import CookiePopup from './components/CookiePopup.vue'
 import ManageQuestions from './components/ManageQuestions.vue'
+import ManageDiscounts from './components/ManageDiscounts.vue'
 import CompileQuestionnaire from './components/CompileQuestionnaire.vue'
 import AnswerVisualization from './components/AnswerVisualization.vue'
 
@@ -60,6 +61,7 @@ const routes = {
   '/compileQuestionnaire': CompileQuestionnaire,
   '/answerVisualization' : AnswerVisualization,
   '/manageQuestions': ManageQuestions,
+  '/seeDiscounts' : ManageDiscounts,
   '/todo': Todo
   
 }
@@ -221,6 +223,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
       <a href="#/resolveReport">Resolve Report</a> |
       <a href="#/manageTrashcans">Manage Trashcans</a> |
       <a href="#/manageQuestions">Manage Questionnaire's Questions</a> |
+      <a href="#/seeDiscounts">Manage Discounts</a> |
       <a href="#/answerVisualization">View Questionnaire's Answers</a> |
       <a href="#/manageUsers">Manage Users</a> |
       <a href="#/logout">Logout</a>
@@ -228,7 +231,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
     <div v-else>
       <a href="#/">Home</a> |
       <a href="#/compileQuestionnaire">Compile Questionnaire</a> |
-      <a href="#/todo">Get Discount</a> |
+      <a href="#/seeDiscounts">See Discounts</a> |
       <a href="#/accountDetails">View Profile</a> |
       <a href="#/logout">Logout</a>
     </div>

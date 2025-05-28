@@ -12,8 +12,10 @@ const TEST_MODE=false;
 
 const API_V = process.env.API_VERSION;
 
-router.get("/", async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){
+router.get("/", async (req, res, next) => {
+    if(req.query.type == "all"){
+        if (req.loggedUser.administrator != true)
+            return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
         if (LOG_MODE >= 1) console.log("Get all authenticated users request!")
         const {administrator, banned, email, lastReportDate, points} = req.query;
         let query = {};
@@ -37,7 +39,11 @@ router.get("/", async (req, res) => {
             };
         });
         res.status(200).json(userList);
-    }else{
+    }else
+        next()
+});
+router.get("/", async (req, res) => {
+    if(req.query.type == "personal"){
         if (LOG_MODE >= 1) console.log("Get user request!")
         let user = await AuthenticatedUser.findOne({_id:req.loggedUser.id});
         user = {
@@ -49,9 +55,9 @@ router.get("/", async (req, res) => {
             lastReportIssueDate: user.lastReportIssueDate
         }
         res.status(200).json(user);
-    }
+    }else
+        return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
-
 router.put("/:id", async (req, res) => {
     if (LOG_MODE >= 1) console.log("Ban authenticated user request!")
     if (req.loggedUser.administrator == true || TEST_MODE){

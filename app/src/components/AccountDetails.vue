@@ -44,7 +44,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Sezione account -->
                 <div class="border rounded p-4 text-center">
                     <strong>YOUR ACCOUNT</strong>
@@ -57,9 +56,17 @@
                     <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
                         <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault" v-model="hasCookieConsent" @change="updateCookieConsent">
                         <label class="form-check-label" for="switchCheckDefault">Accept cookies</label>
-                        <CookiePopup v-if="askForCookie"></CookiePopup>
+                        <CookiePopup v-if="askForCookie"/>
                     </div>
                     <button type="button" class=" mb-2 btn btn-danger" @click="confirmAction('Sei sicuro di voler eliminare l\'utente?', () => deleteUserWrapper(user.self))">Delete your account</button>
+                </div>
+                <div class="p-4">
+                    <div class="border mb-2 p-2">
+                    <strong>YOUR CODES</strong>
+                    </div>
+                    <div class="mb-4 flex-wrap gap-2">
+                        <DiscountsTable :access="'personal'" :admin="false"/>
+                    </div>
                 </div>
             </div>
         </div>
@@ -79,11 +86,14 @@ import UrlManager from '@/urlManager'
 import usersFunctions from '@/usersFunctions'
 import EventBus from '@/EventBus'
 import CookiePopup from './CookiePopup.vue'
+import DiscountsTable from './DiscountsTable.vue'
+
 const COOKIES_CONSENT_LOCAL_STORAGE_NAME = "CookiesConsent"
 
 export default{
   components: {
-    CookiePopup
+    CookiePopup,
+    DiscountsTable
   },
   data() {
       return {
@@ -121,7 +131,7 @@ export default{
         });
     },
     getPersonalData(){
-        fetch(`${UrlManager()}/authenticatedUsers`, {
+        fetch(`${UrlManager()}/authenticatedUsers?type=personal`, {
             method: "GET",
             headers: {
             "Content-type": "application/json; charset=UTF-8",

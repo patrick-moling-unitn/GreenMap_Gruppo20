@@ -73,7 +73,7 @@ export default{
     showUsers(){
         this.$nextTick(() => {
             console.log('Dati richiesti');
-            fetch(`${UrlManager()}/authenticatedUsers?administrator=${this.administrator}&banned=${this.banned}&email=${this.email}&lastReportDate=${this.lastReportDate}&points=${this.points}`, {
+            fetch(`${UrlManager()}/authenticatedUsers?type=all&administrator=${this.administrator}&banned=${this.banned}&email=${this.email}&lastReportDate=${this.lastReportDate}&points=${this.points}`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
