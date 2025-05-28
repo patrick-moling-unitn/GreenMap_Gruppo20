@@ -4,6 +4,7 @@ const mailProvider = require('./mailProvider')
 
 const RegisteringUser = require('../models/registeringUser');
 const AuthenticatedUser = require('../models/authenticatedUser');
+const error = require('../enums/errorCodes.cjs.js');
 
 const router = express.Router();
 //costanti
@@ -29,7 +30,7 @@ router.get("/", async (req, res) => {
         });
         res.status(200).json(usersList);
     }else
-		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.post("/",  async (req, res, next) => {
@@ -108,7 +109,7 @@ router.delete('/:id', async (req, res) => {
         if (LOG_MODE >= 1) console.log('Registering user removed!');
         res.status(204).json({ _id: req.params.id });
     }else
-		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.delete('/', async (req, res) => {
@@ -117,7 +118,7 @@ router.delete('/', async (req, res) => {
         if (LOG_MODE >= 1) console.log('All registering users removed!');
         res.status(204).send();
     }else
-		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 module.exports = router;

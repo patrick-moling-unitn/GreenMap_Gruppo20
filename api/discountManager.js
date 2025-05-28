@@ -3,6 +3,7 @@ const router = express.Router();
 const mailProvider = require('./mailProvider')
 const AuthenticatedUser = require('../models/authenticatedUser');
 const Discount = require('../models/discount');
+const error = require('../enums/errorCodes.cjs.js');
 
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE=false;
@@ -39,7 +40,7 @@ router.get("/", async (req, res) => {
         if (LOG_MODE >= 1) console.log("Get discount request!")
         let user = await AuthenticatedUser.findOne({_id: req.loggedUser.id});
         if(user.points<5000)
-            return res.status(400).json({error: true, message: "Punti insufficienti"});
+            return res.status(400).send(error("INFUFFICIENT_POINTS"))//.json({error: true, message: "Punti insufficienti"});
         const {type, amount, isPercentage, discountType} = req.query;
         let query = {};
         query.redeemedBy = null
@@ -50,9 +51,9 @@ router.get("/", async (req, res) => {
         try{
             discount = await Discount.findOne(query);
              if (!discount)
-                return res.status(400).json({error: true, message: "Sconti terminati per questa categoria"});
+                return res.status(400).send(error("OUT_OF_STOCK"))//.json({error: true, message: "Sconti terminati per questa categoria"});
         }catch(err){
-            return res.status(400).json({error: true, message: "Sconti terminati per questa categoria"});
+            return res.status(400).send(error("OUT_OF_STOCK"))//.json({error: true, message: "Sconti terminati per questa categoria"});
         }
         user.points = user.points-5000;
         discount.redeemedBy =user._id;
@@ -68,10 +69,10 @@ router.get("/", async (req, res) => {
             discount.save();
             return res.location(API_V + "/discounts/" + discount._id).status(201).send();    
         }catch(err){
-            return res.status(500).json({error: true, message: "Internal server error"});
+            return res.status(500).send(error("INTERNAL_ERROR"))//.json({error: true, message: "Internal server error"});
         }
     }else
-        return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
 router.post("/",  async (req, res) => {
@@ -86,7 +87,7 @@ router.post("/",  async (req, res) => {
         try{
             discount = await discount.save();
         }catch(err){
-            return res.status(400).json({error: true, message: "discount has wrong data"});
+            return res.status(400).send(error("WRONG_DATA"))//.json({error: true, message: "discount has wrong data"});
         }
         let discountId = discount._id;
 
@@ -94,7 +95,7 @@ router.post("/",  async (req, res) => {
 
         res.location(API_V + "/discounts/" + discountId).status(201).send();    
     }else
-		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.delete('/:id', async (req, res) => {
@@ -103,7 +104,7 @@ router.delete('/:id', async (req, res) => {
         if (LOG_MODE >= 1) console.log('Discount removed!')
         res.status(204).send()
     }else
-		return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.delete('/', async (req, res) => {

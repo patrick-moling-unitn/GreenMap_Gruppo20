@@ -7,6 +7,7 @@ const AuthenticatedUser = require('../models/authenticatedUser');
 const QuestionType = require('../enums/questionType.cjs')
 const Question = require('../models/question');
 const Answer = require('../models/answer');
+const error = require('../enums/errorCodes.cjs.js');
 
 const LOG_MODE = 2; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE=true;
@@ -46,7 +47,7 @@ router.get("/", async (req, res, next) => {
             });
             return res.status(200).json(questionList);
         }else
-            return res.status(400).json({error: true, message: "You have compiled all the available questions. Please come back later!"});
+            return res.status(400).send(error("ALL_ANSWERED"))//.json({error: true, message: "You have compiled all the available questions. Please come back later!"});
     }else if (req.loggedUser.administrator == true || TEST_MODE){
         if (req.query.type == "answer" && (req.query.method == "email" || req.query.method == "browser") ){
             if (LOG_MODE >= 1) console.log("Get all submitted answers request!")
@@ -73,9 +74,9 @@ router.get("/", async (req, res, next) => {
         }else if (req.query.type == "question"){
             next();
         }else
-            return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+            return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
     }else
-        return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 //GET ALL QUESTIONS
@@ -104,7 +105,7 @@ router.get("/:questionId", async (req, res) => {
         let answerList = await Answer.find({questionId: req.params.questionId});
         res.status(200).json(answerList);
     }else
-        return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 //Richiesta con query parameter (type) che permette di inviare un questionario oppure aggiungere una domanda
@@ -154,14 +155,14 @@ router.post("/",  async (req, res, next) => {
                 return res.status(500).json({error: true, message: "Couldn't save user: " + err});
             }
         }else
-            return res.status(401).json({error: true, message: "THE USER WHO SUBMITTED THE ANSWERS DOESN'T EXIST ON THE DATABASE!"});
+            return res.status(401).send(error("USER_NOT_FOUND"))//.json({error: true, message: "THE USER WHO SUBMITTED THE ANSWERS DOESN'T EXIST ON THE DATABASE!"});
     }else if (req.query.type == "question"){
         if (req.loggedUser.administrator == true || TEST_MODE) //TEST MODE: ACCESSIBILE IN OGNI CASO
             next();
         else
-            return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+            return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
     }else
-        return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
 function getOptionsFromQuestion(question){
@@ -196,7 +197,7 @@ router.post("/",  async (req, res) => {
         }
     }
     else
-        return res.status(400).json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
+        return res.status(400).send(error("MISSING_QUESTION"))//.json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
 });
 
 //Aggiorna una question con del nuovo testo, tipo di domanda oppure opzioni fornite dall'amministratore
@@ -225,7 +226,7 @@ router.put("/:questionId",  async (req, res) => {
         }
     }
     else
-        return res.status(400).json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
+        return res.status(400).send(error("MISSING_QUESTION"))//.json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
 });
 
 //Cancella una question e tutte le sue risposte a cascata
@@ -244,9 +245,9 @@ router.delete("/:questionId",  async (req, res) => {
         }else if (req.query.type == "userAnswers"){
             next();
         }else
-            return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+            return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
     }else
-        return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 //[lavoro di raffaele, commit: d1f1ba8d7c44647c32c0218da98a90f4a129ff01]
@@ -258,7 +259,7 @@ router.delete("/:issuerId", async (req, res) => {
     try {
         await Answer.deleteMany({ submitterId: req.params.issuerId })
     }catch(err){
-        return res.status(400).json({error: true, message: "ID not found."});
+        return res.status(400).send(error("ID_NOT_FOUND"))//.json({error: true, message: "ID not found."});
     }
     return res.status(204).send();
 });
@@ -269,7 +270,7 @@ router.delete("/",  async (req, res) => {
         if (LOG_MODE >= 1) console.log('All questionnaire\'s answers removed!');
         res.status(204).send();
     }else
-        return res.status(401).json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 module.exports = router;

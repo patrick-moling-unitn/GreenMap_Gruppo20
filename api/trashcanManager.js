@@ -2,6 +2,7 @@ const express = require('express');
 const Trashcan = require('../models/trashcan');
 const router = express.Router();
 const geolib = require("geolib");
+const error = require('../enums/errorCodes.cjs.js');
 
 const TEST_MODE = false;
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
@@ -50,7 +51,7 @@ router.get("/:position", async (req, res, next) => {
     }else if (req.query.type)
         next();
     else
-        return res.status(400).json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
 router.get("/:position", async (req, res) => {
