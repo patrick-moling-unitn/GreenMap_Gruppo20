@@ -60,7 +60,7 @@ import QuestionOption from '@enum/questionOption.esm';
 
     export default {
         mounted(){
-            // DELETE ALL QUESTIONNAIRES CODE
+            // DELETE ALL QUESTIONNAIRES'S ANSWERS CODE
             /*    fetch(`${UrlManager()}/questionnaires`, {
                     method: "DELETE",
                     headers: {
@@ -96,7 +96,7 @@ import QuestionOption from '@enum/questionOption.esm';
             },
             requestQuestionnaire(){
                 this.loadingQuestionnaire = true;
-                fetch(`${UrlManager()}/questionnaires?type=questionnaire`, {
+                fetch(`${UrlManager()}/questionnaires`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
@@ -105,7 +105,7 @@ import QuestionOption from '@enum/questionOption.esm';
                 }).then(response => {
                     return response.json()
                 }).then(response => {
-                    if (!response.error){
+                    if (!response.errorCode){
                         this.submittedAnswers = []
                         this.questions = []
                         response.forEach(element => {
@@ -119,7 +119,7 @@ import QuestionOption from '@enum/questionOption.esm';
                         answer: String,
                         gibberishLevel: Schema.Types.Decimal128 */
                     }else
-                        alert(response.message)
+                        alert(response.errorCode)
                 }).finally(() =>{
                     this.loadingQuestionnaire = false;
                 });
@@ -177,7 +177,7 @@ import QuestionOption from '@enum/questionOption.esm';
                     alert("You didn't answer all the questions!")
             },
             sendAnswers(submittedAnswers){
-                fetch(`${UrlManager()}/questionnaires?type=questionnaire`, {
+                fetch(`${UrlManager()}/questionnaires`, {
                     method: "POST",
                     body: JSON.stringify({
                         answers: submittedAnswers

@@ -4,7 +4,7 @@
     
   <div v-if="questionAndAnswers.length > 0">
     <div class="secondary-color p-4 mt-4">
-      <div v-for="(questionData, index) in questionAndAnswers" :key="index" :class="index == 0 ? '' : 'mt-4'">
+      <div v-for="(questionData, questionIndex) in questionAndAnswers" :key="questionIndex" :class="questionIndex == 0 ? '' : 'mt-4'">
             <h5>{{questionData.question}}</h5>
 
             <div class="tertiary-color p-4 mt-4" v-if="questionData.question.questionType==0"> <!-- OPEN_ENDED -->
@@ -30,32 +30,30 @@
                 </div>
             </div>
             <div class="tertiary-color p-4 mt-4" v-else-if="questionData.questionType==1"> <!-- CLOSE_ENDED -->
-                <div v-for="(option, index) in questionData.options" :key="index" :class="index == 0 ? '' : 'mt-2'">
-                    <div class="primary-color row align-items-center" v-if="getPercentageOf(index, questionData) != 0">
-                        <h6 class="col-3 m-0">{{ option }}</h6>
-                        <div class="progress col-9" role="progressbar" aria-label="answerSlider" :aria-valuenow="getPercentageOf(index, questionData)" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar text-bg-success" :style="'width: '+getPercentageOf(index, questionData)+'%'"> {{ getPercentageOf(index, questionData) }}%</div>
-                        </div>
+                <h6 v-if="questionData.answerCount == 0">No answers recieved for this question</h6>
+                <div v-else>
+                    <h6 class="fw-bold text-end">Recieved answers: {{ questionData.answerCount }}</h6>
+                    <div v-for="(currentOption, index) in questionData.options" :key="index" :class="index == 0 ? '' : 'mt-2'">
+                    <AnswerStatistics :option="currentOption" :answerPercentage="getPercentageOf(index, questionData)" :col_size="9"></AnswerStatistics>
                     </div>
                 </div>
             </div>
             <div class="tertiary-color p-4 mt-4" v-else-if="questionData.questionType==2"> <!-- RATING_SCALE -->
-                <div v-for="(option, index) in ratingQuestionOptions" :key="index" :class="index == 0 ? '' : 'mt-2'">
-                    <div class="primary-color row align-items-center" v-if="getPercentageOf(index, questionData) != 0">
-                        <h6 class="col-1 m-0">{{ option }}</h6>
-                        <div class="progress col-11" role="progressbar" aria-label="answerSlider" :aria-valuenow="getPercentageOf(index, questionData)" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar text-bg-success" :style="'width: '+getPercentageOf(index, questionData)+'%'"> {{ getPercentageOf(index, questionData) }}%</div>
-                        </div>
+                <h6 v-if="questionData.answerCount == 0">No answers recieved for this question</h6>
+                
+                <div v-else>
+                    <h6 class="fw-bold text-end">Recieved answers: {{ questionData.answerCount }}</h6>
+                    <div v-for="(currentOption, index) in ratingQuestionOptions" :key="index" :class="index == 0 ? '' : 'mt-2'">
+                    <AnswerStatistics :option="currentOption" :answerPercentage="getPercentageOf(index, questionData)" :col_size="11"></AnswerStatistics>
                     </div>
                 </div>
             </div>
             <div class="tertiary-color p-4 mt-4"  v-else-if="questionData.questionType==3"> <!-- DICHOTOMOUS -->
-                <div v-for="(option, index) in dichotomousQuestionOptions" :key="index" :class="index == 0 ? '' : 'mt-2'">
-                    <div class="primary-color row align-items-center" v-if="getPercentageOf(index, questionData) != 0">
-                        <h6 class="col-1 m-0">{{ option }}</h6>
-                        <div class="progress col-11" role="progressbar" aria-label="answerSlider" :aria-valuenow="getPercentageOf(index, questionData)" aria-valuemin="0" aria-valuemax="100">
-                        <div :class="option == dichotomousQuestionOptions[0] ? 'progress-bar text-bg-success' : 'progress-bar text-bg-danger'" :style="'width: '+getPercentageOf(index, questionData)+'%'"> {{ getPercentageOf(index, questionData) }}%</div>
-                        </div>
+                <h6 v-if="questionData.answerCount == 0">No answers recieved for this question</h6>
+                <div v-else>
+                    <h6 class="fw-bold text-end">Recieved answers: {{ questionData.answerCount }}</h6>
+                    <div v-for="(currentOption, index) in dichotomousQuestionOptions" :key="index" :class="index == 0 ? '' : 'mt-2'">
+                    <AnswerStatistics :option="currentOption" :answerPercentage="getPercentageOf(index, questionData)" :col_size="9"></AnswerStatistics>
                     </div>
                 </div>
             </div>
@@ -79,16 +77,19 @@
 
 import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
-import QuestionOption from '@enum/questionOption.esm';
 import usersFunctions from '@/usersFunctions'
-
+import AnswerStatistics from './AnswerStatistics.vue';
+import QuestionOption from '@enum/questionOption.esm';
 
 export default {
-
+    components : {
+        AnswerStatistics
+    },
     data() {
         return {
             showAnswersWithPossibleGibberish: true,
             GIBBERISH_WARNING_THREESHOLD: .6,
+            NUMBER_OF_STATISTICS_DECIMALS: 1,
             questionAndAnswers: [],
             loadingQuestions: false,
             dichotomousQuestionOptions: QuestionOption.DICHOTOMOUS,
@@ -107,14 +108,15 @@ export default {
         getPercentageOf(optionIndex, question){
             let optionCount = question.answers[optionIndex],
                 totalCount = question.answerCount;
-            return (optionCount / totalCount * 100).toFixed(0)
+            let percentage = (optionCount / totalCount * 100)
+            return percentage == Math.floor(percentage) ? percentage : percentage.toFixed(this.NUMBER_OF_STATISTICS_DECIMALS)
         },
 
         populateAnswersAndQuestions() {
             console.log("Getting questions.");
             this.loadingQuestions = true;
 
-            fetch(`${UrlManager()}/questionnaires?type=answer&method=browser`, {
+            fetch(`${UrlManager()}/questionnaires/answers?method=browser`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
@@ -138,7 +140,7 @@ export default {
         },
         getAnswersViaEmail() {
             this.loadingQuestions = true;
-            fetch(`${UrlManager()}/questionnaires?type=answer&method=email`, {
+            fetch(`${UrlManager()}/questionnaires/answers?method=email`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",

@@ -40,7 +40,7 @@
             <span class="visually-hidden">Loading...</span>
         </div>
         <div v-else>
-        <button type="button" class="btn btn-success" @click="addNewQuestion()">Add New Question</button>
+        <button type="button" class="btn btn-success" @click="addNewEmptyQuestion()">Add New Question</button>
         <button type="button" class="btn btn-primary ms-2" @click="getAllQuestions()">Get All Questions</button>
         </div>
     </div>
@@ -86,7 +86,7 @@ import QuestionOption from '@enum/questionOption.esm';
 
                 return question.original != structure;
             },
-            addNewQuestion(){
+            addNewEmptyQuestion(){
                 let question = { questionId: null, question: this.DEFAULT_NEW_QUESTION_TEXT, 
                     questionType: "", options: [ this.DEFAULT_NEW_OPTION_TEXT ], loading: false}
                 this.questions.push(question);
@@ -103,6 +103,7 @@ import QuestionOption from '@enum/questionOption.esm';
             updateSelectedQuestion(questionIndex){
                 let questionValid = true,
                     question = this.questions[questionIndex];
+                console.log(question)
 
                 if (String(question.questionType) !== "")
                 {
@@ -146,7 +147,7 @@ import QuestionOption from '@enum/questionOption.esm';
             },
             deleteQuestion(deletionQuestion, questionIndex){
                 deletionQuestion.loading = true;
-                fetch(`${UrlManager()}/questionnaires/${deletionQuestion.questionId}?type=question`, {
+                fetch(`${UrlManager()}/questionnaires/questions/${deletionQuestion.questionId}`, {
                     method: "DELETE",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8",
@@ -166,7 +167,7 @@ import QuestionOption from '@enum/questionOption.esm';
             },
             sendNewQuestion(newQuestion){
                 newQuestion.loading = true;
-                fetch(`${UrlManager()}/questionnaires?type=question`, {
+                fetch(`${UrlManager()}/questionnaires/questions`, {
                     method: "POST",
                     body: JSON.stringify({
                         question: {
@@ -195,7 +196,7 @@ import QuestionOption from '@enum/questionOption.esm';
             },
             updateQuestion(updatingQuestion){
                 updatingQuestion.loading = true;
-                fetch(`${UrlManager()}/questionnaires/${updatingQuestion.questionId}?type=question`, {
+                fetch(`${UrlManager()}/questionnaires/questions/${updatingQuestion.questionId}`, {
                     method: "PUT",
                     body: JSON.stringify({
                         question: {
@@ -224,7 +225,7 @@ import QuestionOption from '@enum/questionOption.esm';
             },
             getAllQuestions(){
                 this.loadingQuestions = true;
-                fetch(`${UrlManager()}/questionnaires?type=question`, {
+                fetch(`${UrlManager()}/questionnaires/questions`, {
                     method: "GET",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8",
