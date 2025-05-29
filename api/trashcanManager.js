@@ -31,7 +31,7 @@ router.get("/:position", async (req, res, next) => {
         if (LOG_MODE >= 1) console.log("Get all trashcans near: " + req.params.position + " max distance (meters): " + req.query.distance)
 
         if (isNaN(lat) || isNaN(lng))
-            return res.status(400).json({message: "COORDINATES NOT VALID!"});
+            return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
         
         let userPosition = {
             latitude: lat,
@@ -51,7 +51,7 @@ router.get("/:position", async (req, res, next) => {
     }else if (req.query.type)
         next();
     else
-        return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
 router.get("/:position", async (req, res) => {

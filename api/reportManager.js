@@ -19,11 +19,11 @@ router.get("/:id", async (req, res) => {
         if (LOG_MODE >= 1) console.log("get report request")
         let report = await Report.findById(req.params.id);
         if (!report)
-            return res.status(400).send(error("NO_MATCHING_ID"))//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
+            return res.status(400).json({ errorCode: error("NO_MATCHING_ID") })//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
 
         res.status(200).json(report);
     }else
-        return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 //GET ALL REPORTS
@@ -45,11 +45,11 @@ router.get("/", async (req, res, next) => {
             });
             res.status(200).json(reportList);
         }else
-		    return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		    return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
     }else if (req.query.type == "personal")
         next();
     else
-        return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 
 //GET PERSONAL REPORTS
@@ -81,20 +81,20 @@ router.put("/:id",  async (req, res, next) => {
         try{
             report = await Report.findById(req.params.id)
         }catch(err){
-            return res.status(400).send(error("NO_MATCHING_ID"))//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
+            return res.status(400).json({ errorCode: error("NO_MATCHING_ID") })//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
         }
 
         req.report = report;
         
         next();
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.put("/:id",  async (req, res, next) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
         if (req.report.resolved == req.body.resolved)
-            return res.status(400).send(error("ALREADY_RESOLVED_REPORT"))//.json({error: true, message: "IL REPORT E' GIA' STATO RISOLTO"});
+            return res.status(400).json({ errorCode: error("ALREADY_RESOLVED_REPORT") })//.json({error: true, message: "IL REPORT E' GIA' STATO RISOLTO"});
         req.report.resolved = req.body.resolved;
 
         if (req.report.resolved){
@@ -104,17 +104,17 @@ router.put("/:id",  async (req, res, next) => {
                 try{
                     await authenticatedUser.save();
                 }catch(err){
-                    return res.status(500).json(err);
+                    return res.status(500).json({ errorMessage: err });
                 }
             }
             else
-                return res.status(400).send(error("NO_MATCHING_ID"))//.json({error: true, message: "NON ESISTE PROPRIETARIO DEL REPORT"});
+                return res.status(400).json({ errorCode: error("NO_MATCHING_ID") })//.json({error: true, message: "NON ESISTE PROPRIETARIO DEL REPORT"});
         }
         
         try{
             req.report = await req.report.save();
         }catch(err){
-            return res.status(500).json(err);
+            return res.status(500).json({ errorMessage: err });
         }
         
         let reportId = req.report._id;
@@ -123,7 +123,7 @@ router.put("/:id",  async (req, res, next) => {
 
         res.location(API_V + "reports/" + reportId).status(200).send();
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 //ADD NEW REPORT
@@ -132,19 +132,19 @@ router.post("",  async (req, res) => {
 
     let user = await AuthenticatedUser.findById(req.loggedUser.id)
     if (!user) 
-        return res.status(500).send(error("NO_MATCHING_ID"))//.json("Non è possibile risalire all'utente autenticato");
+        return res.status(500).json({ errorCode: error("NO_MATCHING_ID") })//.json("Non è possibile risalire all'utente autenticato");
     if (user.banned)
-        return res.status(401).send(error("BANNED"))//.json({error: true, message: "SEI STATO BANNATO E NON PUOI INVIARE REPORT!"});
+        return res.status(401).json({ errorCode: error("BANNED") })//.json({error: true, message: "SEI STATO BANNATO E NON PUOI INVIARE REPORT!"});
     
     if (user.lastReportIssueDate && !TEST_MODE) { //TEST MODE: ACCESSIBILE IN OGNI CASO
         let difference = user.lastReportIssueDate.getTime() + ISSUE_REPORT_COOLDOWN_MIN * 60_000 - Date.now()
         if (difference > 0){
             let remainingMinutes = difference / 60_000;
             if (remainingMinutes > 60)
-                return res.status(400).json({error: true, message: "ULTIMO REPORT INVIATO MENO DI " + 
+                return res.status(400).json({errorMessage: "ULTIMO REPORT INVIATO MENO DI " + 
                     (ISSUE_REPORT_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + (remainingMinutes / 60).toFixed(0) + " ORE"});
             else
-                return res.status(400).json({error: true, message: "ULTIMO REPORT INVIATO MENO DI " + 
+                return res.status(400).json({errorMessage: "ULTIMO REPORT INVIATO MENO DI " + 
                     (ISSUE_REPORT_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + remainingMinutes.toFixed(0) + " MINUTI"});
         }
     }
@@ -165,7 +165,7 @@ router.post("",  async (req, res) => {
         await user.save();
     }catch(err){
         if (LOG_MODE >= 3) console.warn(err);
-        return res.status(500).json(err);
+        return res.status(500).json({ errorMessage: err });
     }
     
     let reportId = report._id;
@@ -182,16 +182,16 @@ router.delete('/:id', async (req, res, next) => {
             try{
                 await Report.deleteOne({ _id: req.params.id });
             }catch(err){
-                return res.status(400).send(error("NO_MATCHING_ID"))//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
+                return res.status(400).json({ errorCode: error("NO_MATCHING_ID") })//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
             }
             if (LOG_MODE >= 2) console.log('report removed')
             res.status(204).send()
         }else if (req.query.type == "userReports")
             next();
         else
-            return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+            return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 //DELETE REPORTS OF USERID

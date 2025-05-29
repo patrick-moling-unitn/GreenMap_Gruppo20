@@ -30,7 +30,7 @@ router.get("/", async (req, res) => {
         });
         res.status(200).json(usersList);
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.post("/",  async (req, res, next) => {
@@ -38,12 +38,12 @@ router.post("/",  async (req, res, next) => {
     {
         alreadyRegisteringEmail = await RegisteringUser.findOne({ email: req.body.email.toLowerCase()});
         if(alreadyRegisteringEmail)
-            return res.status(400).json({error: "already sent request"});
+            return res.status(400).json({ errorCode: error("REGISTRATING_USER_DUPLICATED_REQUEST") });
         alreadyExistingEmail = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
         if(alreadyExistingEmail)
-            return res.status(400).json({error: "email already existing"});
+            return res.status(400).json({ errorCode: error("EMAIL_ALREADY_REGISTERED") });
         if (req.body.password.length < MIN_USER_PASSWORD_LENGTH)
-            return res.status(400).json({error: "password too short"});
+            return res.status(400).json({ errorCode: error("REGISTRATING_USER_INVALID_PASSWORD") });
 
         let reguser = new RegisteringUser({
             email: req.body.email,
@@ -64,7 +64,7 @@ router.post("/",  async (req, res, next) => {
             await reguser.save();
             return res.status(200).json({id: reguser._id});
         }catch(err){
-            return res.status(500).json(err);
+            return res.status(500).json({ errorMessage: err });
         }
     }else 
         next();
@@ -73,13 +73,13 @@ router.post("/",  async (req, res, next) => {
 router.post("/",  async (req, res, next) => {
     const verifyinguser = await RegisteringUser.findById(req.body.id);
     if(!verifyinguser)
-        return res.status(400).json({error: "user not existing"});
+        return res.status(400).json({ errorCode: error("INVALID_REGISTRATION_REQUEST") });
     if(verifyinguser.verificationCode.expireDate<new Date()){
         await RegisteringUser.deleteOne({ _id: req.body.id });
-        return res.status(400).json({error: "time expired"});
+        return res.status(400).json({ errorCode: error("REGISTRATION_CODE_EXPIRED") });
     }
     if(verifyinguser.verificationCode.code != req.body.code)
-        return res.status(400).json({error: "wrong code"});
+        return res.status(400).json({ errorCode: error("REGISTRATION_CODE_INVALID") });
     req['registeringUser'] = verifyinguser;
     next();
 });
@@ -99,7 +99,7 @@ router.post("/",  async (req, res) => {
         if (LOG_MODE >= 1) console.log('Registering user created!');
         return res.location(API_V + '/registeringUsers/' + user.id).status(201).send();
     }catch(err){
-        return res.status(500).json(err);
+        return res.status(500).json({ errorMessage: err });
     }
 });
 
@@ -107,9 +107,9 @@ router.delete('/:id', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         await AuthenticatedUser.deleteOne({ _id: req.params.id });
         if (LOG_MODE >= 1) console.log('Registering user removed!');
-        res.status(204).json({ _id: req.params.id });
+        res.status(204).send();
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.delete('/', async (req, res) => {
@@ -118,7 +118,7 @@ router.delete('/', async (req, res) => {
         if (LOG_MODE >= 1) console.log('All registering users removed!');
         res.status(204).send();
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 module.exports = router;

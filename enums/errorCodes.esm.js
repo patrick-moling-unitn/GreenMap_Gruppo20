@@ -1,7 +1,7 @@
 const errorCodes = Object.freeze([
-    "Seuccessful request." ,
+    "Successful request." ,
     "Requesting user is not an administrator!" ,
-    "A quesy parameter is missing!" ,
+    "A query parameter is missing!" ,
     "Id not found!" ,
     "User not found!" ,
     "You don't have enough points!" ,
@@ -15,7 +15,17 @@ const errorCodes = Object.freeze([
     "The services to this application has been restricted." ,
     "Authentication token missing." ,
     "Failed to authenticate token." ,
-    
+    "The password inserted is wrong!",
+    "The email inserted does not exist.",
+    "Your account has been banned!",
+    "Registration request for this email already running!",
+    "The inserted email has already been used!",
+    "The inserted password is too weak.",
+    "Invalid registration request!",
+    "Registration code expired!",
+    "Inserted registration code is wrong!",
+    "Coordinates inserted not valid!",
+    "The question type selected must contain options!"
 ]);
 
 

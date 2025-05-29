@@ -16,7 +16,7 @@ const API_V = process.env.API_VERSION;
 router.get("/", async (req, res, next) => {
     if(req.query.type == "all"){
         if (req.loggedUser.administrator != true)
-            return res.status(401).send(error("UNAUTHORIZED"));//.json({error: true, message: 'Requesting user is not an administrator!'});
+            return res.status(401).json({ errorCode: error("UNAUTHORIZED") });//.json({error: true, message: 'Requesting user is not an administrator!'});
         if (LOG_MODE >= 1) console.log("Get all authenticated users request!")
         const {administrator, banned, email, lastReportDate, points} = req.query;
         let query = {};
@@ -57,7 +57,7 @@ router.get("/", async (req, res) => {
         }
         res.status(200).json(user);
     }else
-        return res.status(400).send(error("MISSING_QUERY_PARAMETER"))//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER")} )//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
 });
 router.put("/:id", async (req, res) => {
     if (LOG_MODE >= 1) console.log("Ban authenticated user request!")
@@ -66,18 +66,18 @@ router.put("/:id", async (req, res) => {
         try{
             authenticatedUser = await AuthenticatedUser.findOne({isSystem:false, _id: req.params.id});
         }catch(err){
-            return res.status(400).send(error("ID_NOT_FOUND"))//.json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
+            return res.status(400).json({ errorCode: error("ID_NOT_FOUND") })//.json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
         }
             authenticatedUser.banned = true;
         try{
             authenticatedUser.save();
         }catch(err){
-            return res.status(500).json(err);
+            return res.status(500).json({ errorMessage: err });
         }
 
         res.status(200).json(authenticatedUser);
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 router.put("/", async (req, res) => {
     if (LOG_MODE >= 1) console.log("Ban/Unban and Promote/Demote authenticated user request!")
@@ -86,7 +86,7 @@ router.put("/", async (req, res) => {
         try{
             authenticatedUser = await AuthenticatedUser.findOne({isSystem:false, _id: req.body.id});
         }catch(err){
-            return res.status(400).send(error("ID_NOT_FOUND"))//.json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
+            return res.status(400).json({ errorCode: error("ID_NOT_FOUND") })//.json({error: true, message: "ID UTENTE INSERITO INESISTENTE"});
         }
         if(req.body.editBan)
             authenticatedUser.banned = !authenticatedUser.banned;
@@ -95,21 +95,21 @@ router.put("/", async (req, res) => {
         try{
             authenticatedUser.save();
         }catch(err){
-            return res.status(500).json(err);
+            return res.status(500).json({ errorMessage: err });
         }
 
         res.status(200).json(authenticatedUser);
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.post("/",  async (req, res) => {
     if (LOG_MODE >= 1) console.log("Authentication request!")
     let authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
     if(!authenticatedUser)
-        return res.status(400).json({message: "EMAIL INSERITA INESISTENTE"});
+        return res.status(400).json({ errorCode: error("AUTHENTICATED_USER_EMAIL_NOT_FOUND") })
     if(authenticatedUser.banned)
-        return res.status(400).json({message: "UTENTE BANDITO"});
+        return res.status(400).json({ errorCode: error("AUTHENTICATED_USER_BANNED") })
 
     await bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
         if (result == true){
@@ -120,7 +120,7 @@ router.post("/",  async (req, res) => {
             res.status(200).json({ authToken: jwt.sign(payload, process.env.JWT_SECRET, options) });
         }
         else
-            res.status(400).json({message: "PASSWORD ERRATA"});
+            res.status(400).json({ errorCode: error("AUTHENTICATED_USER_BANNED") })
     });
 });
 
@@ -129,9 +129,9 @@ router.delete('/:id', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE || req.loggedUser.id == req.params.id ){
         await AuthenticatedUser.deleteOne({isSystem:false, _id: req.params.id})
         if (LOG_MODE >= 2) console.log("Authenticated user deleted!")
-        res.status(204).json({message: "UTENTE CANCELLATO"});
+        res.status(204).send();
     }else
-		return res.status(401).send(error("UNAUTHORIZED"))//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 
