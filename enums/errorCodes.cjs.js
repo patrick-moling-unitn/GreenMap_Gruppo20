@@ -10,7 +10,7 @@ const errorCodes = Object.freeze([
     "WRONG_DATA",
     "ALL_ANSWERED",
     "MISSING_QUESTION",
-    "NO_MATCHING_ID",
+    "NO_MATCHING_REPORT_ID",
     "ALREADY_RESOLVED_REPORT",
     "BANNED",
     "MISSING_TOKEN",
@@ -25,7 +25,9 @@ const errorCodes = Object.freeze([
     "REGISTRATION_CODE_EXPIRED",
     "REGISTRATION_CODE_INVALID",
     "COORDINATES_CHOOSEN_NOT_VALID",
-    "MISSING_QUESTION_OPTIONS"
+    "MISSING_QUESTION_OPTIONS",
+    "NO_MATCHING_AUTHENTICATED_USER_ID",
+    "WRONG_PASSWORD"
 ]);
 
 const getError = (errorToSearch) => (errorCodes.indexOf(errorToSearch));

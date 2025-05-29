@@ -15,7 +15,7 @@ const requestValidator = function(req, res, next) {
 	jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {			
 		if (err){
     		if (LOG_MODE >= 2) console.warn("Error while validating token: "+err)
-			return res.status(403).json({ errorCode: error("INVALID_TOKEN") })//.send({error: true, message: 'Failed to authenticate token.'});	
+			res.status(403).json({ errorCode: error("INVALID_TOKEN") })//.send({error: true, message: 'Failed to authenticate token.'});	
 		}	
 		else {
     		if (LOG_MODE >= 1) console.log("Decoded user from AuthToken: "+decoded)

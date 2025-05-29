@@ -15,6 +15,9 @@ const tableLine = "{0}==========================================================
       tableHeader = " {0}"+'\n'+
       tableLine.format("-|","|-")+'\n';
 
+const NEW_LINE_CSV = "\n", NEW_COLUMN_CSV = ",", 
+    NEW_LINE_AND_COLUMN_CSV = NEW_LINE_CSV + NEW_COLUMN_CSV
+
 class QuestionnaireUtility {
     getNotAnsweredQuestions(userAnswerList, questionList){
         return questionList.filter(question => {
@@ -34,7 +37,7 @@ class QuestionnaireUtility {
         }
         return randomQuestionList;
     }
-    getQuestionsWithAnswerData(questionList, answerList){
+    getQuestionsWithAnswerData(questionList, answerList, fullOpenAnswerData){
         questionList = questionList.map(element => {
             let newOptions = element.options, newAnswers = [];
             switch (element.questionType) {
@@ -58,7 +61,7 @@ class QuestionnaireUtility {
                 let optionIndex = questionOfAnswer.options.indexOf(answer.answer)
                 questionOfAnswer.answers[optionIndex]++;
             }else
-                questionOfAnswer.openAnswers.push(answer.answer)
+                questionOfAnswer.openAnswers.push(fullOpenAnswerData ? answer : answer.answer)
             questionOfAnswer.answerCount++;
         })
         return questionList
@@ -86,6 +89,30 @@ class QuestionnaireUtility {
             questionNumber++;
         })
         return mailText;
+    }
+    formatQuestionsForCSV(questionList){
+        let csvText = "sep="+NEW_COLUMN_CSV, questionNumber = 1;
+        questionList.forEach(question => {
+            csvText += NEW_LINE_CSV + NEW_LINE_AND_COLUMN_CSV
+            csvText += questionNumber + ") " + question.question;
+
+            csvText += NEW_LINE_AND_COLUMN_CSV + "Option" + NEW_COLUMN_CSV + "Answers"
+            if (question.questionType != QuestionType.OPEN_ENDED){
+                let i = 0;
+                question.answers.forEach(count => {
+                    csvText += NEW_LINE_AND_COLUMN_CSV + question.options[i] + NEW_COLUMN_CSV + count
+                    i++;
+                });
+            }else {
+                question.openAnswers.forEach(answer => {
+                    csvText += NEW_LINE_AND_COLUMN_CSV + answer
+                });
+            }
+            csvText += NEW_LINE_AND_COLUMN_CSV + "Total:" + NEW_COLUMN_CSV + question.answerCount
+            csvText += NEW_LINE_CSV
+            questionNumber++;
+        })
+        return csvText;
     }
 }
 

@@ -25,7 +25,9 @@ const errorCodes = Object.freeze([
     "Registration code expired!",
     "Inserted registration code is wrong!",
     "Coordinates inserted not valid!",
-    "The question type selected must contain options!"
+    "The question type selected must contain options!",
+    "The ID provided doesn't match any authenticated user!",
+    "The password submitted is wrong!"
 ]);
 
 

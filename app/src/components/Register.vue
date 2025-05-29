@@ -45,7 +45,8 @@ export default {
             },
             user: {
                 id: ''
-            }
+            },
+            VERIFICATION_ID_LOCAL_STORAGE_NAME: 'VerificationId',
         }
     },
     methods: {
@@ -73,6 +74,7 @@ export default {
               if (data)
               {
                 this.verification.id = data.id;
+                localStorage.setItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME, data.id)
               }
             }).finally(() => { console.log("Richiesta eseguita.") })
         },
@@ -95,6 +97,9 @@ export default {
                 method: "DELETE",
             })
             .then(response => console.log(response));
+        },
+        resetLocalStorageVerificationId(){
+          localStorage.setItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME, '')
         }
     },
     mounted() {
@@ -103,7 +108,12 @@ export default {
         this.form.email = '';
         this.form.password = '';
         this.verification.id = '';
+        this.resetLocalStorageVerificationId();
       })
+
+      if (localStorage.getItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME) == null)
+        this.resetLocalStorageVerificationId();
+      this.verification.id = localStorage.getItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME)
     }
 }
 </script>

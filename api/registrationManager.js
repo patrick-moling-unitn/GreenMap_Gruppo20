@@ -37,6 +37,22 @@ router.post("/",  async (req, res, next) => {
     if (req.body.email)
     {
         alreadyRegisteringEmail = await RegisteringUser.findOne({ email: req.body.email.toLowerCase()});
+        let verificationCode = alreadyRegisteringEmail ? alreadyRegisteringEmail.verificationCode : null;
+        if (verificationCode){ //IF USER IS ALREADY VERIFYING
+            if (verificationCode.expireDate<new Date()){ //IF THE VERIFICATION CODE EXPIRED DELETE THE USER
+                await RegisteringUser.deleteOne(alreadyRegisteringEmail);
+                alreadyRegisteringEmail = null;
+            }else{  //IF THE VERIFICATION CODE IS VALID CHECK THE PASSWORD AND RETURN HIS USER ID
+                bcrypt.compare(req.body.password, alreadyRegisteringEmail.passwordHash, function (err, result) {
+                    if (result == true)
+                        res.status(200).json({ id: alreadyRegisteringEmail._id });
+                    else
+                        res.status(400).json({ errorCode: error("WRONG_PASSWORD") });
+                });
+                return; //return dentro bcrypt.compare non impedisce al metodo di coninuare!
+            }
+        }
+
         if(alreadyRegisteringEmail)
             return res.status(400).json({ errorCode: error("REGISTRATING_USER_DUPLICATED_REQUEST") });
         alreadyExistingEmail = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});

@@ -13,6 +13,16 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+function sendMailWithOptions(mailOptions){
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+            if (LOG_MODE >= 1) console.warn(error);
+        } else {
+            if (LOG_MODE >= 1) console.log('Email sent: ' + info.response);
+        }
+    });
+}
+
 class MailProvider {
     sendMail(toEmail, emailSubject, emailText) {
         let mailOptions = {
@@ -21,13 +31,22 @@ class MailProvider {
             subject: emailSubject,
             text: emailText
         };
-        transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-                if (LOG_MODE >= 1) console.warn(error);
-            } else {
-                if (LOG_MODE >= 1) console.log('Email sent: ' + info.response);
-            }
-        });
+        sendMailWithOptions(mailOptions);
+    }
+    sendMailWithCSVAttachment(toEmail, emailSubject, emailText, CSVfilename, CSVcontent) {
+        let mailOptions = {
+            from: USERNAME,
+            to: toEmail,
+            subject: emailSubject,
+            text: emailText,
+            attachments: [
+                {
+                filename: CSVfilename,
+                content: CSVcontent
+                },
+            ],
+        };
+        sendMailWithOptions(mailOptions);
     }
 }
 

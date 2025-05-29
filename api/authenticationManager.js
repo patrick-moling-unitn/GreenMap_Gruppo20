@@ -111,7 +111,7 @@ router.post("/",  async (req, res) => {
     if(authenticatedUser.banned)
         return res.status(400).json({ errorCode: error("AUTHENTICATED_USER_BANNED") })
 
-    await bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
+    bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
         if (result == true){
             let options = { expiresIn: 24 * 60 * 60_000 } // expires in 24 hours
             let payload = {id: authenticatedUser._id, email: authenticatedUser.email, 
@@ -120,7 +120,7 @@ router.post("/",  async (req, res) => {
             res.status(200).json({ authToken: jwt.sign(payload, process.env.JWT_SECRET, options) });
         }
         else
-            res.status(400).json({ errorCode: error("AUTHENTICATED_USER_BANNED") })
+            res.status(400).json({ errorCode: error("WRONG_PASSWORD") })
     });
 });
 

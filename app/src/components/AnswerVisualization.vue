@@ -7,24 +7,24 @@
       <div v-for="(questionData, questionIndex) in questionAndAnswers" :key="questionIndex" :class="questionIndex == 0 ? '' : 'mt-4'">
             <h5>{{questionData.question}}</h5>
 
-            <div class="tertiary-color p-4 mt-4" v-if="questionData.question.questionType==0"> <!-- OPEN_ENDED -->
+            <div class="tertiary-color p-4 mt-4" v-if="questionData.questionType==0"> <!-- OPEN_ENDED -->
                 <div class="secondary-color mb-4 p-2 form-check form-switch">
                 <input class="form-check-input ms-1" v-model="showAnswersWithPossibleGibberish" type="checkbox" role="switch" id="switchCheck">
                 <label class="form-check-label ms-2" for="switchCheck">Show answers marked as possible gibberish</label>
                 </div>
                 <div v-for="answerData in questionData.openAnswers" class="mt-2">
                     <div v-if="answerData.gibberishLevel.$numberDecimal < GIBBERISH_WARNING_THREESHOLD || showAnswersWithPossibleGibberish">
-                    <div class="alert alert-warning d-flex align-items-center m-0" role="alert" style="height: 25px" v-if="answer.gibberishLevel.$numberDecimal > GIBBERISH_WARNING_THREESHOLD">
+                    <div class="alert alert-warning d-flex align-items-center m-0" role="alert" style="height: 25px" v-if="answerData.gibberishLevel.$numberDecimal > GIBBERISH_WARNING_THREESHOLD">
                     <svg xmlns="http://www.w3.org/2000/svg" class="bi flex-shrink-0 me-2 alert-icon" viewBox="0 0 16 16" role="img" aria-label="Warning:">
                         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
                     </svg>
                     <div>
-                        This answer could contain gibberish [{{ answerData.gibberishLevel.$numberDecimal * 100 }}%]
+                        This answer could contain gibberish [{{ (answerData.gibberishLevel.$numberDecimal * 100).toFixed(0) }}%]
                     </div>
                     </div>
                     <div class="primary-color row align-items-center">
                         <h6 class="col m-0">{{answerData.answer}}</h6>
-                        <button v-if="questionData.question.questionType==0" type="button" class="btn btn-danger col-3" @click="banIssuerWrapper(answer.issuerId)">Ban the issuer of this answer.</button>
+                        <button type="button" class="btn btn-danger col-3" @click="banIssuerWrapper(answerData.issuerId)">Ban the issuer of this answer.</button>
                     </div>
                     </div>
                 </div>

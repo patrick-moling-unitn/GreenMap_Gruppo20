@@ -15,6 +15,8 @@ const TEST_MODE=true;
 const QUESTIONNAIRE_SUBMITTED_REWARD = 1000;
 const QUESTIONNAIRE_MIN_QUESTION_COUNT = 4;
 
+const QUESTIONNAIRES_DATA_TEXT_VIA_EMAIL = false;
+
 const QUESTIONNAIRE_SUBMISSION_COOLDOWN_MIN = 1_440 //24h
 
 const API_V = process.env.API_VERSION;
@@ -56,22 +58,32 @@ router.get("/answers", async (req, res) => {
         if (req.query.method == "email" || req.query.method == "browser") {
             if (LOG_MODE >= 1) console.log("Get all submitted answers request!")
 
-            let answerList = await Answer.find({}), questionList = await Question.find({});
-            questionList = questionnaireUtility.getQuestionsWithAnswerData(questionList, answerList);
+            let answerList = await Answer.find({}), questionList = await Question.find({}),
+                includeFullOpenAnswerData = req.query.method == "browser";
+            questionList = questionnaireUtility.getQuestionsWithAnswerData(questionList, answerList, includeFullOpenAnswerData);
 
             if (LOG_MODE >= 3) console.log(questionList);
 
             if (req.query.method == "browser")
                 res.status(200).json(questionList);
             else{
-                let mailText = 'The following data shows all the questionnaire\'s answers organized by questions' + '\n';
-                mailText += questionnaireUtility.formatQuestionsForMail(questionList);
+                let mailText = "";
+                if (QUESTIONNAIRES_DATA_TEXT_VIA_EMAIL) {
+                    mailText += 'The following data shows all the questionnaire\'s answers organized by questions' + '\n';
+                    mailText += questionnaireUtility.formatQuestionsForMail(questionList);
+                }
+
+                mailText += "The questionnaire's answers data has been attached below."
+                let csvTest = questionnaireUtility.formatQuestionsForCSV(questionList);
 
                 let mailOptions = {
                     subject: '[GreenMap] Questionnaire\'s answers',
                     text: mailText
                 };
-                mailProvider.sendMail(req["loggedUser"].email, mailOptions.subject, mailOptions.text);
+                let date = new Date(), day = date.getDate(), month = date.getMonth()+1;
+                date = day+"-"+month+"-"+date.getFullYear();
+                mailProvider.sendMailWithCSVAttachment(req["loggedUser"].email, mailOptions.subject, 
+                    mailOptions.text, 'questionnaire_data_'+date+'.csv', csvTest);
 
                 res.status(200).send();
             }
