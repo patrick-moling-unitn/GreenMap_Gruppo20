@@ -1,5 +1,5 @@
 <template>
-    <AddTrashcan v-if="admin" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></AddTrashcan>
+    <TrashcanModal v-if="admin" :trashcanTypeRecieved="trashcanModal.selectedType" :mode="trashcanModal.mode" :modalTitle="trashcanModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></TrashcanModal>
     <IssueReport v-else :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></IssueReport>
     <div id="map" tabindex="0"></div>
     <div class="d-flex" style="align-items: center;">
@@ -25,21 +25,26 @@ import { onActivated, onDeactivated } from 'vue'
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import IssueReport from './IssueReport.vue'
-import AddTrashcan from './AddTrashcan.vue';
 import EventBus from '@/EventBus'
+import TrashcanModal from './TrashcanModal.vue';
 
 export default
 {
   name: 'OpenStreethMap',
   components: {
     IssueReport,
-    AddTrashcan
+    TrashcanModal
   },
   props: {
     admin: false
   },
   data() {
       return {
+          trashcanModal: {
+            mode: '',
+            title: '',
+            selectedType: ''
+          },
           mapClickPosition: {
             lat: '',
             lng: ''
@@ -77,11 +82,23 @@ export default
     },
     showGPSposition() {
       this.showGPSPositionCallback();
+    },
+    setFormattedJSONPosition(lat, lng){
+      this.mapClickPosition.lat = lat
+      this.mapClickPosition.lng = lng
+      this.formattedReportPosition = "{ "+Number(lat).toFixed(4) + ", " + Number(lng).toFixed(4)+" }"
+    },
+    updateTrashcanModal(title, trashcanType, mode){
+      this.trashcanModal.selectedType = trashcanType;
+      this.trashcanModal.title = title;
+      this.trashcanModal.mode = mode
     }
   },
   mounted()
   {
     const MAX_TRASHCAN_VIEW_DISTANCE = 1_000;
+    const MAX_REPORT_VIEW_DISTANCE = 1_000;
+
     const TRASHCAN_UPDATE_INTERVAL_MS = 500;
     const GPS_UPDATE_INTERVAL_MS = 10_000;
     
@@ -98,7 +115,11 @@ export default
         ORGANIC: 4
     });
 
-    const paperBinIcon = L.icon({
+    const reportIcon = L.icon({
+      iconUrl: './report-icon.png',
+      iconSize: [30, 30],
+    }),
+    paperBinIcon = L.icon({
       iconUrl: './paper-bin-icon.png',
       shadowUrl: './recycle-bin-hardshadow.png',
       iconSize: [35, 35],
@@ -140,9 +161,10 @@ export default
     let geolocalizationMarker;
     let requestRepeater; //fai si che il garbage collector non uccida la set timeout
 
-    let trashcansCached;
-    let lastTrashcanUpdateTime = -1;
+    let reportsCached;
+    let reportMarkers = [];
 
+    let trashcansCached;
     let trashcanMarkers = [];
 
     let mapOptions = {
@@ -172,9 +194,8 @@ export default
     
     map.on('click', (event) => {
       console.log("Map clicked: " + event.latlng)
-      this.mapClickPosition.lat = event.latlng.lat
-      this.mapClickPosition.lng = event.latlng.lng
-      this.formattedReportPosition = "{ "+event.latlng.lat.toFixed(4) + ", " + event.latlng.lng.toFixed(4)+" }"
+      this.updateTrashcanModal("Add trashcan", "", "add")
+      this.setFormattedJSONPosition(event.latlng.lat, event.latlng.lng)
 
       if (this.admin) $('#addTrashcanModal').modal('show');
       else $('#issueReportModal').modal('show');
@@ -187,6 +208,7 @@ export default
         if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("Map center coordinates:", center.lat, center.lng);
             
         requestAllTrashcans();
+        if (this.admin) requestAllReports();
     });
 
     
@@ -230,7 +252,6 @@ export default
 
       if (firstSuccess){
         SELF.geolocalized = true
-        showAllTrashcans(geolocalizedPosition);
         map.panTo(geolocalizedPosition);
       }
 
@@ -257,58 +278,96 @@ export default
         .then(response => response.json())
         .then(trashcans => { 
           if (DEBUGGING_CONSOLE_LEVEL >= 1) console.log("Get all trashcans from current position")
-          console.log(trashcans)
           trashcansCached = trashcans
-          showAllTrashcans(SELF.currentPosition)
+          trashcanMarkers = showAll(trashcansCached, trashcanMarkers)
       });
     }
 
-    function showAllTrashcans(currentPosition){
-      if (DEBUGGING_CONSOLE_LEVEL >= 3) console.log(trashcansCached)
+    function requestAllReports(){
+      fetch(`${UrlManager()}/reports/${SELF.currentPosition.lat},${SELF.currentPosition.lng}
+             ?distance=${MAX_REPORT_VIEW_DISTANCE}`, {
+            method: "GET",
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+              "x-access-token": TokenManager()
+            }
+        })
+        .then(response => response.json())
+        .then(reports => { 
+          if (DEBUGGING_CONSOLE_LEVEL >= 1) console.log("Get all reports from current position")
+          reportsCached = reports
+          reportMarkers = showAll(reportsCached, reportMarkers)
+      });
+    }
+
+    function showTrashcanInfoPanel(index) {
+      let trashcan = trashcansCached[index];
+      SELF.setFormattedJSONPosition(trashcan.latitude.
+        $numberDecimal, trashcan.longitude.$numberDecimal)
+      SELF.updateTrashcanModal("Manage trashcan", trashcan.trashcanType, "manage")
+      $('#addTrashcanModal').modal('show');
+      console.log(index)
+    }
+
+    function showReportInfoPanel(index) {
+      console.log(index)
+    }
+
+    function showAll(chachedItemList, markerList){
+      if (DEBUGGING_CONSOLE_LEVEL >= 3) console.log(chachedItemList)
              
-      let visibleTrashcanCount = 0;
-      if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("in " + trashcanMarkers.length);
-      if (trashcansCached != null && trashcansCached.length > 0){
-        visibleTrashcanCount = trashcansCached.length;
+      let visibleItemCount = 0;
+      if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("in " + markerList.length);
+      if (chachedItemList != null && chachedItemList.length > 0){
+        visibleItemCount = chachedItemList.length;
         let i = 0;
         
-        trashcansCached.forEach(element => {
+        let trashcanList = chachedItemList == trashcansCached;
+        chachedItemList.forEach(element => {
           let lat = parseFloat(element.latitude.$numberDecimal);
           let lng = parseFloat(element.longitude.$numberDecimal);
 
           let position = L.latLng(lat, lng);
           let marker;
-          if (trashcanMarkers.length > i){
-            marker = trashcanMarkers[i];
+          if (markerList.length > i){
+            marker = markerList[i];
             marker.setLatLng(position);
           }
           else{
             marker = L.marker(position);
-            trashcanMarkers.push(marker);
+            markerList.push(marker);
             marker.addTo(map);
+
+            let index = i
+            marker.on("click", trashcanList ? () => showTrashcanInfoPanel(index) : () => showReportInfoPanel(index))
           }
-          switch (element.trashcanType){
-            case TrashType.PAPER: marker.setIcon(paperBinIcon); break;
-            case TrashType.PLASTIC: marker.setIcon(plasticBinIcon); break;
-            case TrashType.RESIDUE: marker.setIcon(residueBinIcon); break;
-            case TrashType.GLASS: marker.setIcon(glassBinIcon); break;
-            case TrashType.ORGANIC: marker.setIcon(organicBinIcon); break;
-            default: console.warn("Funzionalità non implementata! (type: "+element.trashcanType+")");
+          if (trashcanList){
+            switch (element.trashcanType){
+              case TrashType.PAPER: marker.setIcon(paperBinIcon); break;
+              case TrashType.PLASTIC: marker.setIcon(plasticBinIcon); break;
+              case TrashType.RESIDUE: marker.setIcon(residueBinIcon); break;
+              case TrashType.GLASS: marker.setIcon(glassBinIcon); break;
+              case TrashType.ORGANIC: marker.setIcon(organicBinIcon); break;
+              default: console.warn("Funzionalità non implementata! (type: "+element.trashcanType+")");
+            }
           }
+          else
+            marker.setIcon(reportIcon);
 
           i++;
         });
       }
-      if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("visible " + visibleTrashcanCount);
+      if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("visible " + visibleItemCount);
       
       let j = 0;
-      if (visibleTrashcanCount < trashcanMarkers.length){
-        for (j=visibleTrashcanCount; j<trashcanMarkers.length; j++){
-          trashcanMarkers[j].removeFrom(map);
+      if (visibleItemCount < markerList.length){
+        for (j=visibleItemCount; j<markerList.length; j++){
+          markerList[j].removeFrom(map);
         }
-        trashcanMarkers = trashcanMarkers.slice(0, visibleTrashcanCount);
+        markerList = markerList.slice(0, visibleItemCount);
       }
-      if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("out " + trashcanMarkers.length);
+      if (DEBUGGING_CONSOLE_LEVEL >= 2) console.log("out " + markerList.length);
+      return markerList;
     }
 
     function randomIntFromInterval(min, max) { // massimo e minimo inclusi

@@ -1,6 +1,7 @@
 const express = require('express');
 const Report = require('../models/report');
 const router = express.Router();
+const geolibUtility = require('./getolibUtility.js');
 
 const AuthenticatedUser = require('../models/authenticatedUser');
 const error = require('../enums/errorCodes.cjs.js');
@@ -13,6 +14,25 @@ const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const ISSUE_REPORT_COOLDOWN_MIN = 1_440 //24h
 
 const API_V = process.env.API_VERSION;
+
+router.get("/:position", async (req, res, next) => {
+    if (req.query.distance){
+        if (req.loggedUser.administrator == false)
+            return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+        const [lat, lng] = req.params.position.split(',').map(Number);
+        if (LOG_MODE >= 1) console.log("Get all reports near: " + req.params.position + " max distance (meters): " + req.query.distance)
+
+        if (isNaN(lat) || isNaN(lng))
+            return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
+        
+        let userPosition = geolibUtility.latLngToJSON(lat, lng);
+
+        let reportList = await Report.find({});
+        reportList = geolibUtility.filterClosestElementsOnList(reportList, userPosition, req.query.distance);
+        res.status(200).json(reportList);
+    }else
+        next();
+});
 
 router.get("/:id", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO

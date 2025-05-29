@@ -4,7 +4,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalLabel">Add trashcan</h5>
+            <h5 class="modal-title" id="modalLabel">{{ modalTitle }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -36,7 +36,8 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="clearModal">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="addTrashcan">Submit</button>
+            <button type="button" class="btn btn-primary" v-if="mode == 'add'" @click="addTrashcan">Submit</button>
+            <button type="button" class="btn btn-success" v-else-if="mode == 'manage'" @click="addTrashcan">Update</button>
           </div>
         </div>
       </div>
@@ -56,13 +57,19 @@ export default{
       }
   },
   props: {
+    mode: String,
     position: JSON,
-    formattedPosition: String
+    formattedPosition: String,
+    modalTitle: String,
+    trashcanTypeRecieved: String
   },
   mounted(){
-    $('#addTrashcanModal').on('shown.bs.modal', () => {
-      $('latitudeInput').value = this.position.lat;
-      $('longitudeInput').value = this.position.lng;
+    $('#addTrashcanModal').on('show.bs.modal', () => {
+      this.$nextTick(() => {
+        $('latitudeInput').value = this.position.lat;
+        $('longitudeInput').value = this.position.lng;
+        this.trashcanType = this.trashcanTypeRecieved;
+      });
     });
     $('#addTrashcanModal').on('hidden.bs.modal', () => {
       $('#map').focus();

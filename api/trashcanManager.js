@@ -1,8 +1,8 @@
 const express = require('express');
 const Trashcan = require('../models/trashcan');
 const router = express.Router();
-const geolib = require("geolib");
 const error = require('../enums/errorCodes.cjs.js');
+const geolibUtility = require('./getolibUtility.js');
 
 const TEST_MODE = false;
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
@@ -33,20 +33,10 @@ router.get("/:position", async (req, res, next) => {
         if (isNaN(lat) || isNaN(lng))
             return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
         
-        let userPosition = {
-            latitude: lat,
-            longitude: lng
-        }
+        let userPosition = geolibUtility.latLngToJSON(lat, lng);
 
         let trashcanList = await Trashcan.find({});
-        trashcanList = trashcanList.filter(element => {
-            let trashcanPosition = {
-                latitude: parseFloat(element.latitude),
-                longitude: parseFloat(element.longitude)
-            }
-            return geolib.getDistance(userPosition, trashcanPosition) < req.query.distance;
-        });
-        
+        trashcanList = geolibUtility.filterClosestElementsOnList(trashcanList, userPosition, req.query.distance);
         res.status(200).json(trashcanList);
     }else if (req.query.type)
         next();
@@ -59,18 +49,16 @@ router.get("/:position", async (req, res) => {
     let trashcanList = await Trashcan.find({});
     if (LOG_MODE >= 1) console.log("Get closest trashcan near: " + req.params.position + " of type: " + req.query.type)
 
-    let smallestDistance = Number.MAX_SAFE_INTEGER;
-    let nearestTrashcan = null;
+    let userPosition = geolibUtility.latLngToJSON(userLat, userLng),
+        smallestDistance = Number.MAX_SAFE_INTEGER,
+        nearestTrashcan = null;
     trashcanList.forEach(element => {
         if (LOG_MODE >= 3) console.log("trashcan: " + element.trashcanType + " target: " + req.query.type + " cond: " + (element.trashcanType == req.query.type))
         if (element.trashcanType == req.query.type) {
             let lat = parseFloat(element.latitude);
             let lng = parseFloat(element.longitude);
 
-            let distance = geolib.getDistance(
-                { latitude: userLat, longitude: userLng },
-                { latitude: lat, longitude: lng }
-            );
+            let distance = geolibUtility.distance(userPosition, geolibUtility.latLngToJSON(lat, lng));
 
             if (distance < smallestDistance)
             {
