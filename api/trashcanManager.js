@@ -98,6 +98,23 @@ router.post("",  async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+        let trashcan = await Trashcan.findById(req.params.id);
+        if (!trashcan) 
+            return res.status(400).json({ errorCode: error("ID_NOT_FOUND") })
+
+        trashcan.trashcanType = req.body.trashcanType;
+
+        try {
+            trashcan.save();
+        } catch(err) {
+            return res.status(500).json({ errorMessage: err });
+        }
+        res.status(200).send();
+    }
+});
+
 router.delete('/:id', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
         await Trashcan.deleteOne({ _id: req.params.id });

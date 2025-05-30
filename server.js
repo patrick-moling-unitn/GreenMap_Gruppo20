@@ -31,6 +31,7 @@ app.delete(API_V+"/discounts/:id", requestValidator) //Devi essere autenticato p
 
 app.get(API_V+"/trashcans", requestValidator) //Devi essere autenticato per visualizzare tuti i cestini
 app.post(API_V+"/trashcans", requestValidator) //Devi essere autenticato per aggiungere un cestino
+app.put(API_V+"/trashcans/:id", requestValidator) //Devi essere autenticato per modificare un cestino
 app.delete(API_V+"/trashcans/:id", requestValidator) //Devi essere autenticato per rimuovere un cestino
 
 app.use(API_V+"/reports", requestValidator) //Devi essere autenticato per interagire con l'API reportManager

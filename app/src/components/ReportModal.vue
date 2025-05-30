@@ -4,24 +4,33 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalLabel">Issue Report</h5>
+            <h5 class="modal-title" id="modalLabel">{{ modalTitle }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p>Report position: {{ formattedPosition }}</p>
+            <div class="input-group mb-3">
+              <!-- <span class="input-group-text">Report position</span> -->
+              <!-- <p class="form-control m-0">{{ formattedPosition }}</p> -->
+              <span class="input-group-text">Latitude: </span>
+              <p class="form-control m-0">{{ Number(this.position.lat).toFixed(4) }}</p>
+              <span  class="input-group-text">Longitude: </span>
+              <p class="form-control m-0">{{ Number(this.position.lng).toFixed(4) }}</p>
+            </div>
             <div class="input-group mb-3">
               <label class="input-group-text" for="inputGroupSelect01">Report Type</label>
-              <select class="form-select" id="inputGroupSelect01" v-model="report.type">
+              <select v-if="mode == 'add'" class="form-select" id="inputGroupSelect01" v-model="report.type">
                 <option selected disabled value="">Choose an option...</option>
                 <option value="1">Trashcan location suggestion</option>
                 <option value="2">Trashcan position missing</option>
                 <option value="3">Trash out of place</option>
                 <option value="4">Trashcan full</option>
               </select>
+              <p v-else class="form-control m-0">{{ report.type }}</p>
             </div>
-            <div class="input-group">
-              <span class="input-group-text">Short report description</span>
-              <textarea class="form-control" aria-label="Short report description" v-model="report.description"></textarea>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Report description</span>
+              <textarea v-if="mode == 'add'" class="form-control" aria-label="Short report description" v-model="report.description"></textarea>
+              <p v-else class="form-control m-0">{{ report.description }}</p>
             </div>
             <div class="mt-3 mb-0 p-2 alert alert-danger d-flex align-items-center" role="alert" v-if="error">
               <svg xmlns="http://www.w3.org/2000/svg" class="bi flex-shrink-0 me-2 alert-icon" viewBox="0 0 16 16" role="img" aria-label="Warning:">
@@ -34,7 +43,8 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="clearReport">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="submitReport">Submit</button>
+            <button type="button" class="btn btn-primary" v-if="mode == 'add'" @click="submitReport">Submit</button>
+            <button type="button" class="btn btn-success" v-else-if="mode == 'manage'" @click="resolveReport">Resolve</button>
           </div>
         </div>
       </div>
@@ -44,6 +54,7 @@
 <script template>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
+
 export default{
   data() {
       return {
@@ -55,15 +66,33 @@ export default{
       }
   },
   props: {
+    mode: String,
     position: JSON,
-    formattedPosition: String
+    formattedPosition: String,
+    modalTitle: String,
+    recievedReport: JSON,
   },
   mounted(){
+    $('#issueReportModal').on('show.bs.modal', () => {
+      this.$nextTick(() => {
+        this.report.type = this.numberToReportType(this.recievedReport.reportType);
+        this.report.description = this.recievedReport.reportDescription;
+      });
+    });
     $('#issueReportModal').on('hidden.bs.modal', () => {
       $('#map').focus();
     });
   },
   methods: {
+    numberToReportType(number) {
+      switch (number){
+        case 1: return "Trashcan location suggestion"
+        case 2: return "Trashcan position missing"
+        case 3: return "Trash out of place"
+        case 4: return "Trashcan full"
+        default: return "Error"
+      }
+    },
     submitReport(){
       console.log(this.report.type);
       console.log(this.report.description);
@@ -96,6 +125,9 @@ export default{
         });
         this.clearReport();
       }
+    },
+    resolveReport(){
+      alert("Work in progress...")
     },
     clearReport(){
       this.report.description = '';

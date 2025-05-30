@@ -28,6 +28,7 @@
 <script default>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
+import trashcanAPIUtility from '@/trashcanAPIUtility'
 
 export default {
     data() {
@@ -61,29 +62,15 @@ export default {
                 });
             });
         },
+        updateTrashcanList(removedTrashcanId) {
+            this.trashcans = this.trashcans.filter(element => {
+                if (element.id != removedTrashcanId)
+                    return element;
+            });
+        },
         deleteTrashcan(trashcanId){
             console.log("delete: "+trashcanId)
-            fetch(`${UrlManager()}/trashcans/${trashcanId}`, {
-            method: "DELETE",
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-                "x-access-token": TokenManager()
-            }
-            })
-            .then(response => {
-            if (response.ok){
-                console.log("Deleted report!");
-                this.trashcans = this.trashcans.filter(element => {
-                    if (element.id != trashcanId)
-                        return element;
-                });
-            }else
-                return response.json()
-            })
-            .then(response => { 
-            if (response)
-                alert(response.message)
-            });
+            trashcanAPIUtility.deleteTrashcan(trashcanId, () => this.updateTrashcanList(trashcanId));
         }
     },
     mounted(){

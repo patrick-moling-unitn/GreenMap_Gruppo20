@@ -10,9 +10,11 @@
           <div class="modal-body">
             <div class="input-group mb-3">
                 <span class="input-group-text">Latitude: </span>
-                <input id="latitudeInput" type="text" class="form-control" v-model="this.position.lat" placeholder="Latitude" aria-label="Latitude">
-                <span class="input-group-text">Longitude: </span>
-                <input id="longitudeInput" type="text" class="form-control" v-model="this.position.lng" placeholder="Longitude" aria-label="Longitude">
+                <input v-if="mode == 'add'" id="latitudeInput" type="text" class="form-control" v-model="this.position.lat" placeholder="Latitude" aria-label="Latitude">
+                <p v-else class="form-control m-0">{{ Number(this.position.lat).toFixed(4) }}</p>
+                <span  class="input-group-text">Longitude: </span>
+                <input v-if="mode == 'add'" id="longitudeInput" type="text" class="form-control" v-model="this.position.lng" placeholder="Longitude" aria-label="Longitude">
+                <p v-else class="form-control m-0">{{ Number(this.position.lng).toFixed(4) }}</p>
             </div>
             <div class="input-group mb-3">
               <label class="input-group-text" for="inputGroupSelect01">Trashcan Type</label>
@@ -37,7 +39,10 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="clearModal">Cancel</button>
             <button type="button" class="btn btn-primary" v-if="mode == 'add'" @click="addTrashcan">Submit</button>
-            <button type="button" class="btn btn-success" v-else-if="mode == 'manage'" @click="addTrashcan">Update</button>
+            <div v-else-if="mode == 'manage'">
+              <button type="button" class="btn btn-danger me-2" @click="this.deleteTrashcan()">Delete</button>
+              <button type="button" class="btn btn-success" @click="this.updateTrashcan()">Update</button>
+            </div>
           </div>
         </div>
       </div>
@@ -48,6 +53,8 @@
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
+
+import trashcanAPIUtility from '@/trashcanAPIUtility'
 
 export default{
   data() {
@@ -61,14 +68,15 @@ export default{
     position: JSON,
     formattedPosition: String,
     modalTitle: String,
-    trashcanTypeRecieved: String
+    recievedTrashcan: JSON,
+    onUpdatedCallback: ''
   },
   mounted(){
     $('#addTrashcanModal').on('show.bs.modal', () => {
       this.$nextTick(() => {
         $('latitudeInput').value = this.position.lat;
         $('longitudeInput').value = this.position.lng;
-        this.trashcanType = this.trashcanTypeRecieved;
+        this.trashcanType = this.recievedTrashcan.trashcanType;
       });
     });
     $('#addTrashcanModal').on('hidden.bs.modal', () => {
@@ -76,11 +84,14 @@ export default{
     });
   },
   methods: {
+    hideModal(){
+        $('#addTrashcanModal').modal('hide');
+    },
     addTrashcan(){
       if (!this.trashcanType || isNaN(this.position.lat) || isNaN(this.position.lng)) // || !this.trashcan.description)
         this.error = true;
       else{
-        $('#addTrashcanModal').modal('hide');
+        this.hideModal();
 
         let trashcan = {
             trashcanType: this.trashcanType,
@@ -98,7 +109,7 @@ export default{
         .then(response => {
           if (response.ok){
             EventBus.emit("trashcanAdded")
-            alert("Trashcan added!")
+            console.log("Trashcan added!")
           }
           else
             return response.json()
@@ -109,6 +120,18 @@ export default{
         });
         this.clearModal();
       }
+    },
+    invokeUpdateCallback(){
+        this.onUpdatedCallback();
+        this.hideModal();
+    },
+    deleteTrashcan(){
+      let id = this.recievedTrashcan._id
+      trashcanAPIUtility.deleteTrashcan(id, this.invokeUpdateCallback);
+    },
+    updateTrashcan(){
+      let id = this.recievedTrashcan._id
+      trashcanAPIUtility.updateTrashcan(id, this.trashcanType, this.invokeUpdateCallback);
     },
     clearModal(){
       this.trashcanType = '';

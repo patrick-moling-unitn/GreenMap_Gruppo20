@@ -1,6 +1,6 @@
 <template>
-    <TrashcanModal v-if="admin" :trashcanTypeRecieved="trashcanModal.selectedType" :mode="trashcanModal.mode" :modalTitle="trashcanModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></TrashcanModal>
-    <IssueReport v-else :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></IssueReport>
+    <TrashcanModal :onUpdatedCallback="trashcanModal.updatedCallback" :recievedTrashcan="trashcanModal.selectedItem" :mode="trashcanModal.mode" :modalTitle="trashcanModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></TrashcanModal>
+    <ReportModal :recievedReport="reportModal.selectedItem" :mode="reportModal.mode" :modalTitle="reportModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></ReportModal>
     <div id="map" tabindex="0"></div>
     <div class="d-flex" style="align-items: center;">
       <div class="input-group" style="padding: 5px; max-width: 350px">
@@ -24,7 +24,7 @@ import GeolocalizationManager from '../geolocalization';
 import { onActivated, onDeactivated } from 'vue'
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
-import IssueReport from './IssueReport.vue'
+import ReportModal from './ReportModal.vue'
 import EventBus from '@/EventBus'
 import TrashcanModal from './TrashcanModal.vue';
 
@@ -32,7 +32,7 @@ export default
 {
   name: 'OpenStreethMap',
   components: {
-    IssueReport,
+    ReportModal,
     TrashcanModal
   },
   props: {
@@ -43,7 +43,13 @@ export default
           trashcanModal: {
             mode: '',
             title: '',
-            selectedType: ''
+            selectedItem: '',
+            updatedCallback: ''
+          },
+          reportModal: {
+            mode: '',
+            title: '',
+            selectedItem: '',
           },
           mapClickPosition: {
             lat: '',
@@ -88,10 +94,10 @@ export default
       this.mapClickPosition.lng = lng
       this.formattedReportPosition = "{ "+Number(lat).toFixed(4) + ", " + Number(lng).toFixed(4)+" }"
     },
-    updateTrashcanModal(title, trashcanType, mode){
-      this.trashcanModal.selectedType = trashcanType;
-      this.trashcanModal.title = title;
-      this.trashcanModal.mode = mode
+    updateModalData(modal, title, item, mode){
+      modal.selectedItem = item;
+      modal.title = title;
+      modal.mode = mode;
     }
   },
   mounted()
@@ -194,7 +200,8 @@ export default
     
     map.on('click', (event) => {
       console.log("Map clicked: " + event.latlng)
-      this.updateTrashcanModal("Add trashcan", "", "add")
+      this.updateModalData(this.trashcanModal, "Add trashcan", null, "add")
+      this.updateModalData(this.reportModal, "Issue report", null, "add")
       this.setFormattedJSONPosition(event.latlng.lat, event.latlng.lng)
 
       if (this.admin) $('#addTrashcanModal').modal('show');
@@ -304,13 +311,19 @@ export default
       let trashcan = trashcansCached[index];
       SELF.setFormattedJSONPosition(trashcan.latitude.
         $numberDecimal, trashcan.longitude.$numberDecimal)
-      SELF.updateTrashcanModal("Manage trashcan", trashcan.trashcanType, "manage")
+      SELF.updateModalData(SELF.trashcanModal, "Manage trashcan", trashcan, "manage")
+      SELF.trashcanModal.updatedCallback = requestAllTrashcans;
       $('#addTrashcanModal').modal('show');
-      console.log(index)
+      console.log(index + " showTrashcanInfoPanel")
     }
 
     function showReportInfoPanel(index) {
-      console.log(index)
+      let report = reportsCached[index];
+      SELF.setFormattedJSONPosition(report.latitude.
+        $numberDecimal, report.longitude.$numberDecimal)
+      SELF.updateModalData(SELF.reportModal, "Manage report", report, "manage")
+      $('#issueReportModal').modal('show');
+      console.log(index + " showReportInfoPanel")
     }
 
     function showAll(chachedItemList, markerList){
