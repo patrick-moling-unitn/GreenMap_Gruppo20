@@ -52,6 +52,7 @@ import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
 import QuestionType from '@enum/questionType.esm';
 import QuestionOption from '@enum/questionOption.esm';
+import errors from '@enum/errorCodes.esm';
 
     export default{
         data() {
@@ -160,7 +161,7 @@ import QuestionOption from '@enum/questionOption.esm';
                         return response.json()
                 }).then(response => {
                     if (response)
-                        alert(response.message)
+                        alert(errors[response.errorCode])
                 }).finally(() => {
                     deletionQuestion.loading = false;
                 });
@@ -189,7 +190,7 @@ import QuestionOption from '@enum/questionOption.esm';
                         //alert("Question submitted successfully!")
                     }
                     else
-                        alert(response.message)
+                        alert(errors[response.errorCode])
                 }).finally(() => {
                     newQuestion.loading = false;
                 });
@@ -218,7 +219,7 @@ import QuestionOption from '@enum/questionOption.esm';
                         return response.json()
                 }).then(response => {
                     if (response)
-                        alert(response.message)
+                        alert(errors[response.errorCode])
                 }).finally(() => {
                     updatingQuestion.loading = false;
                 });
@@ -243,7 +244,7 @@ import QuestionOption from '@enum/questionOption.esm';
                             this.addNewQuestion(resourceUrl, element.question, element.questionType, element.options);
                         });
                     }else
-                        alert(response.message)
+                        alert(errors[response.errorCode])
                 }).finally(() => {
                     this.loadingQuestions = false;
                 })

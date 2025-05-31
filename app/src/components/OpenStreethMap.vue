@@ -27,6 +27,7 @@ import UrlManager from '@/urlManager'
 import ReportModal from './ReportModal.vue'
 import EventBus from '@/EventBus'
 import TrashcanModal from './TrashcanModal.vue';
+import errors from '@enum/errorCodes.esm';
 
 export default
 {
@@ -75,7 +76,8 @@ export default
              ?type=${this.selectedTrashcanType}`)
           .then(response => {
             if (!response.ok)
-              alert("Nessun cestino del tipo selezionato trovato nelle vicinanze.");
+              //alert("Nessun cestino del tipo selezionato trovato nelle vicinanze.");
+              alert(errors[response.errorCode])
             else
               return response.json();
           })

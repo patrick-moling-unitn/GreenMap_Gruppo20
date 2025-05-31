@@ -54,6 +54,7 @@
 <script template>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
+import errors from '@enum/errorCodes.esm';
 
 export default{
   data() {
@@ -121,7 +122,7 @@ export default{
         })
         .then(response => {
           if (response)
-            alert(response.message)
+            alert(errors[response.errorCode])
         });
         this.clearReport();
       }

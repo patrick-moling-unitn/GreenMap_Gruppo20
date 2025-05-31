@@ -55,6 +55,8 @@
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import usersFunctions from '@/usersFunctions'
+import errors from '@enum/errorCodes.esm';
+
 export default{
   data() {
       return {
@@ -87,7 +89,7 @@ export default{
                 this.users=users
               }
               else
-                return
+                alert(errors[users.errorCode])
             });
         })
     },

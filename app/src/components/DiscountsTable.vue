@@ -69,6 +69,8 @@
 <script default>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
+import { ErrorCodes } from 'vue';
+import errors from '@enum/errorCodes.esm';
 
 export default {
     data() {
@@ -103,7 +105,7 @@ export default {
                     this.discounts=discounts
                 }
                 else
-                    return
+                    alert(errors[discounts.errorCode])
                 });
             });
         },
@@ -126,7 +128,7 @@ export default {
             })
             .then(response => { 
             if (response)
-                alert(response.message)
+                alert(errors[response.errorCode])
             });
         },
         addNewDiscount(){
@@ -152,7 +154,7 @@ export default {
             })
             .then(response => {
             if (response)
-                alert(response.message)
+                alert(errors[response.errorCode])
             });
         },
         getNewDiscount(){
@@ -173,7 +175,7 @@ export default {
             })
             .then(response => {
             if (response)
-                alert(response.message)
+                alert(errors[response.errorCode])
             });
         }
     },

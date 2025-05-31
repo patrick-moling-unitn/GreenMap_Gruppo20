@@ -7,9 +7,11 @@
   </form>
 </template>
 
-<script>
+<script template>
 import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
+import errors from '@enum/errorCodes.esm'
+
 export default {
     data() {
         return {
@@ -35,7 +37,7 @@ export default {
                 EventBus.emit('registered')
               }
               else{
-                alert(response.error);
+                alert(errors[response.errorCode]);
               }
             });
         }

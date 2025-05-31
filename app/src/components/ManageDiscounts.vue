@@ -4,6 +4,8 @@
 
 <script default>
 import DiscountsTable from './DiscountsTable.vue'
+import errors from '@enum/errorCodes.esm';
+
 export default {
     components: {
         DiscountsTable
@@ -26,7 +28,7 @@ export default {
                 if (!response.error)
                     this.administrator = response.administrator
                 else
-                    alert(response.message)
+                    alert(errors[response.errorCode])
             });
         }
     }

@@ -55,6 +55,7 @@ import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
 
 import trashcanAPIUtility from '@/trashcanAPIUtility'
+import errors from '@enum/errorCodes.esm';
 
 export default{
   data() {
@@ -116,7 +117,7 @@ export default{
         })
         .then(response => {
           if (response)
-            alert(response.message)
+            alert(errors[response.errorCode])
         });
         this.clearModal();
       }

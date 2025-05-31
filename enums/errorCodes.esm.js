@@ -31,4 +31,4 @@ const errorCodes = Object.freeze([
 ]);
 
 
-module.exports = errorCodes;
+export default errorCodes;

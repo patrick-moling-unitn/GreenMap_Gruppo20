@@ -20,6 +20,8 @@
 <script>
 import EventBus from '@/EventBus';
 import UrlManager from '@/urlManager'
+import errors from '@enum/errorCodes.esm';
+
 export default {
     data() {
         return {
@@ -55,6 +57,9 @@ export default {
                 EventBus.emit('loggedin', data.authToken);
                 this.form.email = '';
                 this.form.password = '';
+              }
+              else {
+                alert(errors[data.errorCode])
               }
             });
         }

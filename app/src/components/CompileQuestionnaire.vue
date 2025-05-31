@@ -57,6 +57,7 @@ import TokenManager from '@/tokenManager'
 import EventBus from '@/EventBus'
 import QuestionType from '@enum/questionType.esm';
 import QuestionOption from '@enum/questionOption.esm';
+import ErrorCodes from '@enum/errorCodes.esm';
 
     export default {
         mounted(){
@@ -119,7 +120,7 @@ import QuestionOption from '@enum/questionOption.esm';
                         answer: String,
                         gibberishLevel: Schema.Types.Decimal128 */
                     }else
-                        alert(response.errorCode)
+                        alert(ErrorCodes[response.errorCode])
                 }).finally(() =>{
                     this.loadingQuestionnaire = false;
                 });
@@ -195,7 +196,7 @@ import QuestionOption from '@enum/questionOption.esm';
                         return response.json()
                 }).then(response => {
                     if (response)
-                        alert(response.message)
+                        alert(ErrorCodes[response.errorCode])
                 });
             },
             getQuestionWith(questionId){

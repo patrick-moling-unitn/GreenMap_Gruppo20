@@ -30,6 +30,8 @@
 import EmailVerification from './EmailVerification.vue';
 import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
+import errors from '@enum/errorCodes.esm';
+
 export default {
     components: {
       EmailVerification
@@ -64,8 +66,9 @@ export default {
             })
             .then(response => {
               if (!response.ok) {
-                console.log("Errore nella risposta:", response);
-                alert("Errore nelle credenziali");
+                //console.log("Errore nella risposta:", response);
+                //alert("Errore nelle credenziali");
+                alert(errors[errorCode])
                 return;
               }
               return response.json();

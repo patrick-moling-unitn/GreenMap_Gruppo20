@@ -54,6 +54,7 @@
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import usersFunctions from '@/usersFunctions'
+import errors from '@enum/errorCodes.esm';
 export default{
   data() {
       return {
@@ -102,7 +103,7 @@ export default{
         })
         .then(response => { 
           if (response)
-            alert(response.message)
+            alert(errors[response.errorCode])
         });
     },
     deleteReport(reportId){
@@ -122,7 +123,7 @@ export default{
         })
         .then(response => { 
           if (response)
-            alert(response.message)
+            alert(errors[response.message])
         });
     },
     async banUserWrapper(issuerId){
@@ -147,7 +148,7 @@ export default{
       })
       .then(response => { 
         if (response)
-          alert(response.message)
+          alert(errors[response.errorCode])
       });
     },
     getAllReports(){
@@ -165,7 +166,7 @@ export default{
           console.log(response)
           this.reports = response;
         }else
-          alert(response.message)
+          alert(errors[response.errorCode])
       });
     },
   },
