@@ -57,7 +57,7 @@ import TokenManager from '@/tokenManager'
 import EventBus from '@/EventBus'
 import QuestionType from '@enum/questionType.esm';
 import QuestionOption from '@enum/questionOption.esm';
-import ErrorCodes from '@enum/errorCodes.esm';
+import ErrorCodes from '@enum/errorCodesDecoded.esm';
 
     export default {
         mounted(){

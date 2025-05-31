@@ -4,7 +4,7 @@
 
 <script default>
 import DiscountsTable from './DiscountsTable.vue'
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 
 export default {
     components: {

@@ -52,7 +52,7 @@ import UrlManager from '@/urlManager'
 import TokenManager from '@/tokenManager'
 import QuestionType from '@enum/questionType.esm';
 import QuestionOption from '@enum/questionOption.esm';
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 
     export default{
         data() {

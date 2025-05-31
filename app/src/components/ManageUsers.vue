@@ -55,7 +55,7 @@
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import usersFunctions from '@/usersFunctions'
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 
 export default{
   data() {

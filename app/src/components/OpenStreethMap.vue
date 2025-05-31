@@ -27,7 +27,7 @@ import UrlManager from '@/urlManager'
 import ReportModal from './ReportModal.vue'
 import EventBus from '@/EventBus'
 import TrashcanModal from './TrashcanModal.vue';
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 import { TrashcanType } from '@enum/trashcanType.ems.js'
 
 export default

@@ -48,7 +48,7 @@ import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
 import AlertMessage from './AlertMessage.vue'
 import trashcanAPIUtility from '@/trashcanAPIUtility'
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 
 export default{
   components: {

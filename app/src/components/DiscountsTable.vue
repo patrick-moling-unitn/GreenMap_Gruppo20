@@ -70,7 +70,7 @@
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import { ErrorCodes } from 'vue';
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 
 export default {
     data() {

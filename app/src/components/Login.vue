@@ -20,7 +20,7 @@
 <script>
 import EventBus from '@/EventBus';
 import UrlManager from '@/urlManager'
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 
 export default {
     data() {

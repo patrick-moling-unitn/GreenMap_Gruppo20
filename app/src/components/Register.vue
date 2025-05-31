@@ -30,7 +30,7 @@
 import EmailVerification from './EmailVerification.vue';
 import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 
 export default {
     components: {

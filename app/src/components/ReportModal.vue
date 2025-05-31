@@ -63,7 +63,7 @@
 <script template>
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
-import errors from '@enum/errorCodes.esm';
+import errors from '@enum/errorCodesDecoded.esm';
 import AlertMessage from './AlertMessage.vue'
 import usersFunctions from '@/usersFunctions'
 import reportAPIUtility from '@/reportAPIUtility'
