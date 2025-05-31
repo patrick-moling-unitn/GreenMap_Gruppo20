@@ -54,6 +54,8 @@
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import usersFunctions from '@/usersFunctions'
+import reportAPIUtility from '@/reportAPIUtility'
+
 export default{
   data() {
       return {
@@ -75,60 +77,29 @@ export default{
           switch (this.selectedReportType[self]){
             case "resolve": this.resolveReport(reportId); break;
             case "delete": this.deleteReport(reportId); break;
-            case "ban": this.banUserWrapper(issuerId); this.deleteUserReportsWrapper(issuerId); break;
+            case "ban": this.banUserWrapper(issuerId); this.deleteUserWrapper(issuerId); break;
             default: alert("Please enter a valid resolution method");
           }
         else
           alert("Please enter a valid resolution method");
     },
     resolveReport(reportId){
-      fetch(`${UrlManager()}/reports/${reportId}`, {
-          method: "PUT",
-          body: JSON.stringify({
-            resolved: true
-          }),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "x-access-token": TokenManager()
-          }
-        })
-        .then(response => {
-          if (response.ok){
-            alert("Report resolved!")
-            this.getAllReports()
-          }
-          else
-            return response.json()
-        })
-        .then(response => { 
-          if (response)
-            alert(response.message)
-        });
+      reportAPIUtility.resolveReport(reportId, this.getAllReports);
     },
     deleteReport(reportId){
-        fetch(`${UrlManager()}/reports/${reportId}?type=report`, {
-          method: "DELETE",
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "x-access-token": TokenManager()
-          }
-        })
-        .then(response => {
-          if (response.ok){
-            console.log("Deleted report!");
-            this.getAllReports()
-          }else
-            return response.json()
-        })
-        .then(response => { 
-          if (response)
-            alert(response.message)
-        });
+      reportAPIUtility.deleteReport(reportId, this.getAllReports);
     },
     async banUserWrapper(issuerId){
         const {banUnbanUser} = usersFunctions();
         await banUnbanUser(issuerId)
         this.showUsers()
+    },
+    //Wrapper perso, per errore, durante il merge del commit #474b6e321d6370ade32e0f4ab020fc7c18435053
+    //[lavoro di Matteo, commit: 92903c73b76a091cdbe400d58d9b7760cb09856e]
+    async deleteUserWrapper(self){ 
+      const {deleteUser} = usersFunctions();
+      await deleteUser(self);
+      this.showUsers()
     },
     deleteAllReports(){
       fetch(`${UrlManager()}/reports`, {
