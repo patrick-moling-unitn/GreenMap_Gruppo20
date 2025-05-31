@@ -1,6 +1,6 @@
 <template>
     <TrashcanModal :onUpdatedCallback="trashcanModal.updatedCallback" :recievedTrashcan="trashcanModal.selectedItem" :mode="trashcanModal.mode" :modalTitle="trashcanModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></TrashcanModal>
-    <ReportModal :recievedReport="reportModal.selectedItem" :mode="reportModal.mode" :modalTitle="reportModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></ReportModal>
+    <ReportModal :onAddedTrashcanCallback="trashcanModal.updatedCallback" :onUpdatedCallback="reportModal.updatedCallback" :recievedReport="reportModal.selectedItem" :mode="reportModal.mode" :modalTitle="reportModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></ReportModal>
     <div id="map" tabindex="0"></div>
     <div class="d-flex" style="align-items: center;">
       <div class="input-group" style="padding: 5px; max-width: 350px">
@@ -28,6 +28,7 @@ import ReportModal from './ReportModal.vue'
 import EventBus from '@/EventBus'
 import TrashcanModal from './TrashcanModal.vue';
 import errors from '@enum/errorCodes.esm';
+import { TrashcanType } from '@enum/trashcanType.ems.js'
 
 export default
 {
@@ -51,6 +52,7 @@ export default
             mode: '',
             title: '',
             selectedItem: '',
+            updatedCallback: ''
           },
           mapClickPosition: {
             lat: '',
@@ -115,13 +117,8 @@ export default
     
     const SELF = this;
 
-    const TrashType = Object.freeze({
-        PAPER: 0,
-        PLASTIC: 1,
-        RESIDUE: 2,
-        GLASS: 3,
-        ORGANIC: 4
-    });
+    this.trashcanModal.updatedCallback = requestAllTrashcans;
+    this.reportModal.updatedCallback = requestAllReports;
 
     const reportIcon = L.icon({
       iconUrl: './report-icon.png',
@@ -314,7 +311,6 @@ export default
       SELF.setFormattedJSONPosition(trashcan.latitude.
         $numberDecimal, trashcan.longitude.$numberDecimal)
       SELF.updateModalData(SELF.trashcanModal, "Manage trashcan", trashcan, "manage")
-      SELF.trashcanModal.updatedCallback = requestAllTrashcans;
       $('#addTrashcanModal').modal('show');
       console.log(index + " showTrashcanInfoPanel")
     }
@@ -353,16 +349,18 @@ export default
             markerList.push(marker);
             marker.addTo(map);
 
-            let index = i
-            marker.on("click", trashcanList ? () => showTrashcanInfoPanel(index) : () => showReportInfoPanel(index))
+            if (SELF.admin) {
+              let index = i
+              marker.on("click", trashcanList ? () => showTrashcanInfoPanel(index) : () => showReportInfoPanel(index))
+            }
           }
           if (trashcanList){
             switch (element.trashcanType){
-              case TrashType.PAPER: marker.setIcon(paperBinIcon); break;
-              case TrashType.PLASTIC: marker.setIcon(plasticBinIcon); break;
-              case TrashType.RESIDUE: marker.setIcon(residueBinIcon); break;
-              case TrashType.GLASS: marker.setIcon(glassBinIcon); break;
-              case TrashType.ORGANIC: marker.setIcon(organicBinIcon); break;
+              case TrashcanType.PAPER: marker.setIcon(paperBinIcon); break;
+              case TrashcanType.PLASTIC: marker.setIcon(plasticBinIcon); break;
+              case TrashcanType.RESIDUE: marker.setIcon(residueBinIcon); break;
+              case TrashcanType.GLASS: marker.setIcon(glassBinIcon); break;
+              case TrashcanType.ORGANIC: marker.setIcon(organicBinIcon); break;
               default: console.warn("Funzionalità non implementata! (type: "+element.trashcanType+")");
             }
           }
@@ -395,7 +393,7 @@ export default
         body: JSON.stringify({
           latitude: geolocalizedPosition.lat + (Math.random() - Math.random())/100,
           longitude: geolocalizedPosition.lng + (Math.random() - Math.random())/100,
-          trashcanType: randomIntFromInterval(TrashType.PAPER, TrashType.ORGANIC)
+          trashcanType: randomIntFromInterval(TrashcanType.PAPER, TrashcanType.ORGANIC)
         }),
         headers: {
           "Content-type": "application/json; charset=UTF-8",
