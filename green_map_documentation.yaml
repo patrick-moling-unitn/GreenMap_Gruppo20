@@ -9,35 +9,52 @@ servers:
     description: Optional server description, e.g. Main (production) server
 
 paths:
-  /authenticatedUser:
+  /authenticatedUsers:
     get:
-      summary: Returns a filtered list of all authenticated users. (admin only)
+      summary: Returns a filtered list of all authenticated users.
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+        - in: query
+          name: type
+          schema:
+            enum: [all, personal]
+          required: true
+          description: get "all" users (admin only) or just requesting one "personal" (any user)
         - in: query
           name: email
           schema:
             type: string
+          description: search for matching  email
           example: "user@example.com"
         - in: query
           name: banned
           schema:
             type: string
+          description: search for matching  banned status
           example: "false"
         - in: query
           name: administrator
           schema:
             type: string
+          description: search for matching  admin status
           example: "true"
         - in: query
           name: lastReportDate
           schema:
             type: string
             format: date
+          description: search for matching last report date
           example: "2025-05-19T15:53:30.784Z"
         - in: query
           name: points
           schema:
             type: integer
+          description: \[optional\] search for matching account points
           example: "0"
       responses:
         "200": # status code
@@ -47,29 +64,28 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object 
-                  properties:
-                      passwordHash:
-                        type: string
-                      email:
-                        type: string
-                      banned:
-                        type: boolean
-                      administrator:
-                        type: boolean
-                      points:
-                        type: integer
-                      lastReportIssueDate:
-                        type: string
-                        format: date
+                  $ref: '#/components/schemas/AuthenticatedUser'
                 example: # Sample data
-                  self: /authenticatedUser/abc123
-                  passwordHash: "$2a$10$abcdehashedpw"
-                  email: "user1@example.com"
-                  banned: false
-                  administrator: true
-                  points: 5
-                  lastReportIssueDate: "2025-05-19T15:53:30.784Z"
+                  [
+                    { 
+                      self: "/authenticatedUsers/abc123",
+                      passwordHash: "$2a$10$abcdehashedpw",
+                      email: "user1@example.com",
+                      banned: false,
+                      administrator: true,
+                      points: 5,
+                      lastReportIssueDate: "2025-05-19T15:53:30.784Z"
+                    },
+                    {
+                      self: "/authenticatedUsers/def456",
+                      passwordHash: "fdsoijkfds-1$%kdaAKD",
+                      email: "user2@example.com",
+                      banned: true,
+                      administrator: false,
+                      points: 0,
+                      lastReportIssueDate: null
+                    }
+                  ]
         "401":
             description: Unauthorized
             content:
@@ -92,7 +108,6 @@ paths:
                 message: "Failed to authenticate token."
     post:
       summary: Returns a JWT token if the login is successful.
-      description: Optional extended description in CommonMark or HTML.
       requestBody:
         required: true
         content:
@@ -136,10 +151,88 @@ paths:
                   summary: Wrong user credentials
                   value:
                     error: "PASSWORD ERRATA"
-  /authenticatedUser/{id}:
+    put:
+      summary: Change the ban and admin status of a user (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: string
+                editBan:
+                  type: boolean
+                editAdmin:
+                  type: boolean
+            example:
+              id: "6838a30abdf4be08ee44cc80"
+              editBan: true
+              editAdmin: false
+      responses:
+        '200':
+          description: User banned
+          content:
+            application/json:
+              example:
+                _id: "abc123"
+                email: "user@example.com"
+                banned: false
+                administrator: true
+                points: 9
+        '400':
+          description: Invalid user ID
+          content:
+            application/json:
+              example:
+                error: true
+                message: "ID UTENTE INSERITO INESISTENTE"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Database error"
+  /authenticatedUsers/{id}:
     delete:
       summary: Delete a user by id (admin only)
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: path
           name: id
           required: true
@@ -172,6 +265,12 @@ paths:
     put:
       summary: Ban a user by ID (admin only)
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: path
           name: id
           required: true
@@ -222,10 +321,16 @@ paths:
             application/json:
               example:
                 message: "Database error"
-  /register:
+  /registeringUsers:
     get:
       summary: Returns a list of all registering users.
-      description: Optional extended description in CommonMark or HTML.
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
       responses:
         "200": # status code
           description: A JSON array of RegisteringUser objects
@@ -246,7 +351,7 @@ paths:
                         expireDate:
                           type: string
                 example: # Sample data
-                  self: "/v1/registeringUsers/abc123"
+                  self: "/registeringUsers/abc123"
                   passwordHash: "DfajfkajioFUWAopa"
                   email: "example@email.com"
                   verificationCode:
@@ -273,7 +378,7 @@ paths:
                 error: true
                 message: "Failed to authenticate token."
     post:
-      summary: Register a new user or complete registration
+      summary: Register a new user or verify the registration code
       requestBody:
         required: true
         content:
@@ -289,23 +394,25 @@ paths:
                   type: string
                 code:
                   type: string
-            example:
-              email: "user@example.com"
-              password: "securePassword"
+            examples:
+              register:
+                value: { email: "user@example.com", password: "securePassword" }
+              confirmRegistration:
+                value: { id: "683c6910806994b7690f8b5d", code: "123456" }
       responses:
         "200":
           description: Registration step succeeded
           content:
             application/json:
               example:
-                id: "abc123"
+                id: "683c6910806994b7690f8b5d"
         "201":
           description: User successfully registered
           headers:
             Location:
               schema:
                 type: string
-              example: "/v1/registeringUsers/abc123"
+              example: "/v1/registeringUsers/683c6910806994b7690f8b5d"
         "400":
           description: Bad Request
           content:
@@ -343,6 +450,13 @@ paths:
                 message: "Internal server error"
     delete:
       summary: Delete all registering users (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
       responses:
         "204":
           description: All registering users deleted
@@ -366,10 +480,16 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token."
-  /registeringUser/{id}:
+  /registeringUsers/{id}:
     delete:
       summary: Delete a registering user by ID (admin only)
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: path
           name: id
           required: true
@@ -407,13 +527,19 @@ paths:
       summary: Get reports
       description: Retrieve all reports or personal reports based on query parameter.
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: query
           name: type
           schema:
             type: string
             enum: [all, personal]
           required: true
-          description: Type of reports to retrieve
+          description: get "all" reports (admin only) or just report's of requesting user "personal" (any user)
       responses:
         "200":
           description: List of reports
@@ -442,6 +568,13 @@ paths:
     post:
       summary: Create a new report
       description: Add a new report for the logged-in user
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
       requestBody:
         required: true
         content:
@@ -493,6 +626,13 @@ paths:
 
     delete:
       summary: Delete all reports (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
       responses:
         "204":
           description: All reports deleted
@@ -515,6 +655,12 @@ paths:
     get:
       summary: Get report by ID (admin only)
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: path
           name: id
           schema:
@@ -547,6 +693,12 @@ paths:
     put:
       summary: Update report resolution (admin only)
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: path
           name: id
           schema:
@@ -589,6 +741,12 @@ paths:
     delete:
       summary: Delete specific report (admin only)
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: path
           name: id
           schema:
@@ -598,12 +756,13 @@ paths:
           name: type
           schema:
             type: string
-            enum: [report]
+            enum: [report, userReports]
+          required: true
       responses:
         "204":
           description: Report deleted
         "400":
-          description: Invalid ID or missing query
+          description: Invalid ID or missing query parameter
         '401':
           description: Authentication token missing
           content:
@@ -621,84 +780,60 @@ paths:
   /reports/{userId}:
     delete:
       summary: Delete all reports of a user (admin only)
+      description: This method <b>cannot</b> be called directly! It can just be called using the <b>next()</b> function from the one above
       parameters:
         - in: path
           name: userId
           schema:
             type: string
           required: true
-        - in: query
-          name: type
-          schema:
-            type: string
-            enum: [userReports]
       responses:
         "204":
           description: All user reports deleted
         "400":
           description: Invalid user ID
-        '401':
-          description: Authentication token missing
-          content:
-            application/json:
-              example:
-                error: true
-                message: "Authentication token missing"
-        "403":
-          description: Failed to authenticate token
-          content:
-            application/json:
-              example:
-                error: true
-                message: "Failed to authenticate token." 
   /trashcans:
     get:
-      summary: Returns a list of all trashcans.
-      description: Optional extended description in CommonMark or HTML.
+      summary: Returns a list of all trashcans (admin only)
+      parameters: 
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
       responses:
         "200": # status code
           description: A JSON array of Trashcan objects
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object 
-                  properties:
-                      latitude:
-                        type: number
-                      longitude:
-                        type: number
-                      trashcanType:
-                        type: integer
+                $ref: "#/components/schemas/TrashcanResponse"
               example: # Sample data
+                self: "trashcans/681e53e28becaa63065d6115"
                 latitude: 46.06146267294853
                 longitude: 11.117831247229145
                 trashcanType: 2
     post:
-      summary: Add a new trashcan
+      summary: Add a new trashcan (admin only)
       description: Accessible by administrators or in test mode
+      parameters: 
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - latitude
-                - longitude
-                - trashcanType
-              properties:
-                latitude:
-                  type: number
-                longitude:
-                  type: number
-                trashcanType:
-                  type: string
+              $ref: "#/components/schemas/NewTrashcan"
             example:
               latitude: 45.4642
               longitude: 9.1900
-              trashcanType: "plastic"
+              trashcanType: 3
       responses:
         "201":
           description: Trashcan created
@@ -713,6 +848,12 @@ paths:
       summary: Delete a trashcan by ID (admin only)
       description: Accessible by administrators or in test mode
       parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
         - in: path
           name: id
           required: true
@@ -757,8 +898,10 @@ paths:
           name: type
           required: false
           schema:
-            type: string
-          description: Type of trashcan to find the nearest one
+            type: integer
+            minimum: 0
+            maximum: 4
+          description: Finds the closest trashcan of the selected type (work only if distance query is null)
       responses:
         "200":
           description: Trashcans found
@@ -768,22 +911,7 @@ paths:
                 oneOf:
                   - type: array
                     items:
-                      type: object
-                      properties:
-                        latitude:
-                          type: number
-                        longitude:
-                          type: number
-                        trashcanType:
-                          type: string
-                  - type: object
-                    properties:
-                      latitude:
-                        type: number
-                      longitude:
-                        type: number
-                      trashcanType:
-                        type: string
+                      $ref: "#/components/schemas/TrashcanResponse"
         "400":
           description: Invalid input or missing query parameter
           content:
@@ -802,6 +930,28 @@ paths:
           description: No matching trashcan found
 components:
   schemas:
+    AuthenticatedUser: 
+      type: object
+      properties:
+        passwordHash:
+          type: string
+        email:
+          type: string
+        banned:
+          type: boolean
+        administrator:
+          type: boolean
+        points:
+          type: integer
+        lastReportIssueDate:
+          type: string
+          format: date
+        lastQuestionnaireCompilationDate:
+          type: string
+          format: date
+        isSystem:
+          type: boolean
+  
     NewReport:
       type: object
       required:
@@ -811,7 +961,9 @@ components:
         - longitude
       properties:
         type:
-          type: string
+          type: integer
+          minimum: 0
+          maximum: 3
         description:
           type: string
         latitude:
@@ -827,7 +979,9 @@ components:
         issuerId:
           type: string
         reportType:
-          type: string
+          type: integer
+          minimum: 0
+          maximum: 3
         reportDescription:
           type: string
         latitude:
@@ -845,7 +999,9 @@ components:
         issuerId:
           type: string
         reportType:
-          type: string
+          type: integer
+          minimum: 0
+          maximum: 3
         reportDescription:
           type: string
         latitude:
@@ -854,4 +1010,35 @@ components:
           type: number
         resolved:
           type: boolean
+        
+    NewTrashcan:
+      type: object
+      required:
+        - latitude
+        - longitude
+        - trashcanType
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        trashcanType:
+          type: integer
+          minimum: 0
+          maximum: 4
+            
+        
+    TrashcanResponse:
+      type: object
+      properties:
+        self:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        trashcanType:
+          type: integer
+          minimum: 0
+          maximum: 4
     
