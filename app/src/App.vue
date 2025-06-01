@@ -22,6 +22,7 @@ import CookieManager from './cookieManager'
 
 const askedCookieConsent = ref(false)
 const administrator = ref(false)
+const id = ref('')
 const authToken = ref('')
 
 const AUTHENTICATION_TOKEN_COOKIE_NAME = "AuthenticationToken"
@@ -139,6 +140,7 @@ const loginHandler = function(newAuthToken, automaticLogin) {
   let data = parseJwt(newAuthToken);
   if (LOG_MODE >= 1) console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
   administrator.value = data.administrator;
+  id.value=data.id;
   authToken.value = newAuthToken;
   
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
@@ -152,6 +154,7 @@ const loginHandler = function(newAuthToken, automaticLogin) {
 const logoutHandler = function() {
   if (LOG_MODE >= 2) console.log(`User logged out`)
   administrator.value = false;
+  id.value = '';
   authToken.value = null;
 
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
@@ -239,7 +242,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
   </header>
   <body class="body-div">
     <KeepAlive include="OpenStreethMap">
-      <component :is="currentView" :admin="administrator"/>
+      <component :is="currentView" :admin="administrator" :accountId="id"/>
     </KeepAlive>
     <CookiePopup v-if="!askedCookieConsent"></CookiePopup>
   </body>

@@ -37,6 +37,7 @@ app.delete(API_V+"/trashcans/:id", requestValidator) //Devi essere autenticato p
 app.use(API_V+"/reports", requestValidator) //Devi essere autenticato per interagire con l'API reportManager
 
 app.get(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per ottenere gli utenti
+app.get(API_V+"/authenticatedUsers/:id/discounts", requestValidator) //Devi essere amministratore per eliminare un utente
 app.delete(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per eliminare gli utenti
 app.put(API_V+"/authenticatedUsers", requestValidator) //Devi essere amministratore per bandire gli utenti
 app.put(API_V+"/authenticatedUsers/:id", requestValidator) //Devi essere amministratore per bandire gli utenti per id

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const discountManager = require('./discountManager');
 
 const AuthenticatedUser = require('../models/authenticatedUser');
 const error = require('../enums/errorCodes.cjs.js');
@@ -12,6 +13,15 @@ const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE=false;
 
 const API_V = process.env.API_VERSION;
+router.use('/:id/discounts', async (req, res, next) => {
+    if(req.loggedUser.id == req.params.id || req.loggedUser.administrator){
+        req.issuer=req.params.id
+        next()
+    }
+    else
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+});
+router.use('/:id/discounts', discountManager)
 
 router.get("/", async (req, res, next) => {
     if(req.query.type == "all"){
