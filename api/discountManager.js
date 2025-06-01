@@ -11,11 +11,11 @@ const TEST_MODE=false;
 const API_V = process.env.API_VERSION;
 
 router.get("/", async (req, res, next) => {
-    if (req.query.type == "all" || req.query.type == "personal" ){
+    if (req.query.type == "all" || req.query.type == "personal" && req.issuer !== 'undefined'){
         if (LOG_MODE >= 1) console.log("Get all discounts request!")
         const {type, amount, isPercentage, discountType} = req.query;
         let query = {};
-        query.redeemedBy = req.query.type == "all"? null : req.loggedUser.id
+        query.redeemedBy = req.query.type == "all"? null : req.issuer
         if (discountType !== '') query.discountType = discountType;
         if (amount !== '') query.amount = {$gte: amount};
         if (isPercentage !== '') query.isPercentage = isPercentage;
@@ -36,7 +36,7 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/", async (req, res) => {
-    if (req.query.type == "new"){
+    if (req.query.type == "new" && req.issuer !== 'undefined' ){
         if (LOG_MODE >= 1) console.log("Get discount request!")
         let user = await AuthenticatedUser.findOne({_id: req.loggedUser.id});
         if(user.points<5000)

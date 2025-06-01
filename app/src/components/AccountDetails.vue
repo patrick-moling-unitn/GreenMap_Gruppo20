@@ -65,7 +65,7 @@
                     <strong>YOUR CODES</strong>
                     </div>
                     <div class="mb-4 flex-wrap gap-2">
-                        <DiscountsTable :access="'personal'" :admin="false"/>
+                        <DiscountsTable :access="'personal'" :admin="false" :self="this.user.self"/>
                     </div>
                 </div>
             </div>
