@@ -1079,22 +1079,22 @@ paths:
         content:
           application/json:
             schema:
-#NON FUNZIONA
-#BISOGNA FAR SI CHE IL JSON GLI PASSI UN ARRAY CHIAMATO "submittedAnswers"
                 anyOf:
                   - type: array
                     items:
                       $ref: '#/components/schemas/NewAnswer'
+            example:
+                answers:
+                  [
+                    {
+                      questionId: "6833420d9fed0793799c69ee",
+                      answer: "I would place more trashcans around the city",
+                      gibberishLevel: 0.5,
+                    }
+                  ]
       responses:
-        "200":
-          description: Questionnaire available
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: array
-                    items:
-                      $ref: "#/components/schemas/QuestionResponse"
+        "201":
+          description: Answers submitted
         "400":
           description: Last questionnaire compilation time is less than 24 hours
           content:
@@ -1194,6 +1194,37 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token." 
+    delete:
+      summary: Deletes all the answers to the questionnaires (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+      responses:
+        "204":
+          description: All answers deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
   /questionnaires/questions:
     get:
       summary: Returns all the questions available for the questionnaires (admin only)
@@ -1249,12 +1280,17 @@ paths:
         content:
           application/json:
             schema:
-#NON FUNZIONA
-#BISOGNA FAR SI CHE IL JSON GLI PASSI UN OGGETTO JSON CHIAMATO "question"
               oneOf:
                 - type: array
                   items:
                     $ref: '#/components/schemas/NewQuestion'
+              example:
+                question:
+                  {
+                    question: "question",
+                    questionType: 2,
+                    options: null,
+                  }
       responses:
         "201":
           description: Question created 
@@ -1263,14 +1299,18 @@ paths:
               example:
                 id: "68333c96fac44bf38c4f91ce"
         "400":
-          description: Missing question
+          description: Missing question or question options invalid
           content:
             application/json:
               examples:
-                outOfQuestions:
+                missingQuestion:
                   summary: Missing question
                   value:
                     message: "You have to submit a question!"
+                invalidOptions:
+                  summary: Invalid question options
+                  value:
+                    message: "You have to put at least 1 answer option!"
         '401':
           description: Unauthorized
           content:
@@ -1342,6 +1382,164 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token." 
+  /questionnaires/answers/{issuerId}:
+    delete:
+      summary: Deletes all the answers submitted by a specific user (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+        - in: path
+          name: issuerId
+          schema:
+            type: string
+          description: id of the user you want to remove the answers from
+          required: true
+      responses:
+        "204":
+          description: Answers of user deleted successfully 
+        "400":
+          description: User id not found
+          content:
+            application/json:
+              example:
+                message: "The specified user id is invalid!"  
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+  /questionnaires/questions/{questionId}:
+    put:
+      summary: Updates a question selected by it's id (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+        - in: path
+          name: questionId
+          schema:
+            type: string
+          description: id of the question you are updating
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/NewQuestion'
+              example:
+                question:
+                  {
+                    question: "question",
+                    questionType: 2,
+                    options: null,
+                  }
+      responses:
+        "200":
+          description: Question updated successfully
+        "400":
+          description: Missing question or question options invalid
+          content:
+            application/json:
+              examples:
+                missingQuestion:
+                  summary: Missing question
+                  value:
+                    message: "You have to submit a question!"
+                invalidOptions:
+                  summary: Invalid question options
+                  value:
+                    message: "You have to put at least 1 answer option!"      
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
+    delete:
+      summary: Deletes a question selected by it's id (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+        - in: path
+          name: questionId
+          schema:
+            type: string
+          description: id of the question you are deleting
+          required: true
+      responses:
+        "204":
+          description: Question deleted successfully 
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
     
 components:
   schemas:
