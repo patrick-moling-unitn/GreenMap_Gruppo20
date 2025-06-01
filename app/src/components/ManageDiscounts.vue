@@ -1,6 +1,5 @@
 <template>
-<p>{{self}}</p>
-<DiscountsTable :access="'all'" :admin="administrator" :self="self"/>
+<DiscountsTable :access="'all'" :admin="administrator" :accountId="accountId"/>
 </template>
 
 <script default>
@@ -9,14 +8,13 @@ export default {
     components: {
         DiscountsTable
     },
+    props:{
+        accountId: String
+    },
     data() {
-        return {
-            self:"",
-            administrator: ""
-        }
     },
     methods : {
-        
+        //
     }
 }
 </script>

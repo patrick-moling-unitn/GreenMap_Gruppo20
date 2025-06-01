@@ -84,14 +84,14 @@ export default {
             type: String,
             required: true
         },
-        self: String,
+        accountId: String,
         admin: Boolean
     },
     methods : {
         getAllDiscounts(){
             this.$nextTick(() => {
                 console.log('Dati richiesti');
-                fetch(`${UrlManager()}${this.access=="personal"?"/authenticatedUsers/"+this.self.split("/").pop():""}/discounts?type=${this.access}&discountType=${this.searchDiscount.discountType}&amount=${this.searchDiscount.amount}&isPercentage=${this.searchDiscount.isPercentage}`, {
+                fetch(`${UrlManager()}${this.access=="personal"?"/authenticatedUsers/"+this.accountId:""}/discounts?type=${this.access}&discountType=${this.searchDiscount.discountType}&amount=${this.searchDiscount.amount}&isPercentage=${this.searchDiscount.isPercentage}`, {
                     method: "GET",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8",
@@ -158,7 +158,7 @@ export default {
         },
         getNewDiscount(){
             console.log('Dati richiesti');
-            fetch(`${UrlManager()}/authenticatedUsers/${this.self.split("/").pop()}/discounts?type=new&discountType=${this.addDiscount.discountType}&amount=${this.addDiscount.amount}&isPercentage=${this.addDiscount.isPercentage}`, {
+            fetch(`${UrlManager()}/authenticatedUsers/${this.accountId}/discounts?type=new&discountType=${this.addDiscount.discountType}&amount=${this.addDiscount.amount}&isPercentage=${this.addDiscount.isPercentage}`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
@@ -178,11 +178,8 @@ export default {
             });
         }
     },
-    watch: {
-        self(newVal) {
-            if (newVal)
-                this.getAllDiscounts();
-        }
+    mounted(){
+        this.getAllDiscounts()
     },
     activated(){
         this.getAllDiscounts()

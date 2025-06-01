@@ -58,14 +58,14 @@
                         <label class="form-check-label" for="switchCheckDefault">Accept cookies</label>
                         <CookiePopup v-if="askForCookie"/>
                     </div>
-                    <button type="button" class=" mb-2 btn btn-danger" @click="confirmAction('Sei sicuro di voler eliminare l\'utente?', () => deleteUserWrapper(user.self))">Delete your account</button>
+                    <button type="button" class=" mb-2 btn btn-danger" @click="confirmAction('Sei sicuro di voler eliminare l\'utente?', () => deleteUserWrapper(accountId))">Delete your account</button>
                 </div>
                 <div class="p-4">
                     <div class="border mb-2 p-2">
                     <strong>YOUR CODES</strong>
                     </div>
                     <div class="mb-4 flex-wrap gap-2">
-                        <DiscountsTable :access="'personal'" :admin="false" :self="this.user.self"/>
+                        <DiscountsTable :access="'personal'" :admin="false" :accountId="accountId"/>
                     </div>
                 </div>
             </div>
@@ -95,9 +95,12 @@ export default{
     CookiePopup,
     DiscountsTable
   },
+  props: {
+    accountId:String
+  },
   data() {
       return {
-          user: {self: "", points:"", email:"", lastReportIssueDate: ""},
+          user: {points:"", email:"", lastReportIssueDate: ""},
           reports: [],
           reportTypes: {
             '1': "Trashcan location suggestion",
@@ -140,7 +143,6 @@ export default{
         }).then(response => response.json())
         .then(response => { 
             if (!response.error){
-                this.user.self = response.self
                 this.user.points = response.points
                 this.user.email = response.email
                 this.user.lastReportIssueDate = response.lastReportIssueDate
@@ -148,10 +150,9 @@ export default{
             alert(response.message)
         });
     },
-    async deleteUserWrapper(self){
-        let userID= self.split("/").pop();
+    async deleteUserWrapper(userId){
         const {deleteUser} = usersFunctions();
-        await deleteUser(userID)
+        await deleteUser(userId)
         EventBus.emit('loggedout');
     },
     updateCookieConsent(){
