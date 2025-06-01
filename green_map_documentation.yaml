@@ -11,7 +11,7 @@ servers:
 paths:
   /authenticatedUsers:
     get:
-      summary: Returns a filtered list of all authenticated users.
+      summary: Returns a list of all authenticated users or just the one making the request based on the query parameter "type".
       parameters:
         - in: header
           name: x-access-token
@@ -323,7 +323,7 @@ paths:
                 message: "Database error"
   /registeringUsers:
     get:
-      summary: Returns a list of all registering users.
+      summary: Returns a list of all registering users (admin only)
       parameters:
         - in: header
           name: x-access-token
@@ -378,7 +378,7 @@ paths:
                 error: true
                 message: "Failed to authenticate token."
     post:
-      summary: Register a new user or verify the registration code
+      summary: Register a new account or verify the registration code
       requestBody:
         required: true
         content:
@@ -650,10 +650,10 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token." 
-
-  /reports/{id}:
+  /reports/{position|userId}:
     get:
-      summary: Get report by ID (admin only)
+      summary: Retrieve reports near the passed position (admin only)
+      description: If the <b>query</b> parameter "distance" is <u>missing</u> the function will call <b>next()</b>
       parameters:
         - in: header
           name: x-access-token
@@ -661,6 +661,47 @@ paths:
             type: string
           description: authentication token
           required: true
+        - in: path
+          name: position|userId
+          required: true
+          schema:
+            type: string
+          description: Coordinates as "lat,lng" or UserId
+        - in: query
+          name: distance
+          required: false
+          schema:
+            type: number
+          description: Distance in meters for searching nearby reports
+      responses:
+        "200":
+          description: Reports found
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/ReportResponse"
+        "400":
+          description: Invalid input or missing query parameter
+          content:
+            application/json:
+              examples:
+                invalidCoordinates:
+                  summary: Coordinates not valid
+                  value:
+                    message: "COORDINATES NOT VALID!"
+                missingParameter:
+                  summary: Missing query parameter
+                  value:
+                    error: true
+                    message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"
+  /reports/{id}:
+    get:
+      summary: Get report by ID (admin only)
+      description: This method <b>cannot</b> be called directly! It can just be called using the <b>next()</b> function from the one above
+      parameters:
         - in: path
           name: id
           schema:
@@ -738,8 +779,10 @@ paths:
             application/json:
               example:
                 message: "Internal server error"
+  /reports/{id|userId}:
     delete:
       summary: Delete specific report (admin only)
+      description: If the <b>query</b> parameter "type" is set to <u>userReports</u> the function will call <b>next()</b>
       parameters:
         - in: header
           name: x-access-token
@@ -748,9 +791,10 @@ paths:
           description: authentication token
           required: true
         - in: path
-          name: id
+          name: id|userId
           schema:
             type: string
+          description: Either an id of a report or one of a user
           required: true
         - in: query
           name: type
@@ -876,6 +920,56 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token." 
+    put:
+      summary: Update trashcan type (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trashcanType:
+                  type: integer
+                  minimum: 0
+                  maximum: 4
+      responses:
+        "200":
+          description: Trashcan updated
+        "400":
+          description: Invalid ID
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
 
   /trashcans/{position}:
     get:
@@ -928,6 +1022,327 @@ paths:
                     message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"
         "404":
           description: No matching trashcan found
+  /questionnaires:
+    get:
+      summary: Returns a new set of questions to compile if successful
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+      responses:
+        "200":
+          description: Questionnaire available
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/QuestionResponse"
+        "400":
+          description: No available questions
+          content:
+            application/json:
+              examples:
+                outOfQuestions:
+                  summary: No available questions
+                  value:
+                    message: "You have answered all the questions available!"
+        '401':
+          description: Authentication token missing
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+    post:
+      summary: Submits the answers and rewards the user if successful
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+#NON FUNZIONA
+#BISOGNA FAR SI CHE IL JSON GLI PASSI UN ARRAY CHIAMATO "submittedAnswers"
+                anyOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/NewAnswer'
+      responses:
+        "200":
+          description: Questionnaire available
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/QuestionResponse"
+        "400":
+          description: Last questionnaire compilation time is less than 24 hours
+          content:
+            application/json:
+              examples:
+                outOfQuestions:
+                  summary: Submitting too early
+                  value:
+                    message: "You have sumbitted a questionnaire less than 24 hours ago. Try again later!"
+        '401':
+          description: Authentication token missing or user not found
+          content:
+            application/json:
+                examples:
+                  authTokenMissing:
+                    summary: Authentication token missing
+                    value:
+                      message: "Authentication token missing"
+                  userNotFound:
+                    summary: User not found
+                    value:
+                      message: "Requesting user not found!"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
+  /questionnaires/answers:
+    get:
+      summary: Returns all the answers submitted by the users or sends them to the requester's email based on the query parameter "method" (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+        - in: query
+          name: method
+          schema:
+            enum: [browser, email]
+          description: authentication token
+          required: true
+      responses:
+        "200":
+          description: Answers retrieved
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/QuestionWithAnswerResponse"
+                    example: 
+                      self: "/questionnaires/answers/68333c96fac44bf38c4f91ce"
+                      question: "What would you do to improve the city of trento?"
+                      questionType: 3
+                      options: [ "Yes", "No" ]
+                      answers: [ 3, 2 ]
+                      openAnswers: null
+                      answerCount: 5
+        "400":
+          description: Missing query parameter
+          content:
+            application/json:
+              examples:
+                missingQueryParameter:
+                  summary: Missing query parameter
+                  value:
+                    error: true
+                    message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+  /questionnaires/questions:
+    get:
+      summary: Returns all the questions available for the questionnaires (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+      responses:
+        "200":
+          description: Questions retrieved
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/QuestionResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+                
+    post:
+      summary: Adds a new question for the questionnaires (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+#NON FUNZIONA
+#BISOGNA FAR SI CHE IL JSON GLI PASSI UN OGGETTO JSON CHIAMATO "question"
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/NewQuestion'
+      responses:
+        "201":
+          description: Question created 
+          content:
+            application/json:
+              example:
+                id: "68333c96fac44bf38c4f91ce"
+        "400":
+          description: Missing question
+          content:
+            application/json:
+              examples:
+                outOfQuestions:
+                  summary: Missing question
+                  value:
+                    message: "You have to submit a question!"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
+  /questionnaires/answers/{questionId}:
+    get:
+      summary: Returns all the answers given to a certain question (admin only)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+        - in: path
+          name: questionId
+          schema:
+            type: string
+          description: id of the question you are searching the answers for
+          required: true
+      responses:
+        "200":
+          description: Answers of question retrieved
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/AnswerResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        "403":
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token." 
+    
 components:
   schemas:
     AuthenticatedUser: 
@@ -1041,4 +1456,85 @@ components:
           type: integer
           minimum: 0
           maximum: 4
+
+    QuestionResponse:
+      type: object
+      properties:
+        self:
+          type: string
+        question:
+          type: string
+        questionType:
+          type: integer
+          minimum: 0
+          maximum: 3
+        options:
+          type: array
+          items:
+            type: string
+
+    NewQuestion:
+      type: object
+      properties:
+        question:
+          type: string
+        questionType:
+          type: integer
+          minimum: 0
+          maximum: 3
+        options:
+          type: array
+          items:
+            type: string
+
+    QuestionWithAnswerResponse:
+      type: object
+      properties:
+        self:
+          type: string
+        question:
+          type: string
+        questionType:
+          type: integer
+          minimum: 0
+          maximum: 3
+        options:
+          type: array
+          items:
+            type: string
+        answers:
+          type: array
+          items:
+            type: string
+        openAnswers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnswerResponse"
+        answerCount:
+          type: integer
+          minimum: 0
+          
+    AnswerResponse:
+      type: object
+      properties:
+        self:
+          type: string
+        submitterId:
+          type: string
+        questionId:
+          type: string
+        answer:
+          type: string
+        gibberishLevel:
+          type: number
+
+    NewAnswer:
+      type: object
+      properties:
+        questionId:
+          type: string
+        answer:
+          type: string
+        gibberishLevel:
+          type: number
     
