@@ -33,7 +33,7 @@ const CookieManagerClass = new CookieManager();
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE = false
 
-let API_VERSION = "/api/v1"
+let API_VERSION = "/api/v2"
 let BASE_URL = "http://localhost:3000"
 
 if (LOG_MODE >= 2)  

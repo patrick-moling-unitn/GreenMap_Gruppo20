@@ -23,3 +23,10 @@ Come avviare il server
 + è necessario copiare il contenuto del file *.env.example*, incollarlo nel file *.env* e compilare il campo **DATABASE_URL** inserendo le proprie credenziali.
 + inserire il comando *npm run dev* per avviare il servizio backend del server.
 + in base alla porta scelta aprire il browser ed inserire *localhost:PORT* per interagire col servizio
+
+Come creare una test suite
++ creare un nuovo file **yourTestSuite.test.js** dentro la cartella *.../GreenMap_Gruppo20/test_suites*
++ copiare il contenuto presente nel file **templateSuite.test.js**
++ sostituire i valori template (e.g.: <METHOD_UPPER_CASE>) con i valori desiderati (e.g.: API_METHOD = GET)
++ sostituire il methodo *post* a linea 28 con il metodo desiderato (get, put, delete, ...) che coinciderà con *METHOD_UPPER_CASE*
++ inserire il comando *npm run test* per avviare i casi di test e vederne i risultati sulla console

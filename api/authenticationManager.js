@@ -123,7 +123,7 @@ router.post("/",  async (req, res) => {
 
     bcrypt.compare(req.body.password, authenticatedUser.passwordHash, function(err, result) {
         if (result == true){
-            let options = { expiresIn: 24 * 60 * 60_000 } // expires in 24 hours
+            let options = { expiresIn: 86_400 } // expires in 24 hours
             let payload = {id: authenticatedUser._id, email: authenticatedUser.email, 
                 administrator: authenticatedUser.administrator, expiresIn: options.expiresIn}
             //console.log(jwt.sign(payload, process.env.JWT_SECRET, options))
