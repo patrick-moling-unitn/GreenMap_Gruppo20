@@ -96,7 +96,8 @@ router.post("",  async (req, res) => {
         if (LOG_MODE >= 1) console.log('Trashcan saved successfully!');
 
         res.location(API_V + "trashcans/" + trashcanId).status(201).send();
-    }
+    }else
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.put('/:id', async (req, res) => {
@@ -113,7 +114,8 @@ router.put('/:id', async (req, res) => {
             return res.status(500).json({ errorMessage: err });
         }
         res.status(200).send();
-    }
+    }else
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 router.delete('/:id', async (req, res) => {
@@ -121,7 +123,8 @@ router.delete('/:id', async (req, res) => {
         await Trashcan.deleteOne({ _id: req.params.id });
         if (LOG_MODE >= 1) console.log('Trashcan removed!')
         res.status(204).send()
-    }
+    }else
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
 });
 
 

@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:3000/api/v1/
+  - url: http://localhost:3000/api/v2/
     description: Optional server description, e.g. Main (production) server
 
 paths:
@@ -717,12 +717,18 @@ paths:
         "400":
           description: Invalid ID
         '401':
-          description: Authentication token missing
+          description: Unauthorized
           content:
             application/json:
-              example:
-                error: true
-                message: "Authentication token missing"
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
         "403":
           description: Failed to authenticate token
           content:
@@ -760,12 +766,18 @@ paths:
         "400":
           description: Already resolved or invalid ID
         '401':
-          description: Authentication token missing
+          description: Unauthorized
           content:
             application/json:
-              example:
-                error: true
-                message: "Authentication token missing"
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
         "403":
           description: Failed to authenticate token
           content:
@@ -808,12 +820,18 @@ paths:
         "400":
           description: Invalid ID or missing query parameter
         '401':
-          description: Authentication token missing
+          description: Unauthorized
           content:
             application/json:
-              example:
-                error: true
-                message: "Authentication token missing"
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
         "403":
           description: Failed to authenticate token
           content:
@@ -836,6 +854,19 @@ paths:
           description: All user reports deleted
         "400":
           description: Invalid user ID
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
   /trashcans:
     get:
       summary: Returns a list of all trashcans (admin only)
@@ -886,6 +917,19 @@ paths:
               schema:
                 type: string
               example: "/v1/trashcans/abc123"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
 
   /trashcans/{id}:
     delete:
@@ -907,12 +951,18 @@ paths:
         '204':
           description: Trashcan deleted
         '401':
-          description: Authentication token missing
+          description: Unauthorized
           content:
             application/json:
-              example:
-                error: true
-                message: "Authentication token missing"
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
         "403":
           description: Failed to authenticate token
           content:
@@ -951,12 +1001,18 @@ paths:
         "400":
           description: Invalid ID
         '401':
-          description: Authentication token missing
+          description: Unauthorized
           content:
             application/json:
-              example:
-                error: true
-                message: "Authentication token missing"
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
         "403":
           description: Failed to authenticate token
           content:
@@ -1540,7 +1596,167 @@ paths:
             application/json:
               example:
                 message: "Internal server error"
-    
+  /discounts:
+    get:
+      summary: Get discounts (all, personal, or new)
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [all, personal, new]
+          required: true
+        - in: query
+          name: amount
+          schema:
+            type: number
+        - in: query
+          name: isPercentage
+          schema:
+            type: boolean
+        - in: query
+          name: discountType
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of discounts
+          content:
+            application/json:
+              example:
+                - self: /discounts/64a7fc90b4a3e8bdbb90a1f0
+                  discountType: Steam
+                  amount: 10
+                  isPercentage: true
+                  code: "##################"
+        '201':
+          description: Discount successfully redeemed
+        '400':
+          description: Missing query parameters or out of stock
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+        '500':
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
+    post:
+      summary: Create a new discount
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                discountType:
+                  type: string
+                amount:
+                  type: number
+                isPercentage:
+                  type: boolean
+                code:
+                  type: string
+      responses:
+        '201':
+          description: Discount created
+        '400':
+          description: Wrong data
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+    delete:
+      summary: Delete all user-redeemed discounts
+      responses:
+        '204':
+          description: Discounts deleted
+  /discounts/{id}:
+    delete:
+      summary: Delete a discount by ID
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Discount deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                UserNotAdmin:
+                  summary: User is not administrator
+                  value:
+                    error: "Requesting user is not an administrator!"
+                UserNotAuthenticated:
+                  summary: User does not have an authentication token
+                  value:
+                    error: "Authentication token missing"
+        '403':
+          description: Failed to authenticate token
+          content:
+            application/json:
+              example:
+                error: true
+                message: "Failed to authenticate token."
+
 components:
   schemas:
     AuthenticatedUser: 
