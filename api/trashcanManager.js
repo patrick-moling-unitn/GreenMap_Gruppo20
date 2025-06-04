@@ -6,6 +6,7 @@ const geolibUtility = require('./getolibUtility.js');
 
 const TEST_MODE = false;
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
+const SIMULATE_NO_TRASHCANS_IN_DB = false
 
 const API_V = process.env.API_VERSION;
 
@@ -46,7 +47,7 @@ router.get("/:position", async (req, res, next) => {
 
 router.get("/:position", async (req, res) => {
     const [userLat, userLng] = req.params.position.split(',').map(Number);
-    let trashcanList = await Trashcan.find({});
+    let trashcanList = SIMULATE_NO_TRASHCANS_IN_DB ? [] : await Trashcan.find({});
     if (LOG_MODE >= 1) console.log("Get closest trashcan near: " + req.params.position + " of type: " + req.query.type)
 
     let userPosition = geolibUtility.latLngToJSON(userLat, userLng),

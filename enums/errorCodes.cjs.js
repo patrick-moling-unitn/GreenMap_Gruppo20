@@ -27,7 +27,8 @@ const errorCodes = Object.freeze([
     "COORDINATES_CHOOSEN_NOT_VALID",
     "MISSING_QUESTION_OPTIONS",
     "NO_MATCHING_AUTHENTICATED_USER_ID",
-    "WRONG_PASSWORD"
+    "WRONG_PASSWORD",
+    "NOT_FOUND"
 ]);
 
 const getError = (errorToSearch) => (errorCodes.indexOf(errorToSearch));

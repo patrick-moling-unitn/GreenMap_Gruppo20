@@ -27,7 +27,8 @@ const errorCodes = Object.freeze([
     "Coordinates inserted not valid!",
     "The question type selected must contain options!",
     "The ID provided doesn't match any authenticated user!",
-    "The password submitted is wrong!"
+    "The password submitted is wrong!",
+    "The searched item was not found."
 ]);
 
 
