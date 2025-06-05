@@ -16,11 +16,7 @@
           <td>
             <select class="form-select" v-model="addDiscount.discountType">
                 <option :value="''">Select</option>
-                <option :value='0'>Fragrance</option>
-                <option :value="1">Toys</option>
-                <option :value="2">Steam</option>
-                <option :value="3">Amazon</option>
-                <option :value="4">Supermarket</option>
+                <option v-for="(discountType,index) in discountTypes" :value='index'>{{discountType}}</option>
             </select></td>
           <td><input type="number" class="form-control" v-model="addDiscount.amount" placeholder="0"/></td>
           <td>
@@ -37,11 +33,7 @@
           <td>
             <select class="form-select" v-model="searchDiscount.discountType" @change="getAllDiscounts">
                 <option :value="''">Select</option>
-                <option :value='0'>Fragrance</option>
-                <option :value="1">Toys</option>
-                <option :value="2">Steam</option>
-                <option :value="3">Amazon</option>
-                <option :value="4">Supermarket</option>
+                <option v-for="(discountType,index) in discountTypes" :value='index'>{{discountType}}</option>
             </select></td>
           <td><input type="number" class="form-control" v-model="searchDiscount.amount" @input="getAllDiscounts" placeholder="0"/></td>
           <td>
@@ -70,13 +62,14 @@
 import TokenManager from '@/tokenManager'
 import UrlManager from '@/urlManager'
 import { ErrorCodes } from 'vue';
+import discountType from '@enum/discountType.esm';
 import errors from '@enum/errorCodesDecoded.esm';
 
 export default {
     data() {
       return {
         discounts: [],
-        discountTypes: ["Fragrance","Toys","Steam","Amazon","Supermarket"],
+        discountTypes: discountType,
         addDiscount: {discountType:'', amount:'', isPercentage:'', code:''},
         searchDiscount: {discountType:'', amount:'', isPercentage:'', code:''}
       }

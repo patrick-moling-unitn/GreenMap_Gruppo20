@@ -3,6 +3,7 @@ const router = express.Router();
 const mailProvider = require('./mailProvider')
 const AuthenticatedUser = require('../models/authenticatedUser');
 const Discount = require('../models/discount');
+const DiscountTypes = require('../enums/discountType.cjs')
 const error = require('../enums/errorCodes.cjs.js');
 
 const LOG_MODE = 1; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
@@ -57,11 +58,10 @@ router.get("/", async (req, res) => {
         }
         user.points = user.points-5000;
         discount.redeemedBy =user._id;
-        const discountTypes= ["Fragrance","Toys","Steam","Amazon","Supermarket"]
         let mailOptions = {
             subject: '[GreenMap] Your redeemed code',
             text: `Your redeemed code is: ${discount.code}\n`+
-                  `The amount is ${discount.amount}${discount.isPercentage?"%":"€"} valid only for ${discountTypes[discount.discountType]}\n`
+                  `The amount is ${discount.amount}${discount.isPercentage?"%":"€"} valid only for ${DiscountTypes[discount.discountType]}\n`
         };
         try{
             mailProvider.sendMail(user.email, mailOptions.subject, mailOptions.text);
