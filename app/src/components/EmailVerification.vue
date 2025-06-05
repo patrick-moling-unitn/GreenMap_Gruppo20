@@ -23,10 +23,9 @@ export default {
     },
     methods: {
         verifyCode() {
-            fetch(`${UrlManager()}/registeringUsers`, {
+            fetch(`${UrlManager()}/registeringUsers/${this.userId}/code`, {
                 method: "POST",
                 body: JSON.stringify({
-                    id: this.userId,
                     code: this.code
                 }),
                 headers: {

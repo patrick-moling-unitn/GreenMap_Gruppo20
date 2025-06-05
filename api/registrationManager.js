@@ -34,8 +34,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/",  async (req, res, next) => {
-    if (req.body.email)
-    {
+    if(req.path == "/"){
         alreadyRegisteringEmail = await RegisteringUser.findOne({ email: req.body.email.toLowerCase()});
         let verificationCode = alreadyRegisteringEmail ? alreadyRegisteringEmail.verificationCode : null;
         if (verificationCode){ //IF USER IS ALREADY VERIFYING
@@ -78,7 +77,7 @@ router.post("/",  async (req, res, next) => {
         mailProvider.sendMail(req.body.email, mailOptions.subject, mailOptions.text);
         try{
             await reguser.save();
-            return res.status(200).json({id: reguser._id});
+            res.location(API_V + '/registeringUsers/' + reguser._id).status(201).json({id: reguser._id});
         }catch(err){
             return res.status(500).json({ errorMessage: err });
         }
@@ -86,12 +85,12 @@ router.post("/",  async (req, res, next) => {
         next();
 });
 
-router.post("/",  async (req, res, next) => {
-    const verifyinguser = await RegisteringUser.findById(req.body.id);
+router.post("/:id/code",  async (req, res, next) => {
+    const verifyinguser = await RegisteringUser.findById(req.params.id);
     if(!verifyinguser)
         return res.status(400).json({ errorCode: error("INVALID_REGISTRATION_REQUEST") });
     if(verifyinguser.verificationCode.expireDate<new Date()){
-        await RegisteringUser.deleteOne({ _id: req.body.id });
+        await RegisteringUser.deleteOne({ _id: req.params.id });
         return res.status(400).json({ errorCode: error("REGISTRATION_CODE_EXPIRED") });
     }
     if(verifyinguser.verificationCode.code != req.body.code)
@@ -100,7 +99,7 @@ router.post("/",  async (req, res, next) => {
     next();
 });
 
-router.post("/",  async (req, res) => {
+router.post("/:id/code",  async (req, res) => {
     const newuser = req['registeringUser'];
 	let user = new AuthenticatedUser({
         email: newuser.email,
@@ -109,11 +108,11 @@ router.post("/",  async (req, res) => {
         banned: false,
         passwordHash: newuser.passwordHash
     });
-    await RegisteringUser.deleteOne({_id: req.body.id});
+    await RegisteringUser.deleteOne({_id: req.params.id});
     try{
         await user.save();
         if (LOG_MODE >= 1) console.log('Registering user created!');
-        return res.location(API_V + '/registeringUsers/' + user.id).status(201).send();
+        return res.location(API_V + '/authenticatedUsers/' + user._id).status(201).send();
     }catch(err){
         return res.status(500).json({ errorMessage: err });
     }

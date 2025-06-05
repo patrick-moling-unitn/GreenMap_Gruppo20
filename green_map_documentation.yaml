@@ -378,7 +378,7 @@ paths:
                 error: true
                 message: "Failed to authenticate token."
     post:
-      summary: Register a new account or verify the registration code
+      summary: Register a new account
       requestBody:
         required: true
         content:
@@ -390,29 +390,22 @@ paths:
                   type: string
                 password:
                   type: string
-                id:
-                  type: string
-                code:
-                  type: string
-            examples:
-              register:
-                value: { email: "user@example.com", password: "securePassword" }
-              confirmRegistration:
-                value: { id: "683c6910806994b7690f8b5d", code: "123456" }
+            example:
+              email: "user@example.com"
+              password: "securePassword"
       responses:
-        "200":
-          description: Registration step succeeded
-          content:
-            application/json:
-              example:
-                id: "683c6910806994b7690f8b5d"
         "201":
-          description: User successfully registered
+          description: Registration step succeeded
           headers:
             Location:
               schema:
                 type: string
-              example: "/v1/registeringUsers/683c6910806994b7690f8b5d"
+                format: uri
+              example: /api/v1/registeringUsers/683c6910806994b7690f8b5d
+          content:
+            application/json:
+              example:
+                id: "683c6910806994b7690f8b5d"
         "400":
           description: Bad Request
           content:
@@ -430,18 +423,6 @@ paths:
                   summary: Password too short
                   value:
                     error: "password too short"
-                wrongCode:
-                  summary: Wrong verification code
-                  value:
-                    error: "wrong code"
-                timeExpired:
-                  summary: Verification time expired
-                  value:
-                    error: "time expired"
-                notFound:
-                  summary: User ID not found
-                  value:
-                    error: "user not existing"
         "500":
           description: Server error
           content:
@@ -480,6 +461,59 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token."
+  /registeringUsers/{id}/code:
+    post:
+      summary: Verify the registration code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the registering user
+          schema:
+            type: string
+          example: "683c6910806994b7690f8b5d"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+            example:
+              code: "123456"
+      responses:
+        "201":
+          description: User successfully registered
+          headers:
+            Location:
+              schema:
+                type: string
+              example: "/v1/authenticatedUsers/683c6910806994b7690f8b5d"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                wrongCode:
+                  summary: Wrong verification code
+                  value:
+                    error: "wrong code"
+                timeExpired:
+                  summary: Verification time expired
+                  value:
+                    error: "time expired"
+                notFound:
+                  summary: User ID not found
+                  value:
+                    error: "user not existing"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              example:
+                message: "Internal server error"
   /registeringUsers/{id}:
     delete:
       summary: Delete a registering user by ID (admin only)
