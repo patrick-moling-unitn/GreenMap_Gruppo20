@@ -9,7 +9,7 @@ let apiRequest = testUtility.formatRequestJSON("GET", "trashcans/190,190",
 
 xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //FAIL: GOT STATUS CODE 200
     beforeAll( () => testUtility.connectToDatabase(jest, app) );
-    afterAll( testUtility.closeDatabaseConnection );
+    afterAll(async () => await testUtility.closeDatabaseConnection());
 
     let expectedHttpCode = 400, expectedHttpJSON = { errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") }
 
@@ -26,7 +26,7 @@ apiRequest = testUtility.formatRequestJSON("GET", "trashcans/0,0",
 
 xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //OK
     beforeAll( () => testUtility.connectToDatabase(jest, app) );
-    afterAll( testUtility.closeDatabaseConnection );
+    afterAll(async () => await testUtility.closeDatabaseConnection());
 
     let expectedHttpCode = 200, expectedHttpJSON = { }
 
@@ -46,7 +46,7 @@ apiRequest = testUtility.formatRequestJSON("GET", "trashcans/0,0",
 
 xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //OK
     beforeAll( () => testUtility.connectToDatabase(jest, app) );
-    afterAll( testUtility.closeDatabaseConnection );
+    afterAll(async () => await testUtility.closeDatabaseConnection());
 
     let expectedHttpCode = 404, expectedHttpJSON = { }
 
@@ -63,7 +63,7 @@ apiRequest = testUtility.formatRequestJSON("GET", "trashcans/0,0",
 
 xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //OK
     beforeAll( () => testUtility.connectToDatabase(jest, app) );
-    afterAll( testUtility.closeDatabaseConnection );
+    afterAll(async () => await testUtility.closeDatabaseConnection());
 
     let expectedHttpCode = 404, expectedHttpJSON = { }
 
