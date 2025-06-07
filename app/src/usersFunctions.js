@@ -62,14 +62,13 @@ export default function usersFunctions(){
         deleteUserAnswers(userId)
       ])
       .then(() => {
-        return fetch(`${UrlManager()}/authenticatedUsers`,{
+        return fetch(`${UrlManager()}/authenticatedUsers/${userId}`,{
             method: "PUT",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
                 "x-access-token": TokenManager()
             },
             body: JSON.stringify({
-                id: userId,
                 editAdmin: false,
                 editBan: true
             })

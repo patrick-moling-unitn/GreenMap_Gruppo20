@@ -107,14 +107,13 @@ export default{
     },
     promoteDemoteUser(self){
         let userID= self.split("/").pop();
-        fetch(`${UrlManager()}/authenticatedUsers`,{
+        fetch(`${UrlManager()}/authenticatedUsers/${userID}`,{
             method: "PUT",
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
                 "x-access-token": TokenManager()
             },
             body: JSON.stringify({
-                id: userID,
                 editAdmin: true,
                 editBan: false
             })

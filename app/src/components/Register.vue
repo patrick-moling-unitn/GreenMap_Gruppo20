@@ -1,5 +1,5 @@
 <template>
-  <EmailVerification v-if="this.verification.id" :userId="this.verification.id"/>
+  <EmailVerification v-if="this.verification.id" :userId="this.verification.id" :resetUserIdCallback="this.resetUserIdCallback"/>
   <div v-else>
     <h1>Register new account</h1>
     <form @submit.prevent="handleSubmit">
@@ -48,6 +48,7 @@ export default {
             user: {
                 id: ''
             },
+            resetUserIdCallback: '',
             VERIFICATION_ID_LOCAL_STORAGE_NAME: 'VerificationId',
         }
     },
@@ -65,20 +66,15 @@ export default {
                 }
             })
             .then(response => {
-              if (!response.ok) {
-                //console.log("Errore nella risposta:", response);
-                //alert("Errore nelle credenziali");
-                alert(errors[errorCode])
-                return;
-              }
               return response.json();
             })
             .then(data => {
-              if (data)
+              if (!data.errorCode)
               {
                 this.verification.id = data.id;
                 localStorage.setItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME, data.id)
-              }
+              }else
+                alert(errors[data.errorCode])
             }).finally(() => { console.log("Richiesta eseguita.") })
         },
         showAllUsers(){
@@ -106,13 +102,14 @@ export default {
         }
     },
     mounted() {
-      EventBus.on('registered', () => {
+      this.resetUserIdCallback = () => {
         console.log('resetUserID')
         this.form.email = '';
         this.form.password = '';
         this.verification.id = '';
-        this.resetLocalStorageVerificationId();
-      })
+        this.resetLocalStorageVerificationId()
+      };
+      EventBus.on('registered', this.resetUserIdCallback)
 
       if (localStorage.getItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME) == null)
         this.resetLocalStorageVerificationId();

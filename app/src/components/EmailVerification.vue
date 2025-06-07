@@ -19,10 +19,12 @@ export default {
         }
     },
     props: {
-        userId: String
+        userId: String,
+        resetUserIdCallback: ''
     },
     methods: {
         verifyCode() {
+            console.log(this.userId)
             fetch(`${UrlManager()}/registeringUsers/${this.userId}/code`, {
                 method: "POST",
                 body: JSON.stringify({
@@ -32,17 +34,16 @@ export default {
                     "Content-type": "application/json; charset=UTF-8"
                 }
             }).then(response => {
-              if(response.ok){
+              if(response.ok)
                 EventBus.emit('registered')
-              }
-              else{
-                alert(errors[response.errorCode]);
-              }
+              else
+                return response.json();
+            }).then(response => {
+              if (errors[response.errorCode] == "Invalid registration request!")
+                this.resetUserIdCallback(); //the userId is invalid. We need to reset it!
+              alert(errors[response.errorCode]);
             });
         }
-    },
-    mounted() {
-        //
     }
 }
 </script>

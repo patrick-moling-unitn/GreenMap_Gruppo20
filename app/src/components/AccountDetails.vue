@@ -128,9 +128,9 @@ export default{
         }).then(response => response.json())
         .then(response => { 
             if (!response.error){
-            this.reports = response;
+                this.reports = response;
             }else
-            alert(response.message)
+                alert(response.message)
         });
     },
     getPersonalData(){

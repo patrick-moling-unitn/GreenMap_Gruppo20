@@ -17,6 +17,15 @@ const TEST_MODE = true;
 
 const API_V = process.env.API_VERSION;
 
+/**
+ * RELATIVE PATH)
+ *  .../registratingUsers/
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, 
+ *  to get all registering users
+ * SUCCESSFUL RETURNS)
+ *  usersList: the list of all registrating users
+ */
 router.get("/", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         if (LOG_MODE >= 1) console.log("Get all registering user request!")
@@ -30,11 +39,23 @@ router.get("/", async (req, res) => {
         });
         res.status(200).json(usersList);
     }else
-		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
-router.post("/",  async (req, res, next) => {
-    if(req.path == "/"){
+/**
+ * RELATIVE PATH)
+ *  .../registratingUsers/
+ * DESCRIPTION)
+ *  the method permits an anonymous requesting user to start
+ *  the registration process of a new account
+ * PARAMS)
+ *  body.email: the email which you want to register the account with
+ *  body.password: the password you want to associate with the account
+ * SUCCESSFUL RETURNS)
+ *  id: the identifier of the registering user used by the client for the confirmation
+ */
+router.post("/",  async (req, res) => {
+    //Errore precedente: pensare che /registeringUsers/REG_USER_ID/code venisse indirizzato a questo metodo. E' falso!
         alreadyRegisteringEmail = await RegisteringUser.findOne({ email: req.body.email.toLowerCase()});
         let verificationCode = alreadyRegisteringEmail ? alreadyRegisteringEmail.verificationCode : null;
         if (verificationCode){ //IF USER IS ALREADY VERIFYING
@@ -81,10 +102,20 @@ router.post("/",  async (req, res, next) => {
         }catch(err){
             return res.status(500).json({ errorMessage: err });
         }
-    }else 
-        next();
 });
 
+/**
+ * RELATIVE PATH)
+ *  .../registratingUsers/REG_USER_IDENTIFIER/code
+ * DESCRIPTION)
+ *  the method permits an anonymous requesting user, having a user identifier, to complete
+ *  the registration request of his account by confirming the code sent to his personal email
+ * PARAMS)
+ *  id: the user identifier of the account you want to confirm the registration
+ *  body.code: the code that was sent to your email adress
+ * NOTES)
+ *  the method proceeds executing below if previous checks are successful
+ */
 router.post("/:id/code",  async (req, res, next) => {
     const verifyinguser = await RegisteringUser.findById(req.params.id);
     if(!verifyinguser)
@@ -99,6 +130,13 @@ router.post("/:id/code",  async (req, res, next) => {
     next();
 });
 
+/**
+ * DESCRIPTION)
+ *  the method converts the registering user into a new authenticated user since
+ *  it has verified the code above. The temporary registrating user will be deleted.
+ * NOTES)
+ *  the method shares the parameters of the one above
+ */
 router.post("/:id/code",  async (req, res) => {
     const newuser = req['registeringUser'];
 	let user = new AuthenticatedUser({
@@ -118,22 +156,38 @@ router.post("/:id/code",  async (req, res) => {
     }
 });
 
+/**
+ * RELATIVE PATH)
+ *  .../registratingUsers/REG_USER_IDENTIFIER
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to
+ *  delete a user who's carrying a registration process
+ * PARAMS)
+ *  id: the user identifier of the account you want to delete
+ */
 router.delete('/:id', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         await AuthenticatedUser.deleteOne({ _id: req.params.id });
         if (LOG_MODE >= 1) console.log('Registering user removed!');
         res.status(204).send();
     }else
-		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
+/**
+ * RELATIVE PATH)
+ *  .../registratingUsers/
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to
+ *  delete all users carrying a registration process
+ */
 router.delete('/', async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         await RegisteringUser.deleteMany({})
         if (LOG_MODE >= 1) console.log('All registering users removed!');
         res.status(204).send();
     }else
-		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
 module.exports = router;

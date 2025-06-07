@@ -74,11 +74,15 @@ router.get("/", async (req, res) => {
  *  query.method: discriminates the request method the user wants to make
  *                either by sending the answers via email "email" or returning
  *                the list of questions with answers "browser"
+ *  query.questionId: if the query parameter exists the method gets forwarded to 
+ *                    the next one to handle the retrieval of answers per questionId
  * SUCCESSFUL RETURNS)
  *  questionList: the list of questions containing the answers and statistics
  */
 router.get("/answers", async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){
+    if (req.loggedUser.administrator == false && !TEST_MODE)
+        res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+    else if (!req.query.questionId) {
         if (req.query.method == "email" || req.query.method == "browser") {
             if (LOG_MODE >= 1) console.log("Get all submitted answers request!")
 
@@ -114,20 +118,25 @@ router.get("/answers", async (req, res) => {
         }else
             return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+        next(); //CONTINUES BELOW<!!!>
 });
 
 /**
- * DA CORREGGERE.....
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to get all
+ *  answers submitted by the users only to a specific answer
+ * PARAMS)
+ *  query.questionId: the identifier of the question you want to get all answers from 
+ * SUCCESSFUL RETURNS)
+ *  answerList: the list of answers given to the corrisponding question id
+ * NOTES)
+ *  we checked if the user is administrator above so there's no need to do that again
  */
-router.get("/answers/:questionId", async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){
-        if (LOG_MODE >= 1) console.log("Get all submitted answers to a specific question request!")
+router.get("/answers", async (req, res) => {
+    if (LOG_MODE >= 1) console.log("Get all submitted answers to a specific question request!")
 
-        let answerList = await Answer.find({questionId: req.params.questionId});
-        res.status(200).json(answerList);
-    }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+    let answerList = await Answer.find({questionId: req.query.questionId});
+    res.status(200).json(answerList);
 });
 
 /**
@@ -328,37 +337,44 @@ router.delete("/questions/:questionId",  async (req, res) => {
 });
 
 /**
- * DA CORREGGERE.....
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, 
+ *  to delete all answers submitted by a specific user
+ * PARAMS)
+ *  query.issuerId: the identifier of the user you want to get all answers from.
+ *                  If not specified the method gets forwarded to the next one 
+ *                  to handle the deletion of all the submitted answers.
  */
 //[lavoro di raffaele, commit: d1f1ba8d7c44647c32c0218da98a90f4a129ff01]
-router.delete("answers/:issuerId", async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){
-        if (LOG_MODE >= 1) console.log("Delete all answers of user " + req.params.issuerId);
+router.delete("/answers", async (req, res) => {
+    if (req.loggedUser.administrator == false && !TEST_MODE)
+        res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+    else if (req.query.issuerId){
+        if (LOG_MODE >= 1) console.log("Delete all answers of user " + req.query.issuerId);
 
         try {
-            await Answer.deleteMany({ submitterId: req.params.issuerId })
+            await Answer.deleteMany({ submitterId: req.query.issuerId })
         }catch(err){
             return res.status(400).json({ errorCode: error("ID_NOT_FOUND") })
         }
         res.status(204).send();
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+        next(); //CONTINUES BELOW<!!!>
 });
 
 /**
  * RELATIVE PATH)
  *  .../questionnaires/answers
  * DESCRIPTION)
- *  the method permits a requesting user, if administrator, to 
- *  delete all questionnaire's answers
+ *  the method permits a requesting user, if administrator, 
+ *  to delete all questionnaire's answers
+ * NOTES)
+ *  we checked if the user is administrator above so there's no need to do that again
  */
 router.delete("/answers",  async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){
-        await Answer.deleteMany({})
-        if (LOG_MODE >= 1) console.log('All questionnaire\'s answers removed!');
-        res.status(204).send();
-    }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+    await Answer.deleteMany({})
+    if (LOG_MODE >= 1) console.log('All questionnaire\'s answers removed!');
+    res.status(204).send();
 });
 
 module.exports = router;

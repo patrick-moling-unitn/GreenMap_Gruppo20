@@ -113,8 +113,8 @@ router.get("/", async (req, res) => {
  *  (i.e. admin@gmail.com is the only System user)
  * PARAMS)
  *  id: identifier of the user whose account you want to manage
- *  body.editBan: wether the ban status of a user should be flipped (true<=>false)
- *  body.editAdmin: wether the admin status of a user should be flipped (true<=>false)
+ *  body.editBan: whether the ban status of a user should be flipped (true<=>false)
+ *  body.editAdmin: whether the admin status of a user should be flipped (true<=>false)
  * SUCCESSFUL RETURNS)
  *  authenticatedUser: the edited user
  */
@@ -149,8 +149,8 @@ router.put("/:id", async (req, res) => {
  *  the method permits an anonymous requesting user to execute a login
  *  request by passing email and password
  * PARAMS)
- *  query.type: discriminates the type of request the user wants to make
- *              either getting "all" or "personal" user information
+ *  body.email: the email of the account trying to log into
+ *  body.password: the password of the account trying to log into
  * SUCCESSFUL RETURNS)
  *  authToken: the token that will from now on be used from the client to authenticate requests
  */
