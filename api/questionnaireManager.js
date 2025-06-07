@@ -11,6 +11,7 @@ const error = require('../enums/errorCodes.cjs.js');
 
 const LOG_MODE = 2; //0: NONE; 1: MINIMAL; 2: MEDIUM; 3: HIGH
 const TEST_MODE=true;
+const EXECUTE_QUESTIONNAIRE_REQUEST_BENCHMARK=true;
 
 const QUESTIONNAIRE_SUBMITTED_REWARD = 1000;
 const QUESTIONNAIRE_MIN_QUESTION_COUNT = 4;
@@ -21,16 +22,27 @@ const QUESTIONNAIRE_SUBMISSION_COOLDOWN_MIN = 1_440 //24h
 
 const API_V = process.env.API_VERSION;
 
-//GET A QUESTIONNAIRE (N RANDOM QUESTIONS) TO COMPILE 
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/
+ * DESCRIPTION)
+ *  the method permits a requesting user to recieve a new questionnaire if there 
+ *  are questions available (i.e. there are at least MIN_QUESTION_COUNT questions)
+ * SUCCESSFUL RETURNS)
+ *  questionList: the list of randomly choosen questions (i.e. a questionnaire)
+ */
 router.get("/", async (req, res) => {
-    let start = new Date(Date.now());
-    if (LOG_MODE >= 2) console.log("[Get questionnaire] request started at "+ (start.getSeconds() * 1000 + start.getMilliseconds()))
+    let start;
+    if (EXECUTE_QUESTIONNAIRE_REQUEST_BENCHMARK){
+        start = new Date(Date.now());
+        console.log("[Get questionnaire] request started at "+ (start.getSeconds() * 1000 + start.getMilliseconds()));
+    }
     let questionList = await Question.find({}),
     userAnswerList = await Answer.find({submitterId: req["loggedUser"].id});
 
     questionList = questionnaireUtility.getNotAnsweredQuestions(userAnswerList, questionList);
 
-    if (LOG_MODE >= 2){
+    if (EXECUTE_QUESTIONNAIRE_REQUEST_BENCHMARK){
         let finish = new Date(Date.now());
         console.log("[Get questionnaire] request finished at "+(finish.getSeconds() * 1000 + finish.getMilliseconds()));
         console.warn("Query speed: "+(finish - start)+"ms");
@@ -41,7 +53,7 @@ router.get("/", async (req, res) => {
     if (questionList != null){ // getRandomQuestions restituisce null se  numberOfQuestions > questionList.length
         questionList = questionList.map(element => {
             return {
-                self: API_V + '/questionnaires/' + element._id,
+                self: API_V + '/questionnaires/questions/' + element._id,
                 question: element.question,
                 questionType: element.questionType,
                 options: element.options,
@@ -52,7 +64,19 @@ router.get("/", async (req, res) => {
         res.status(400).json({ errorCode: error("ALL_ANSWERED") })
 });
 
-//GET ALL ANSWERS
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/answers
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to get all
+ *  answers submitted by the users who compiled questionnaires
+ * PARAMS)
+ *  query.method: discriminates the request method the user wants to make
+ *                either by sending the answers via email "email" or returning
+ *                the list of questions with answers "browser"
+ * SUCCESSFUL RETURNS)
+ *  questionList: the list of questions containing the answers and statistics
+ */
 router.get("/answers", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         if (req.query.method == "email" || req.query.method == "browser") {
@@ -88,31 +112,14 @@ router.get("/answers", async (req, res) => {
                 res.status(200).send();
             }
         }else
-            return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+            return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
-//GET ALL QUESTIONS
-router.get("/questions", async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){
-        if (LOG_MODE >= 1) console.log("Get all questions request!")
-
-        let questionsList = await Question.find({});
-        questionsList = questionsList.map((element) => {
-            return {
-                self: API_V + '/questionnaires/' + element._id,
-                question: element.question,
-                questionType: element.questionType,
-                options: element.options
-            };
-        });
-        res.status(200).json(questionsList);
-    }else 
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
-});
-
-//GET ALL ANSWERS TO A CERTAIN QUESTION
+/**
+ * DA CORREGGERE.....
+ */
 router.get("/answers/:questionId", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         if (LOG_MODE >= 1) console.log("Get all submitted answers to a specific question request!")
@@ -120,10 +127,45 @@ router.get("/answers/:questionId", async (req, res) => {
         let answerList = await Answer.find({questionId: req.params.questionId});
         res.status(200).json(answerList);
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
-//SUBMIT A QUESTIONNAIRE 
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/questions
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to get all
+ *  the questions currently available for questionnaires
+ * SUCCESSFUL RETURNS)
+ *  questionList: the list of questions
+ */
+router.get("/questions", async (req, res) => {
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        if (LOG_MODE >= 1) console.log("Get all questions request!")
+
+        let questionsList = await Question.find({});
+        questionsList = questionsList.map((element) => {
+            return {
+                self: API_V + '/questionnaires/questions/' + element._id,
+                question: element.question,
+                questionType: element.questionType,
+                options: element.options
+            };
+        });
+        res.status(200).json(questionsList);
+    }else 
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+});
+
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/
+ * DESCRIPTION)
+ *  the method permits a requesting user to submit questionnaire's answers if 
+ *  the last submission time was done more than SUBMISSION_COOLDOWN_MIN minutes ago
+ * SUCCESSFUL RETURNS)
+ *  questionList: the list of randomly choosen questions (i.e. a questionnaire)
+ */
 router.post("/",  async (req, res) => {
     if (LOG_MODE >= 1) console.log("Compile questionnaire request!")
 
@@ -164,28 +206,38 @@ router.post("/",  async (req, res) => {
             user.points += QUESTIONNAIRE_SUBMITTED_REWARD;
             await user.save();
 
-            return res.location(API_V+"/questionnaires/"+answer._id+"?type=answer").status(201).send();
+            return res.location(API_V+"/questionnaires/answers/"+answer._id).status(201).send();
         } catch (err){
             return res.status(500).json({ errorMessage: err});
         }
     }else
-        return res.status(401).json({ errorCode: error("USER_NOT_FOUND") })//.json({error: true, message: "THE USER WHO SUBMITTED THE ANSWERS DOESN'T EXIST ON THE DATABASE!"});
+        return res.status(401).json({ errorCode: error("USER_NOT_FOUND") })
 });
 
 //Extract options from a question. Returns -1 if options are not valid.
 function getOptionsFromQuestion(question){
     if (question.questionType == QuestionType.CLOSE_ENDED){
-        if (question.options)
+        if (question.options) //Se la risposta è di tipo chiuso DOBBIAMO avere opzioni valide
             return question.options;
         else
             return -1;
     }
-    return null;
+    return null; //Se la risposta non è di tipo chiuso non ci interessano le opzioni
 }
 
-//POST A NEW QUESTIONS
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/questions
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to submit a new questionnaire's
+ *  question if valid that will from now on be used for questionnaires
+ * PARAMS)
+ *  body.question: contains the text of the question, the questionType and question's options
+ * SUCCESSFUL RETURNS)
+ *  id: the identifier of the question just created used by the client for eventual updates
+ */
 router.post("/questions",  async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE) //TEST MODE: ACCESSIBILE IN OGNI CASO
+    if (req.loggedUser.administrator == true || TEST_MODE)
     {
         let submittedQuestion = req.body.question;
         if (submittedQuestion){
@@ -201,18 +253,28 @@ router.post("/questions",  async (req, res) => {
             try {
                 await question.save();
                 console.log("Question saved successfully");
-                return res.location(API_V+"/questionnaires/"+question._id+"?type=question").status(201).json({id: question._id});
+                return res.location(API_V+"/questionnaires/questions/"+question._id).status(201).json({id: question._id});
             } catch(err) {
                 return res.status(500).json({errorMessage: err});
             }
         }
         else
-            return res.status(400).json({ errorCode: error("MISSING_QUESTION") })//.json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
+            return res.status(400).json({ errorCode: error("MISSING_QUESTION") })
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
-//Aggiorna una question con del nuovo testo, tipo di domanda oppure opzioni fornite dall'amministratore
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/questions/QUESTION_IDENTIFIER
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to 
+ *  update an existing questionnaire's question
+ * PARAMS)
+ *  questionId: identifier of the question which properties you want to change
+ *  body.question: contains the updated text of the question, the new questionType 
+ *                 and question's options
+ */
 router.put("/questions/:questionId",  async (req, res) => {
     let submittedQuestion = req.body.question;
     if (submittedQuestion){
@@ -238,10 +300,18 @@ router.put("/questions/:questionId",  async (req, res) => {
         }
     }
     else
-        return res.status(400).json({ errorCode: error("MISSING_QUESTION") })//.json({error: true, message: "NON E' STATA PASSATA UNA QUESTION AL METODO!"});
+        return res.status(400).json({ errorCode: error("MISSING_QUESTION") })
 });
 
-//Cancella una question e tutte le sue risposte a cascata
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/questions/QUESTION_IDENTIFIER
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to delete 
+ *  an existing questionnaire's question and all its cascading answers
+ * PARAMS)
+ *  questionId: identifier of the question that you want to delete
+ */
 router.delete("/questions/:questionId",  async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         try {
@@ -254,11 +324,13 @@ router.delete("/questions/:questionId",  async (req, res) => {
         if (LOG_MODE >= 1) console.log('Question successfully removed!');
         res.status(204).send();    
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
+/**
+ * DA CORREGGERE.....
+ */
 //[lavoro di raffaele, commit: d1f1ba8d7c44647c32c0218da98a90f4a129ff01]
-//Cancella tutte le risposte di un certo utente a cascata 
 router.delete("answers/:issuerId", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         if (LOG_MODE >= 1) console.log("Delete all answers of user " + req.params.issuerId);
@@ -266,21 +338,27 @@ router.delete("answers/:issuerId", async (req, res) => {
         try {
             await Answer.deleteMany({ submitterId: req.params.issuerId })
         }catch(err){
-            return res.status(400).json({ errorCode: error("ID_NOT_FOUND") })//.json({error: true, message: "ID not found."});
+            return res.status(400).json({ errorCode: error("ID_NOT_FOUND") })
         }
         res.status(204).send();
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
-//DELETE ALL ANSWERS
+/**
+ * RELATIVE PATH)
+ *  .../questionnaires/answers
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to 
+ *  delete all questionnaire's answers
+ */
 router.delete("/answers",  async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
         await Answer.deleteMany({})
         if (LOG_MODE >= 1) console.log('All questionnaire\'s answers removed!');
         res.status(204).send();
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
 module.exports = router;
