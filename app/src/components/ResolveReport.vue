@@ -103,7 +103,7 @@ export default{
       this.showUsers()
     },
     deleteAllReports(){
-      fetch(`${UrlManager()}/reports`, {
+      fetch(`${UrlManager()}/reports?type=all`, {
         method: "DELETE",
         headers: {
           "Content-type": "application/json; charset=UTF-8",

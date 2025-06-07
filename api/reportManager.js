@@ -15,6 +15,9 @@ const ISSUE_REPORT_COOLDOWN_MIN = 1_440 //24h
 
 const API_V = process.env.API_VERSION;
 
+/**
+ * In attesa della conferma dal professore...
+ */
 router.get("/:position", async (req, res, next) => {
     if (req.query.distance){
         if (req.loggedUser.administrator == false)
@@ -34,22 +37,37 @@ router.get("/:position", async (req, res, next) => {
         next();
 });
 
+/**
+ * In attesa della conferma dal professore...
+ */
 router.get("/:id", async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+    if (req.loggedUser.administrator == true || TEST_MODE){
         if (LOG_MODE >= 1) console.log("get report request")
         let report = await Report.findById(req.params.id);
         if (!report)
-            return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
+            return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
 
         res.status(200).json(report);
     }else
-        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
-//GET ALL REPORTS
+/**
+ * RELATIVE PATH)
+ *  .../reports/
+ * DESCRIPTION)
+ *  the method permits a requesting user to get his personal reports or, 
+ *  if administrator, the get the reports of all users
+ * PARAMS)
+ *  query.type: discriminates the request method the user wants to make
+ *              either by returning the reports submitted by all users "all"
+ *              or forwarding the request to the next method "personal"
+ * SUCCESSFUL RETURNS)
+ *  reportList: the list of reports submitted by all users
+ */
 router.get("/", async (req, res, next) => {
     if (req.query.type == "all"){
-        if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+        if (req.loggedUser.administrator == true || TEST_MODE){
             if (LOG_MODE >= 1) console.log("get all reports request")
             let reportList = await Report.find({});
             reportList = reportList.map((report) => {
@@ -65,14 +83,19 @@ router.get("/", async (req, res, next) => {
             });
             res.status(200).json(reportList);
         }else
-		    return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+		    return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
     }else if (req.query.type == "personal")
-        next();
+        next(); //CONTINUES BELOW<!!!>
     else
-        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
+        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })
 });
 
-//GET PERSONAL REPORTS
+/**
+ * DESCRIPTION)
+ *  the method permits a requesting user to get his personal reports
+ * SUCCESSFUL RETURNS)
+ *  reportList: the list of reports submitted by the user who's making the request
+ */
 router.get("/", async (req, res) => {
     if (LOG_MODE >= 1) console.log("get all reports request from", req.loggedUser.id)
 
@@ -92,29 +115,46 @@ router.get("/", async (req, res) => {
 });
 
 
-//UPDATE EXISTING REPORT RESOLUTION
+/**
+ * RELATIVE PATH)
+ *  .../reports/REPORT_IDENTIFIER
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to update
+ *  a report resolution status. It's split in 2 methods to reduce complexity
+ * PARAMS)
+ *  id: the identifier of the report to update
+ *  body.resolved: the resolution status that you want to set
+ */
 router.put("/:id",  async (req, res, next) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+    if (req.loggedUser.administrator == true || TEST_MODE){
         if (LOG_MODE >= 1) console.log("put report request from user "+req.loggedUser.email)
 
         let report;
         try{
             report = await Report.findById(req.params.id)
         }catch(err){
-            return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
+            return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
         }
 
         req.report = report;
         
         next(); //CONTINUES BELOW<!!!>
     }else
-		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
+		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
-//CONTINUES HERE<!!!> WE CHECKED ABOVE THE ADMIN STATUS. NO NEED TO DOUBLE CHECK.
+/**
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to update a report 
+ *  resolution and rewards the user who's submitted the report (if body.resolved
+ *  is set to true)
+ * NOTES)
+ *  we checked if the user is administrator above so there's no need to do that again.
+ *  The method shares the parameters of the one above
+ */
 router.put("/:id",  async (req, res) => {
     if (req.report.resolved == req.body.resolved)
-        return res.status(400).json({ errorCode: error("ALREADY_RESOLVED_REPORT") })//.json({error: true, message: "IL REPORT E' GIA' STATO RISOLTO"});
+        return res.status(400).json({ errorCode: error("ALREADY_RESOLVED_REPORT") })
     req.report.resolved = req.body.resolved;
 
     if (req.report.resolved){
@@ -128,7 +168,7 @@ router.put("/:id",  async (req, res) => {
             }
         }
         else
-            return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })//.json({error: true, message: "NON ESISTE PROPRIETARIO DEL REPORT"});
+            return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
     }
     
     try{
@@ -144,17 +184,28 @@ router.put("/:id",  async (req, res) => {
     res.location(API_V + "reports/" + reportId).status(200).send();
 });
 
-//ADD NEW REPORT
+/**
+ * RELATIVE PATH)
+ *  .../reports/
+ * DESCRIPTION)
+ *  the method permits a requesting user to submit a new report if 
+ *  the last submission time is more than REPORT_COOLDOWN_MIN minutes ago
+ * PARAMS)
+ *  body.type: the type of report submitted
+ *  body.description: the description of the report submitted
+ *  body.latitude: the first coordinate of the report submitted
+ *  body.longitude: the second coordinate of the report submitted
+ */
 router.post("",  async (req, res) => {
     if (LOG_MODE >= 1) console.log("post report request from user "+req.loggedUser.email)
 
     let user = await AuthenticatedUser.findById(req.loggedUser.id)
     if (!user) 
-        return res.status(500).json({ errorCode: error("NO_MATCHING_REPORT_ID") })//.json("Non è possibile risalire all'utente autenticato");
+        return res.status(500).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
     if (user.banned)
-        return res.status(401).json({ errorCode: error("BANNED") })//.json({error: true, message: "SEI STATO BANNATO E NON PUOI INVIARE REPORT!"});
+        return res.status(401).json({ errorCode: error("BANNED") })
     
-    if (user.lastReportIssueDate && !TEST_MODE) { //TEST MODE: ACCESSIBILE IN OGNI CASO
+    if (user.lastReportIssueDate && !TEST_MODE) {
         let difference = user.lastReportIssueDate.getTime() + ISSUE_REPORT_COOLDOWN_MIN * 60_000 - Date.now()
         if (difference > 0){
             let remainingMinutes = difference / 60_000;
@@ -191,46 +242,71 @@ router.post("",  async (req, res) => {
     res.location("reports/" + reportId).status(201).send();
 });
 
-//DELETE REPORT
+/**
+ * RELATIVE PATH)
+ *  .../reports/REPORT_IDENTIFIER
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to delete a specific report by id
+ * PARAMS)
+ *  id: the identifier of the report to delete
+ */
 router.delete('/:id', async (req, res, next) => {
-    if (req.loggedUser.administrator == true  || (req.query.type == "userReports" && req.loggedUser.id == req.params.id) || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
-        if (req.query.type == "report"){
+    if (req.query.type == "report"){
+        if (req.loggedUser.administrator == true || TEST_MODE){
             if (LOG_MODE >= 1) console.log("delete report request from user "+req.loggedUser.email)
 
             try{
                 await Report.deleteOne({ _id: req.params.id });
             }catch(err){
-                return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })//.json({error: true, message: "L'ID INSERITO NON CORRISPONDE A NESSUN REPORT"});
+                return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
             }
             if (LOG_MODE >= 2) console.log('report removed')
             res.status(204).send()
-        }else if (req.query.type == "userReports")
-            next();
-        else
-            return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })//.json({error: true, message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"});
-    }else
-		return res.status(401).json({ errorCode: error("UNAUTHORIZED") })//.json({error: true, message: 'Requesting user is not an administrator!'});
-});
-
-//DELETE REPORTS OF USERID
-router.delete('/:userId', async (req, res) => { 
-    // SOPRA C'E' LA NEXT QUINDI NON SERVE IL CONTROLLO DELLE CREDENZIALI QUI!
-    // !- NB: SAPPIAMO GIA' CHE CHI ARRIVA QUA DENTRO E' UN ADMIN -!
-    if (LOG_MODE >= 1) console.log("delete reports of user " + req.params.userId + " request from user "+req.loggedUser.email)
-    
-    try{
-        await Report.deleteMany({ issuerId: req.params.userId });
-    }catch(err){
-        return res.status(400).json({ errorCode: error("NO_MATCHING_AUTHENTICATED_USER_ID") });
+        }else
+		    return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
     }
-
-    if (LOG_MODE >= 2) console.log('all reports of requested user deleted')
-    res.status(204).send()
+    else
+        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })
 });
 
-//DELETE ALL REPORTS
+/**
+ * RELATIVE PATH)
+ *  .../reports/
+ * DESCRIPTION)
+ *  the method permits a requesting user to delete all his reports or, if administrator,
+ *  to delete all the reports submitted either by a specific user or all the users
+ * PARAMS)
+ *  query.type: discriminates whether to delete all reports associated to a certain user 
+ *              identifier "userReports" or to delete all reports submitted by the users "all"
+ *  req.body.userId: the identifier of the user whose reports you want to delete. You can 
+ *                   delete your own ones but to delete reports of others you need admin status
+ */
+router.delete('/', async (req, res) => { 
+    if (req.query.type == "userReports" && (req.loggedUser.id == req.body.userId || req.loggedUser.administrator))
+    {
+        if (LOG_MODE >= 1) console.log("delete reports of user " + req.body.userId + " request from user "+req.loggedUser.email)
+        
+        try{
+            await Report.deleteMany({ issuerId: req.body.userId });
+        }catch(err){
+            return res.status(400).json({ errorCode: error("NO_MATCHING_AUTHENTICATED_USER_ID") });
+        }
+
+        if (LOG_MODE >= 2) console.log('all reports of requested user deleted')
+        res.status(204).send()
+    }else if (req.query.type == "all")
+        next(); //CONTINUES BELOW<!!!>
+    else
+        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })
+});
+
+/**
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator,
+ *  to delete all the reports submitted by the users
+ */
 router.delete('/', async (req, res) => {
-    if (req.loggedUser.administrator == true || TEST_MODE){ //TEST MODE: ACCESSIBILE IN OGNI CASO
+    if (req.loggedUser.administrator == true || TEST_MODE){
         if (LOG_MODE >= 1) console.log("delete all report request from user "+req.loggedUser.email)
 
         await Report.deleteMany({});

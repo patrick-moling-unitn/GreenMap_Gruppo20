@@ -3,7 +3,7 @@ import UrlManager from '@/urlManager'
 
 export default function usersFunctions(){
     const deleteUserReports=(userId)=>{
-      return fetch(`${UrlManager()}/reports/${userId}?type=userReports`, {
+      return fetch(`${UrlManager()}/reports?type=userReports&issuerId=${userId}`, {
         method: "DELETE",
         headers: {
           "Content-type": "application/json; charset=UTF-8",
@@ -22,7 +22,7 @@ export default function usersFunctions(){
       });
     }
     const deleteUserAnswers=(userId)=>{
-      return fetch(`${UrlManager()}/answers/${userId}?type=userAnswers`, {
+      return fetch(`${UrlManager()}/questionnaires/answers?issuerId=${userId}`, {
         method: "DELETE",
         headers: {
           "Content-type": "application/json; charset=UTF-8",

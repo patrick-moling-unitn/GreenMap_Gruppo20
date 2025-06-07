@@ -42,10 +42,19 @@ router.use('/:id/discounts', discountManager)
  *  .../authenticatedUsers/
  * DESCRIPTION)
  *  the method permits a requesting user to view his own information
- *  or, if administator, view the information of all users
+ *  or, if administator, view the information of all users and permits
+ *  applying filters on the search explained below
  * PARAMS)
  *  query.type: discriminates the type of request the user wants to make
  *              either getting "all" or "personal" user information
+ * 
+ *  the following query parameters can be left empty '' and will be ignored
+ * 
+ *  query.email: the email you want to apply a filter on for the search 
+ *  query.banned: whether you want to search for accounts banned or not banned
+ *  query.administrator: whether you want to search for admin or not admin accounts
+ *  query.lastReportDate: the last report date you want to apply a filter on for the search 
+ *  query.points:  the totalized account's points you want to apply a filter on for the search 
  * SUCCESSFUL RETURNS)
  *  userList: the list of users' information matching the searched criteria
  */

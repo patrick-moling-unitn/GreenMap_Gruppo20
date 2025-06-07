@@ -239,7 +239,7 @@ function getOptionsFromQuestion(question){
  *  .../questionnaires/questions
  * DESCRIPTION)
  *  the method permits a requesting user, if administrator, to submit a new questionnaire's
- *  question if valid that will from now on be used for questionnaires
+ *  question (if valid) that will from now on be used for questionnaires
  * PARAMS)
  *  body.question: contains the text of the question, the questionType and question's options
  * SUCCESSFUL RETURNS)
@@ -339,15 +339,16 @@ router.delete("/questions/:questionId",  async (req, res) => {
 /**
  * DESCRIPTION)
  *  the method permits a requesting user, if administrator, 
- *  to delete all answers submitted by a specific user
+ *  to delete all answers submitted by a specific user.
+ *  Permits also the owner of the answers to delete his own
  * PARAMS)
- *  query.issuerId: the identifier of the user you want to get all answers from.
+ *  query.issuerId: the identifier of the user you want to delete all answers from.
  *                  If not specified the method gets forwarded to the next one 
  *                  to handle the deletion of all the submitted answers.
  */
 //[lavoro di raffaele, commit: d1f1ba8d7c44647c32c0218da98a90f4a129ff01]
 router.delete("/answers", async (req, res) => {
-    if (req.loggedUser.administrator == false && !TEST_MODE)
+    if (req.loggedUser.administrator == false && req.query.issuerId != req.loggedUser.id)
         res.status(401).json({ errorCode: error("UNAUTHORIZED") })
     else if (req.query.issuerId){
         if (LOG_MODE >= 1) console.log("Delete all answers of user " + req.query.issuerId);
