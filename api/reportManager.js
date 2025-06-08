@@ -271,23 +271,19 @@ router.post("",  async (req, res) => {
  * PARAMS)
  *  id: the identifier of the report to delete
  */
-router.delete('/:id', async (req, res, next) => {
-    if (req.query.type == "report"){
-        if (req.loggedUser.administrator == true || TEST_MODE){
-            if (LOG_MODE >= 1) console.log("delete report request from user "+req.loggedUser.email)
+router.delete('/:id', async (req, res) => {
+    if (req.loggedUser.administrator == true || TEST_MODE){
+        if (LOG_MODE >= 1) console.log("delete report request from user "+req.loggedUser.email)
 
-            try{
-                await Report.deleteOne({ _id: req.params.id });
-            }catch(err){
-                return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
-            }
-            if (LOG_MODE >= 2) console.log('report removed')
-            res.status(204).send()
-        }else
-		    return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
-    }
-    else
-        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETER") })
+        try{
+            await Report.deleteOne({ _id: req.params.id });
+        }catch(err){
+            return res.status(400).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
+        }
+        if (LOG_MODE >= 2) console.log('report removed')
+        res.status(204).send()
+    }else
+        return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
 });
 
 /**

@@ -173,7 +173,7 @@ export default
     let trashcanMarkers = [];
 
     let mapOptions = {
-      center:[50, 50],
+      center:[46.0662, 11.1256],
       zoom:100
     }
 

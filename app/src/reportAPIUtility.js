@@ -28,7 +28,7 @@ class ReportAPIUtility {
         });
     }
     deleteReport(reportId, successCallback){
-        fetch(`${UrlManager()}/reports/${reportId}?type=report`, {
+        fetch(`${UrlManager()}/reports/${reportId}`, {
           method: "DELETE",
           headers: {
             "Content-type": "application/json; charset=UTF-8",

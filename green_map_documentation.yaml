@@ -1,12 +1,14 @@
 openapi: 3.0.4
 info:
   title: GreenMap API
-  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
-  version: 1.0.0
+  description: In this file all the API exposed by our service are documented. The errors are written
+               as text instead of "errorCode", which is the real server response, to provide a more
+               helpful and intuitive understanding of the possible arising errors.
+  version: 2.0.0
 
 servers:
   - url: http://localhost:3000/api/v2/
-    description: Optional server description, e.g. Main (production) server
+    description: Server where the GreenMap APIs are hosted
 
 paths:
   /authenticatedUsers:
@@ -151,78 +153,6 @@ paths:
                   summary: Wrong user credentials
                   value:
                     error: "PASSWORD ERRATA"
-    put:
-      summary: Change the ban and admin status of a user (admin only)
-      parameters:
-        - in: header
-          name: x-access-token
-          schema:
-            type: string
-          description: authentication token
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id
-              properties:
-                id:
-                  type: string
-                editBan:
-                  type: boolean
-                editAdmin:
-                  type: boolean
-            example:
-              id: "6838a30abdf4be08ee44cc80"
-              editBan: true
-              editAdmin: false
-      responses:
-        '200':
-          description: User banned
-          content:
-            application/json:
-              example:
-                _id: "abc123"
-                email: "user@example.com"
-                banned: false
-                administrator: true
-                points: 9
-        '400':
-          description: Invalid user ID
-          content:
-            application/json:
-              example:
-                error: true
-                message: "ID UTENTE INSERITO INESISTENTE"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                  UserNotAdmin:
-                    summary: User is not administrator
-                    value:
-                      error: "Requesting user is not an administrator!"
-                  UserNotAuthenticated:
-                    summary: User does not have an authentication token
-                    value:
-                      error: "Authentication token missing"
-        '403':
-          description: Failed to authenticate token
-          content:
-            application/json:
-              example:
-                error: true
-                message: "Failed to authenticate token."
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              example:
-                message: "Database error"
   /authenticatedUsers/{id}:
     delete:
       summary: Delete a user by id (admin only)
@@ -263,7 +193,7 @@ paths:
                 error: true
                 message: "Failed to authenticate token."
     put:
-      summary: Ban a user by ID (admin only)
+      summary: Change the ban and admin status of a user (admin only)
       parameters:
         - in: header
           name: x-access-token
@@ -276,7 +206,23 @@ paths:
           required: true
           schema:
             type: string
-          example: "abc123"
+          example: "6838a30abdf4be08ee44cc80"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                editBan:
+                  type: boolean
+                editAdmin:
+                  type: boolean
+            example:
+              editBan: true
+              editAdmin: false
       responses:
         '200':
           description: User banned
@@ -285,16 +231,16 @@ paths:
               example:
                 _id: "abc123"
                 email: "user@example.com"
-                banned: true
-                administrator: false
-                points: 3
+                banned: false
+                administrator: true
+                points: 9
         '400':
           description: Invalid user ID
           content:
             application/json:
               example:
                 error: true
-                message: "ID UTENTE INSERITO INESISTENTE"
+                message: "Inserted user id doesn't exist!"
         '401':
           description: Unauthorized
           content:
@@ -559,7 +505,9 @@ paths:
   /reports:
     get:
       summary: Get reports
-      description: Retrieve all reports or personal reports based on query parameter.
+      description: If the <b>query</b> parameter "position" and "distance" are provided the function will show
+                   the reports inside the research area.
+                   Else it will retrieve all reports or personal reports based on the <b>query</b> parameter "type". 
       parameters:
         - in: header
           name: x-access-token
@@ -574,6 +522,17 @@ paths:
             enum: [all, personal]
           required: true
           description: get "all" reports (admin only) or just report's of requesting user "personal" (any user)
+        - in: query
+          name: position
+          schema:
+            type: string
+          description: origin where the report search should begin
+          example: "45.8147,10.4895"
+        - in: query
+          name: distance
+          schema:
+            type: number
+          description: maximum distance a report can have from the origin to be returned
       responses:
         "200":
           description: List of reports
@@ -584,20 +543,29 @@ paths:
                 items:
                   $ref: '#/components/schemas/ReportResponse'
         "400":
-          description: Bad request
+          description: Invalid input or missing query parameter
+          content:
+            application/json:
+              examples:
+                invalidCoordinates:
+                  summary: Coordinates not valid
+                  value:
+                    message: "Coordinates not valid!"
+                missingParameter:
+                  summary: Missing query parameter
+                  value:
+                    message: "Query parameters missing!"
         "401":
           description: Authentication token missing
           content:
             application/json:
               example:
-                error: true
                 message: "Authentication token missing"
         "403":
           description: Failed to authenticate token
           content:
             application/json:
               example:
-                error: true
                 message: "Failed to authenticate token."  
     post:
       summary: Create a new report
@@ -659,7 +627,10 @@ paths:
                 message: "Internal server error"
 
     delete:
-      summary: Delete all reports (admin only)
+      summary: Delete reports of a specific user/all users (admin only) or delete just personal reports
+      description: If the <b>query</b> parameter "type" is set to <u>userReports</u> the function will delete all the reports
+                   of the user whose id is passed in the body. If the id doesn't match the one of the requester requires administrator.
+                   If the <b>query</b> parameter "type" is set to <u>all</u> all reports will be deleted (admin only).
       parameters:
         - in: header
           name: x-access-token
@@ -667,16 +638,39 @@ paths:
             type: string
           description: authentication token
           required: true
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [userReports, all]
+          required: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
       responses:
         "204":
-          description: All reports deleted
+          description: Report deleted
+        "400":
+          description: Invalid ID or missing query parameter
         '401':
-          description: Authentication token missing
+          description: Unauthorized
           content:
             application/json:
-              example:
-                error: true
-                message: "Authentication token missing"
+              examples:
+                  UserNotAdmin:
+                    summary: User is not administrator
+                    value:
+                      error: "Requesting user is not an administrator!"
+                  UserNotAuthenticated:
+                    summary: User does not have an authentication token
+                    value:
+                      error: "Authentication token missing"
         "403":
           description: Failed to authenticate token
           content:
@@ -684,10 +678,9 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token." 
-  /reports/{position|userId}:
+  /reports/{id}:
     get:
-      summary: Retrieve reports near the passed position (admin only)
-      description: If the <b>query</b> parameter "distance" is <u>missing</u> the function will call <b>next()</b>
+      summary: Get report by ID (admin only)
       parameters:
         - in: header
           name: x-access-token
@@ -695,47 +688,6 @@ paths:
             type: string
           description: authentication token
           required: true
-        - in: path
-          name: position|userId
-          required: true
-          schema:
-            type: string
-          description: Coordinates as "lat,lng" or UserId
-        - in: query
-          name: distance
-          required: false
-          schema:
-            type: number
-          description: Distance in meters for searching nearby reports
-      responses:
-        "200":
-          description: Reports found
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: array
-                    items:
-                      $ref: "#/components/schemas/ReportResponse"
-        "400":
-          description: Invalid input or missing query parameter
-          content:
-            application/json:
-              examples:
-                invalidCoordinates:
-                  summary: Coordinates not valid
-                  value:
-                    message: "COORDINATES NOT VALID!"
-                missingParameter:
-                  summary: Missing query parameter
-                  value:
-                    error: true
-                    message: "NON E' STATO PASSATO UN QUERY PARAMETER PREVISTO ALLA FUNZIONE!"
-  /reports/{id}:
-    get:
-      summary: Get report by ID (admin only)
-      description: This method <b>cannot</b> be called directly! It can just be called using the <b>next()</b> function from the one above
-      parameters:
         - in: path
           name: id
           schema:
@@ -825,10 +777,8 @@ paths:
             application/json:
               example:
                 message: "Internal server error"
-  /reports/{id|userId}:
     delete:
       summary: Delete specific report (admin only)
-      description: If the <b>query</b> parameter "type" is set to <u>userReports</u> the function will call <b>next()</b>
       parameters:
         - in: header
           name: x-access-token
@@ -837,22 +787,16 @@ paths:
           description: authentication token
           required: true
         - in: path
-          name: id|userId
+          name: id
           schema:
             type: string
-          description: Either an id of a report or one of a user
-          required: true
-        - in: query
-          name: type
-          schema:
-            type: string
-            enum: [report, userReports]
+          description: The identifier of the report
           required: true
       responses:
         "204":
           description: Report deleted
         "400":
-          description: Invalid ID or missing query parameter
+          description: Invalid ID
         '401':
           description: Unauthorized
           content:
@@ -873,34 +817,6 @@ paths:
               example:
                 error: true
                 message: "Failed to authenticate token." 
-  /reports/{userId}:
-    delete:
-      summary: Delete all reports of a user (admin only)
-      description: This method <b>cannot</b> be called directly! It can just be called using the <b>next()</b> function from the one above
-      parameters:
-        - in: path
-          name: userId
-          schema:
-            type: string
-          required: true
-      responses:
-        "204":
-          description: All user reports deleted
-        "400":
-          description: Invalid user ID
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                  UserNotAdmin:
-                    summary: User is not administrator
-                    value:
-                      error: "Requesting user is not an administrator!"
-                  UserNotAuthenticated:
-                    summary: User does not have an authentication token
-                    value:
-                      error: "Authentication token missing"
   /trashcans:
     get:
       summary: Returns a list of all trashcans (admin only)
