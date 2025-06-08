@@ -132,7 +132,7 @@ export default{
       })
       .then(response => response.json())
       .then(response => { 
-        if (!response.error){
+        if (!response.errorCode){
           console.log("Got all reports: ")
           console.log(response)
           this.reports = response;

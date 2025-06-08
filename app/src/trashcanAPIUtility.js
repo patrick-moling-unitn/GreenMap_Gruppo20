@@ -1,5 +1,6 @@
 import UrlManager from './urlManager'
 import TokenManager from './tokenManager'
+import errors from '@enum/errorCodesDecoded.esm';
 
 class TrashcanAPIUtility {
     addTrashcan(trashcan, successCallback){
@@ -21,7 +22,7 @@ class TrashcanAPIUtility {
         })
         .then(response => {
           if (response)
-            alert(response.message)
+            alert(errors[response.errorCode])
         });
     }
     deleteTrashcan(trashcanId, successCallback){
@@ -43,7 +44,7 @@ class TrashcanAPIUtility {
                 })
             .then(response => { 
                 if (response)
-                    alert(response.message)
+                  alert(errors[response.errorCode])
             });
     }
     updateTrashcan(trashcanId, trashcanTypeParam, successCallback){
@@ -67,7 +68,7 @@ class TrashcanAPIUtility {
         })
         .then(response => { 
           if (response)
-            alert(response.message)
+            alert(errors[response.errorCode])
         });
     }
 }

@@ -290,8 +290,8 @@ export default
     }
 
     function requestAllReports(){
-      fetch(`${UrlManager()}/reports/${SELF.currentPosition.lat},${SELF.currentPosition.lng}
-             ?distance=${MAX_REPORT_VIEW_DISTANCE}`, {
+      fetch(`${UrlManager()}/reports?position=${SELF.currentPosition.lat},${SELF.currentPosition.lng}
+              &distance=${MAX_REPORT_VIEW_DISTANCE}&solved=${false}`, {
             method: "GET",
             headers: {
               "Content-type": "application/json; charset=UTF-8",

@@ -127,7 +127,7 @@ router.post("/:id/code",  async (req, res, next) => {
     if(verifyinguser.verificationCode.code != req.body.code)
         return res.status(400).json({ errorCode: error("REGISTRATION_CODE_INVALID") });
     req['registeringUser'] = verifyinguser;
-    next();
+    next(); //CONTINUES BELOW<!!!>
 });
 
 /**

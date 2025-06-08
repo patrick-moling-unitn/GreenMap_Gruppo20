@@ -1,5 +1,6 @@
 import UrlManager from './urlManager'
 import TokenManager from './tokenManager'
+import errors from '@enum/errorCodesDecoded.esm';
 
 class ReportAPIUtility {
     resolveReport(reportId, successCallback){
@@ -23,7 +24,7 @@ class ReportAPIUtility {
         })
         .then(response => { 
           if (response)
-            alert(response.message)
+            alert(errors[response.errorCode])
         });
     }
     deleteReport(reportId, successCallback){
@@ -43,7 +44,7 @@ class ReportAPIUtility {
         })
         .then(response => { 
           if (response)
-            alert(response.message)
+            alert(errors[response.errorCode])
         });
     }
 }

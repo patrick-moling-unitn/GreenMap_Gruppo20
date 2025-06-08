@@ -16,29 +16,15 @@ const ISSUE_REPORT_COOLDOWN_MIN = 1_440 //24h
 const API_V = process.env.API_VERSION;
 
 /**
- * In attesa della conferma dal professore...
- */
-router.get("/:position", async (req, res, next) => {
-    if (req.query.distance){
-        if (req.loggedUser.administrator == false)
-            return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
-        const [lat, lng] = req.params.position.split(',').map(Number);
-        if (LOG_MODE >= 1) console.log("Get all reports near: " + req.params.position + " max distance (meters): " + req.query.distance)
-
-        if (isNaN(lat) || isNaN(lng))
-            return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
-        
-        let userPosition = geolibUtility.latLngToJSON(lat, lng);
-
-        let reportList = await Report.find({});
-        reportList = geolibUtility.filterClosestElementsOnList(reportList, userPosition, req.query.distance);
-        res.status(200).json(reportList);
-    }else
-        next();
-});
-
-/**
- * In attesa della conferma dal professore...
+ * RELATIVE PATH)
+ *  .../reports/REPORT_IDENTIFIER
+ * DESCRIPTION)
+ *  the method permits a requesting user, if administrator, to view information
+ *  about a specific report
+ * PARAMS)
+ *  id: the identifier of the report you want to get information from
+ * SUCCESSFUL RETURNS)
+ *  report: the report found
  */
 router.get("/:id", async (req, res) => {
     if (req.loggedUser.administrator == true || TEST_MODE){
@@ -56,8 +42,43 @@ router.get("/:id", async (req, res) => {
  * RELATIVE PATH)
  *  .../reports/
  * DESCRIPTION)
+ *  the method permits a requesting user to get the reports within a specified range from 
+ *  his positon. If the query parameters are empty the request will get forwarded to 
+ *  the next method.
+ * PARAMS)
+ *  query.position: the origin point where the search begins
+ *  query.distance: the maximum distance a report can have from the origin
+ *  query.solved: whether to search just for reports already resolved or not.
+ *                If left empty no filter is applied.
+ * SUCCESSFUL RETURNS)
+ *  reportList: the list of reports which position is inside the searched circle
+ */
+router.get("/", async (req, res, next) => {
+    if (req.query.position && req.query.distance){
+        if (req.loggedUser.administrator == false)
+            return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
+        const [lat, lng] = req.query.position.split(',').map(Number);
+        if (LOG_MODE >= 1) console.log("Get all reports near: " + req.query.position + " max distance (meters): " + req.query.distance)
+
+        if (isNaN(lat) || isNaN(lng))
+            return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
+        
+        let userPosition = geolibUtility.latLngToJSON(lat, lng);
+        
+        let query = req.query.solved ? { resolved: req.query.solved } : {},
+            reportList = await Report.find(query);
+        reportList = geolibUtility.filterClosestElementsOnList(reportList, userPosition, req.query.distance);
+        res.status(200).json(reportList);
+    }else
+        next();  //CONTINUES BELOW<!!!>
+});
+
+/**
+ * RELATIVE PATH)
+ *  .../reports/
+ * DESCRIPTION)
  *  the method permits a requesting user to get his personal reports or, 
- *  if administrator, the get the reports of all users
+ *  if administrator, to get the reports of all users
  * PARAMS)
  *  query.type: discriminates the request method the user wants to make
  *              either by returning the reports submitted by all users "all"
