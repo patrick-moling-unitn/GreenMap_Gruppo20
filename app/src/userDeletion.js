@@ -20,6 +20,8 @@ export function useUserDeletion(){
       .then(response => { 
         if (response)
           alert(response.message)
+      }).catch(() =>{
+        alert("Network error. Please try again later!")
       });
     }
     const deleteUser = (self) => {
@@ -33,7 +35,10 @@ export function useUserDeletion(){
             }
         })
         .then(response => console.log(response))
-        .then(() => this.showUsers());
+        .then(() => this.showUsers())
+        .catch(() =>{
+          alert("Network error. Please try again later!")
+        });
     }
 
   return {

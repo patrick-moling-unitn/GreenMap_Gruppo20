@@ -1,5 +1,8 @@
 <template>
-<DiscountsTable :access="'all'" :admin="administrator" :accountId="accountId"/>
+    <div class="adaptive-margin-body">
+        <h1>Manage Discounts</h1>
+        <DiscountsTable :access="'all'" :admin="admin" :accountId="accountId"/>
+    </div>
 </template>
 
 <script default>
@@ -11,7 +14,8 @@ export default {
         DiscountsTable
     },
     props:{
-        accountId: String
+        accountId: String,
+        admin: String
     },
     data() {
     },

@@ -19,6 +19,8 @@ export default function usersFunctions(){
       .then(response => { 
         if (response)
           alert(response.message)
+      }).catch(() =>{
+        alert("Network error. Please try again later!")
       });
     }
     const deleteUserAnswers=(userId)=>{
@@ -38,6 +40,8 @@ export default function usersFunctions(){
       .then(response => { 
         if (response)
           alert(response.message)
+      }).catch(() =>{
+        alert("Network error. Please try again later!")
       });
     }
     
@@ -53,7 +57,9 @@ export default function usersFunctions(){
                 "x-access-token": TokenManager()
             }
         })
-      })
+      }).catch(() =>{
+        alert("Network error. Please try again later!")
+      });
     }
 
     const banUnbanUser = (userId) =>{
@@ -73,7 +79,9 @@ export default function usersFunctions(){
                 editBan: true
             })
         })
-      })
+      }).catch(() =>{
+        alert("Network error. Please try again later!")
+      });
     }
     return {deleteUser, deleteUserAnswers, deleteUserReports, banUnbanUser };
 }

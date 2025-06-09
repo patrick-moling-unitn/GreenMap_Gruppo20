@@ -1,6 +1,6 @@
 <template>
-    <div class="mb-4 d-flex flex-wrap gap-2">
-    <div class="container-fluid" style="max-width: 5000px; margin: auto;">
+    <div class="p-4 mt-4 d-flex flex-wrap gap-2">
+    <div class="container-fluid p-0" style="max-width: 5000px; margin: auto;">
     <table class="table table-bordered table-hover w-100 text-center align-middle">
       <thead class="table-primary">
         <tr>
