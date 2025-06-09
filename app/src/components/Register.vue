@@ -1,27 +1,25 @@
 <template>
   <EmailVerification v-if="this.verification.id" :userId="this.verification.id" :resetUserIdCallback="this.resetUserIdCallback"/>
-  <div v-else>
+  <div class="adaptive-margin-body" v-else>
     <h1>Register new account</h1>
-    <form @submit.prevent="handleSubmit">
+    <form @submit.prevent="handleSubmit" class="p-4 mt-4">
       <div>
-        <label for="email">Email:</label>
-        <input id="email" v-model="form.email" type="email" required />
+        <label for="email" class="form-label">Email:</label>
+        <input id="email" v-model="form.email" type="email" class="form-control w-75" placeholder="name@example.com" required />
       </div>
 
       <div>
-        <label for="password">Password:</label>
-        <input id="password" v-model="form.password" type="password" required />
+        <label for="password" class="form-label">Password:</label>
+        <input id="password" v-model="form.password" class="form-control w-75" type="password" aria-describedby="passwordHelpBlock" required />
+        <div id="passwordHelpBlock" class="form-text">
+          Your password must be at least 8 characters long
+        </div>
       </div>
 
-      <button type="submit">Registrati</button>
-    </form>
-
-    <button @click="deleteAllUsers">Delete All Registering User</button>
-    <button @click="showAllUsers">Show All Registering User</button>
-
-    <form @submit.prevent="deleteUser">
-      <input id="userid" v-model="user.id" type="text"/>
-      <button type="submit">Delete User</button>
+      <div class="mt-4">
+        <LoadingSpinner v-if="registering"></LoadingSpinner>
+        <button class="btn btn-success" type="submit" v-else>Register</button>
+      </div>
     </form>
   </div>
 </template>
@@ -31,10 +29,12 @@ import EmailVerification from './EmailVerification.vue';
 import UrlManager from '@/urlManager'
 import EventBus from '@/EventBus'
 import errors from '@enum/errorCodesDecoded.esm';
+import LoadingSpinner from './LoadingSpinner.vue';
 
 export default {
     components: {
-      EmailVerification
+      EmailVerification,
+      LoadingSpinner
     },
     data() {
         return {
@@ -48,6 +48,7 @@ export default {
             user: {
                 id: ''
             },
+            registering: false,
             resetUserIdCallback: '',
             VERIFICATION_ID_LOCAL_STORAGE_NAME: 'VerificationId',
         }
@@ -55,6 +56,7 @@ export default {
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
+            this.registering = true;
             fetch(`${UrlManager()}/registeringUsers`, {
                 method: "POST",
                 body: JSON.stringify({
@@ -75,27 +77,12 @@ export default {
                 localStorage.setItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME, data.id)
               }else
                 alert(errors[data.errorCode])
-            }).finally(() => { console.log("Richiesta eseguita.") })
-        },
-        showAllUsers(){
-            console.log('Dati richiesti');
-            fetch(`${UrlManager()}/registeringUsers`)
-            .then(response => response.json())
-            .then(users => console.log(users));
-        },
-        deleteUser(){
-            console.log('Dati inviati');
-            fetch(`${UrlManager()}/registeringUsers/${this.user.id}`,{
-                method: "DELETE",
+            }).catch(() =>{
+              alert("Network error. Please try again later!")
+            }).finally(() => { 
+              console.log("Richiesta eseguita.")
+              this.registering = false;
             })
-            .then(response => console.log(response));
-        },
-        deleteAllUsers(){
-          console.log('Dati inviati');
-            fetch(`${UrlManager()}/registeringUsers`,{
-                method: "DELETE",
-            })
-            .then(response => console.log(response));
         },
         resetLocalStorageVerificationId(){
           localStorage.setItem(this.VERIFICATION_ID_LOCAL_STORAGE_NAME, '')
@@ -117,38 +104,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-form {
-  display: flex;
-  flex-direction: column;
-  max-width: 300px;
-}
-
-div {
-  margin-bottom: 1rem;
-}
-
-label {
-  font-weight: bold;
-}
-
-input {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  padding: 0.6rem;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #369f75;
-}
-</style>

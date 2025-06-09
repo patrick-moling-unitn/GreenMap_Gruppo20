@@ -43,9 +43,7 @@
     </div>
     <button type="button" class="btn btn-outline-primary m-4 align-self-start" @click="submitQuestionnaire">Submit Questionnaire</button>
     </div>
-    <div v-else-if="loadingQuestionnaire" class="spinner-border mt-4 mb-4" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
+    <LoadingSpinner v-if="loadingQuestionnaire"></LoadingSpinner>
     <h5 v-else class="mt-4 mb-4">No questionnaires available at the moment</h5>
     </div>
 </template>
@@ -58,8 +56,12 @@ import EventBus from '@/EventBus'
 import QuestionType from '@enum/questionType.esm';
 import QuestionOption from '@enum/questionOption.esm';
 import ErrorCodes from '@enum/errorCodesDecoded.esm';
+import LoadingSpinner from './LoadingSpinner.vue';
 
     export default {
+        components: {
+            LoadingSpinner
+        },
         mounted(){
             // DELETE ALL QUESTIONNAIRES'S ANSWERS CODE
             /*    fetch(`${UrlManager()}/questionnaires`, {

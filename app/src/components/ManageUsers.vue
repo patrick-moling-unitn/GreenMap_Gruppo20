@@ -1,6 +1,6 @@
 <template>
-    <div class="mb-4 d-flex flex-wrap gap-2">
-    <h2 class="mb-4">utenti</h2>
+    <div class="adaptive-margin-body d-flex flex-wrap gap-2">
+    <h2 class="mb-4">Manage Users</h2>
     <div class="container-fluid" style="max-width: 5000px; margin: auto;">
     <table class="table table-bordered table-hover w-100 text-center align-middle">
       <thead class="table-primary">
@@ -10,30 +10,26 @@
           <th>Email</th>
           <th>Last Report Date</th>
           <th>Points</th>
-          <th>Ban</th>
-          <th>Delete</th>
-          <th>Promote</th>
+          <th>Ban/Delete/Promote</th>
         </tr>
       </thead>
       <tbody> 
         <tr>
           <td>
             <select class="form-select" v-model="administrator" @change="showUsers">
-                <option :value='""'>Tutti</option>
-                <option :value="true">Sì</option>
+                <option :value='""'>All</option>
+                <option :value="true">Yes</option>
                 <option :value="false">No</option>
             </select></td>
           <td>
             <select class="form-select" v-model="banned" @change="showUsers">
-                <option :value='""'>Tutti</option>
-                <option :value="true">Sì</option>
+                <option :value='""'>All</option>
+                <option :value="true">Yes</option>
                 <option :value="false">No</option>
             </select></td>
           <td><input type="text" class="form-control" v-model="email" @input="showUsers" placeholder="write"/></td>
           <td><input type="text" class="form-control" v-model="lastreportdate" @input="showUsers" placeholder="write"/></td>
           <td><input type="text" class="form-control" v-model="points" @input="showUsers" placeholder="write"/></td>
-          <td><p>-</p></td>
-          <td><p>-</p></td>
           <td><p>-</p></td>
         </tr>
         <tr v-for="user in users">
@@ -42,9 +38,18 @@
           <td>{{ user.email }}</td>
           <td>{{ user.lastReportIssueDate }}</td>
           <td>{{ user.points }}</td>
-          <td><button type="button" class="btn btn-danger" @click="banUnbanUserWrapper(user.self)">Ban/Unban</button></td>
-          <td><button type="button" class="btn btn-danger" @click="deleteUserWrapper(user.self)">Delete</button></td>
-          <td><button type="button" class="btn btn-success" @click="promoteDemoteUser(user.self)">Promote/Demote</button></td>
+          <td>
+          <div class="input-group p-0 m-0">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Manage user</button>
+            <ul class="dropdown-menu">
+              <li><button class="dropdown-item btn btn-danger" @click="banUnbanUserWrapper(user.self)">Ban/Unban</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item btn btn-danger" @click="deleteUserWrapper(user.self)">Delete</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item btn btn-primary" @click="promoteDemoteUser(user.self)">Promote/Demote</button></li>
+            </ul>
+          </div>
+          </td>
         </tr>
       </tbody>
     </table>

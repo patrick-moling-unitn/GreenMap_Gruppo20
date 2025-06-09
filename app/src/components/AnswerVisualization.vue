@@ -12,7 +12,8 @@
                 <input class="form-check-input ms-1" v-model="showAnswersWithPossibleGibberish" type="checkbox" role="switch" id="switchCheck">
                 <label class="form-check-label ms-2" for="switchCheck">Show answers marked as possible gibberish</label>
                 </div>
-                <div v-for="answerData in questionData.openAnswers" class="mt-2">
+                <h6 v-if="questionData.openAnswers == 0">No answers recieved for this question</h6>
+                <div v-else v-for="answerData in questionData.openAnswers" class="mt-2">
                     <div v-if="answerData.gibberishLevel.$numberDecimal < GIBBERISH_WARNING_THREESHOLD || showAnswersWithPossibleGibberish">
                     <div class="alert alert-warning d-flex align-items-center m-0" role="alert" style="height: 25px" v-if="answerData.gibberishLevel.$numberDecimal > GIBBERISH_WARNING_THREESHOLD">
                     <svg xmlns="http://www.w3.org/2000/svg" class="bi flex-shrink-0 me-2 alert-icon" viewBox="0 0 16 16" role="img" aria-label="Warning:">
@@ -62,9 +63,7 @@
   </div>
   <h5 v-else class="mt-4 mb-4">No answers submitted at the moment</h5>
   <div class="d-flex secondary-color p-4 mt-4">
-        <div v-if="loadingQuestions" class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+        <LoadingSpinner v-if="loadingQuestions"></LoadingSpinner>
         <div v-else>
         <button type="button" class="btn btn-warning" @click="getAnswersViaEmail()">Get Answers Via Email</button>
         <button type="button" class="btn btn-primary ms-2" @click="populateAnswersAndQuestions()">Get All Answers</button>
@@ -80,10 +79,12 @@ import TokenManager from '@/tokenManager'
 import usersFunctions from '@/usersFunctions'
 import AnswerStatistics from './AnswerStatistics.vue';
 import QuestionOption from '@enum/questionOption.esm';
+import LoadingSpinner from './LoadingSpinner.vue';
 
 export default {
     components : {
-        AnswerStatistics
+        AnswerStatistics,
+        LoadingSpinner
     },
     data() {
         return {
@@ -99,9 +100,6 @@ export default {
 
     mounted() {
         this.populateAnswersAndQuestions();
-    },
-    activated(){
-        this.populateAnswersAndQuestions()
     },
 
     methods : {
@@ -129,6 +127,8 @@ export default {
                 response.forEach(question => {
                     this.questionAndAnswers.push(question);
                 })
+            }).catch(() =>{
+              alert("Network error. Please try again later!")
             }).finally(() =>{
                 this.loadingQuestions = false;
             });
@@ -153,6 +153,8 @@ export default {
                     alert("Answers sent at your personal email!")
                 else
                     alert("An error occurred while trying to send the answers!")
+            }).catch(() =>{
+              alert("Network error. Please try again later!")
             }).finally(() => {
                 this.loadingQuestions = false;
             });

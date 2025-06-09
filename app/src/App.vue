@@ -144,7 +144,7 @@ const loginHandler = function(newAuthToken, automaticLogin) {
   authToken.value = newAuthToken;
   
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
-    CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn);
+    CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn * 1_000);
   if (!automaticLogin) {
     alert("Logged in")
     returnToHomePage();

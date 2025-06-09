@@ -2,8 +2,9 @@
     <TrashcanModal :onUpdatedCallback="trashcanModal.updatedCallback" :recievedTrashcan="trashcanModal.selectedItem" :mode="trashcanModal.mode" :modalTitle="trashcanModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></TrashcanModal>
     <ReportModal :onAddedTrashcanCallback="trashcanModal.updatedCallback" :onUpdatedCallback="reportModal.updatedCallback" :recievedReport="reportModal.selectedItem" :mode="reportModal.mode" :modalTitle="reportModal.title" :position="this.mapClickPosition" :formattedPosition="this.formattedReportPosition"></ReportModal>
     <div id="map" tabindex="0"></div>
-    <div class="d-flex" style="align-items: center;">
-      <div class="input-group" style="padding: 5px; max-width: 350px">
+    <div class="d-flex align-items-center">
+      <LoadingSpinner v-if="searchingForTrashcan"></LoadingSpinner>
+      <div v-else class="input-group" style="padding: 5px; max-width: 350px">
         <select class="form-select" id="button-addon" v-model="selectedTrashcanType">
           <option selected disabled value="">Trashcan type...</option>
           <option value="0">Paper trashcan</option>
@@ -14,7 +15,7 @@
         </select>
         <button class="btn btn-outline-primary" type="button" id="button-addon" @click="searchClosestTrashcan">Find</button>
       </div>
-      <button id="showGPSPosition" class="btn btn-primary" type="button" v-if="this.geolocalized" 
+      <button id="showGPSPosition" class="btn btn-primary ms-4" type="button" v-if="this.geolocalized" 
         @click="showGPSposition">Show GPS position</button>
     </div>
 </template>
@@ -29,13 +30,15 @@ import EventBus from '@/EventBus'
 import TrashcanModal from './TrashcanModal.vue';
 import errors from '@enum/errorCodesDecoded.esm';
 import { TrashcanType } from '@enum/trashcanType.ems.js'
+import LoadingSpinner from './LoadingSpinner.vue';
 
 export default
 {
   name: 'OpenStreethMap',
   components: {
     ReportModal,
-    TrashcanModal
+    TrashcanModal,
+    LoadingSpinner
   },
   props: {
     admin: false
@@ -64,6 +67,7 @@ export default
             lat: '',
             lng: ''
           },
+          searchingForTrashcan: false,
           searchTrashcanCallback: '',
           showGPSPositionCallback: '',
           geolocalized: false
@@ -74,6 +78,7 @@ export default
       if (!this.selectedTrashcanType){
         alert("Seleziona un tipo di cestino da ricercare!")
       }else{
+        this.searchingForTrashcan = true;
         fetch(`${UrlManager()}/trashcans/${this.currentPosition.lat},${this.currentPosition.lng}
              ?type=${this.selectedTrashcanType}`)
           .then(response => {
@@ -87,6 +92,10 @@ export default
             if (trashcan){
               this.searchTrashcanCallback(trashcan)
             }
+        }).catch(() =>{
+          alert("Network error. Please try again later!")
+        }).finally(() => {
+          this.searchingForTrashcan = false;
         });
       }
     },
