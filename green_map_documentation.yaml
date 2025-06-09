@@ -644,15 +644,12 @@ paths:
             type: string
             enum: [userReports, all]
           required: true
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: string
+        - in: query
+          name: userId
+          schema:
+            type: string
+          description: if the query status above is set to all this will be ignored
+          required: false
       responses:
         "204":
           description: Report deleted
@@ -1139,6 +1136,8 @@ paths:
   /questionnaires/answers:
     get:
       summary: Returns all the answers submitted by the users or sends them to the requester's email based on the query parameter "method" (admin only)
+      description: If the <b>query</b> parameter "questionId" is <u>null</u> the function will return all users' answers
+                   <u>else</u> the function will return the answers submitted by the user of matching id.
       parameters:
         - in: header
           name: x-access-token
@@ -1151,6 +1150,12 @@ paths:
           schema:
             enum: [browser, email]
           description: authentication token
+          required: true
+        - in: query
+          name: questionId
+          schema:
+            type: string
+          description: id of the question you are searching the answers for
           required: true
       responses:
         "200":
@@ -1201,13 +1206,23 @@ paths:
                 error: true
                 message: "Failed to authenticate token." 
     delete:
-      summary: Deletes all the answers to the questionnaires (admin only)
+      summary: Deletes all the answers to the questionnaires (admin only) or the answers submitted by a specific user (admin if not self)
+      description: If the <b>query</b> parameter "issuerId" is <u>null</u> the function will delete all users' answers
+                   <u>else</u> the function will delete the answers submitted by the user of matching id if it's the
+                   same identifier inside the authenticationToken or if the requester is an administrator.
       parameters:
         - in: header
           name: x-access-token
           schema:
             type: string
           description: authentication token
+          required: true
+        - in: path
+          name: issuerId
+          schema:
+            type: string
+          description: id of the user you want to remove the answers from
+          required: true
       responses:
         "204":
           description: All answers deleted successfully
@@ -1343,95 +1358,6 @@ paths:
             application/json:
               example:
                 message: "Internal server error"
-  /questionnaires/answers/{questionId}:
-    get:
-      summary: Returns all the answers given to a certain question (admin only)
-      parameters:
-        - in: header
-          name: x-access-token
-          schema:
-            type: string
-          description: authentication token
-        - in: path
-          name: questionId
-          schema:
-            type: string
-          description: id of the question you are searching the answers for
-          required: true
-      responses:
-        "200":
-          description: Answers of question retrieved
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: array
-                    items:
-                      $ref: "#/components/schemas/AnswerResponse"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                UserNotAdmin:
-                  summary: User is not administrator
-                  value:
-                    error: "Requesting user is not an administrator!"
-                UserNotAuthenticated:
-                  summary: User does not have an authentication token
-                  value:
-                    error: "Authentication token missing"
-        "403":
-          description: Failed to authenticate token
-          content:
-            application/json:
-              example:
-                error: true
-                message: "Failed to authenticate token." 
-  /questionnaires/answers/{issuerId}:
-    delete:
-      summary: Deletes all the answers submitted by a specific user (admin only)
-      parameters:
-        - in: header
-          name: x-access-token
-          schema:
-            type: string
-          description: authentication token
-        - in: path
-          name: issuerId
-          schema:
-            type: string
-          description: id of the user you want to remove the answers from
-          required: true
-      responses:
-        "204":
-          description: Answers of user deleted successfully 
-        "400":
-          description: User id not found
-          content:
-            application/json:
-              example:
-                message: "The specified user id is invalid!"  
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                UserNotAdmin:
-                  summary: User is not administrator
-                  value:
-                    error: "Requesting user is not an administrator!"
-                UserNotAuthenticated:
-                  summary: User does not have an authentication token
-                  value:
-                    error: "Authentication token missing"
-        "403":
-          description: Failed to authenticate token
-          content:
-            application/json:
-              example:
-                error: true
-                message: "Failed to authenticate token." 
   /questionnaires/questions/{questionId}:
     put:
       summary: Updates a question selected by it's id (admin only)
@@ -1555,6 +1481,7 @@ paths:
           schema:
             type: string
           description: authentication token
+          required: true
         - in: query
           name: type
           schema:
@@ -1665,6 +1592,13 @@ paths:
                 message: "Failed to authenticate token."
     delete:
       summary: Delete all user-redeemed discounts
+      parameters:
+        - in: header
+          name: x-access-token
+          schema:
+            type: string
+          description: authentication token
+          required: true
       responses:
         '204':
           description: Discounts deleted

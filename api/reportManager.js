@@ -295,16 +295,16 @@ router.delete('/:id', async (req, res) => {
  * PARAMS)
  *  query.type: discriminates whether to delete all reports associated to a certain user 
  *              identifier "userReports" or to delete all reports submitted by the users "all"
- *  req.body.userId: the identifier of the user whose reports you want to delete. You can 
- *                   delete your own ones but to delete reports of others you need admin status
+ *  query.userId: the identifier of the user whose reports you want to delete. You can 
+ *                delete your own ones but to delete reports of others you need admin status
  */
 router.delete('/', async (req, res) => { 
-    if (req.query.type == "userReports" && (req.loggedUser.id == req.body.userId || req.loggedUser.administrator))
+    if (req.query.type == "userReports" && (req.loggedUser.id == req.query.userId || req.loggedUser.administrator))
     {
-        if (LOG_MODE >= 1) console.log("delete reports of user " + req.body.userId + " request from user "+req.loggedUser.email)
+        if (LOG_MODE >= 1) console.log("delete reports of user " + req.query.userId + " request from user "+req.loggedUser.email)
         
         try{
-            await Report.deleteMany({ issuerId: req.body.userId });
+            await Report.deleteMany({ issuerId: req.query.userId });
         }catch(err){
             return res.status(400).json({ errorCode: error("NO_MATCHING_AUTHENTICATED_USER_ID") });
         }
