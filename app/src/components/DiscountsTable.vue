@@ -100,6 +100,8 @@ export default {
                 }
                 else
                     alert(errors[discounts.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 });
             });
         },
@@ -123,7 +125,9 @@ export default {
             .then(response => { 
             if (response)
                 alert(errors[response.errorCode])
-            });
+            }).catch(() =>{
+                alert("Network error. Please try again later!")
+            })
         },
         addNewDiscount(){
             fetch(`${UrlManager()}/discounts`, {
@@ -149,7 +153,9 @@ export default {
             .then(response => {
             if (response)
                 alert(errors[response.errorCode])
-            });
+            }).catch(() =>{
+                alert("Network error. Please try again later!")
+            })
         },
         getNewDiscount(){
             console.log('Dati richiesti');
@@ -170,13 +176,12 @@ export default {
             .then(response => {
             if (response)
                 alert(errors[response.errorCode])
-            });
+            }).catch(() =>{
+                alert("Network error. Please try again later!")
+            })
         }
     },
     mounted(){
-        this.getAllDiscounts()
-    },
-    activated(){
         this.getAllDiscounts()
     }
 }

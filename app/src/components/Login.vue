@@ -8,7 +8,7 @@
         <input id="email" v-model="form.email" type="email" class="form-control w-75" placeholder="name@example.com" required />
       </div>
 
-      <div>
+      <div class="mt-2">
         <label for="password" class="form-label">Password:</label>
         <input id="password" v-model="form.password" class="form-control w-75" type="password" required />
       </div>

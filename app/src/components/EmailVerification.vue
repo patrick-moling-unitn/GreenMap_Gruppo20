@@ -1,10 +1,19 @@
 <template>
-  <h1>Verify email</h1>
-  <form @submit.prevent="verifyCode">
-    <p>Inserisci il codice che hai ricevuto sulla tua email</p>
-    <input name="code" v-model="this.code" type="text"/>
-    <button type="submit">Confirm Code</button>
-  </form>
+  <div class="adaptive-margin-body">
+    <h1>Verify email</h1>
+    <form @submit.prevent="verifyCode" class="p-4 mt-4">
+      <p>Insert the code sent on your email</p>
+      <div class="row g-3">
+        <input class="col-auto input-group-text" name="code" placeholder="Code" v-model="this.code" type="text"/>
+        <button class="col-auto ms-2 btn btn-success" type="submit">Confirm Code</button>
+      </div>
+      
+      <div class="d-flex mt-5">
+        <h5 class="mt-1">or</h5>
+        <button class="btn ms-2 btn-danger" @click="resetUserIdCallback()">Cancel registration</button>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script template>
@@ -39,46 +48,15 @@ export default {
               else
                 return response.json();
             }).then(response => {
-              if (errors[response.errorCode] == "Invalid registration request!")
-                this.resetUserIdCallback(); //the userId is invalid. We need to reset it!
-              alert(errors[response.errorCode]);
+              if (response && response.errorCode){
+                if (errors[response.errorCode] == "Invalid registration request!")
+                  this.resetUserIdCallback(); //the userId is invalid. We need to reset it!
+                alert(errors[response.errorCode]);
+              }
+            }).catch(() =>{
+              alert("Network error. Please try again later!")
             });
         }
     }
 }
 </script>
-
-<style scoped>
-form {
-  display: flex;
-  flex-direction: column;
-  max-width: 300px;
-}
-
-div {
-  margin-bottom: 1rem;
-}
-
-label {
-  font-weight: bold;
-}
-
-input {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  padding: 0.6rem;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #369f75;
-}
-</style>

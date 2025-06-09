@@ -178,10 +178,6 @@ export default{
   mounted(){
     this.getPersonalReports()
     this.getPersonalData()
-  },
-  activated(){
-    this.getPersonalReports()
-    this.getPersonalData()
   }
 }
 </script>

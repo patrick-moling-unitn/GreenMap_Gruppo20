@@ -9,8 +9,8 @@
       <button type="button" class="ms-4 btn btn-danger" @click="deleteAllTrashcans">Delete all trashcans</button>
     </div>
 
-    <h2 class="mt-4">Trashcans</h2>
-    <div class="container-fluid mt-4 p-0" style="max-width: 5000px; margin: auto;">
+    <div class="container-fluid p-0 mt-4" v-if="this.trashcans.length > 0">
+    <h3>Trashcans</h3>
     <table class="table table-bordered table-hover w-100 text-center align-middle">
       <thead class="table-primary">
         <tr>
@@ -30,6 +30,7 @@
       </tbody>
     </table>
     </div>
+    <h5 class="mt-4" v-else-if="!requestRunning">No trashcans on the map. Click on a point on the map to add one!</h5>
     </div>
     </div>  
 </template>
@@ -117,9 +118,6 @@ export default {
         }
     },
     mounted(){
-        this.getAllTrashcans()
-    },
-    activated(){
         this.getAllTrashcans()
     }
 }

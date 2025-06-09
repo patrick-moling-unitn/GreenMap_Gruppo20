@@ -8,7 +8,7 @@
       <button type="button" class="ms-4 btn btn-danger" @click="deleteAllReports">Delete all reports</button>
     </div>
     <div class="container p-0" v-if="this.reports.length > 0">
-    <h2 class="mt-4">Recieved reports</h2>
+    <h3 class="mt-4">Recieved reports</h3>
     <table class="table table-bordered table-hover">
       <thead class="table-primary">
         <tr>
@@ -42,7 +42,7 @@
       </tbody>
     </table>
     </div>
-    <h2 v-else>No reports issued</h2>
+    <h5 class="mt-4" v-else-if="!requestRunning">No reports issued</h5>
     </div>
   </div>
 </template>
@@ -161,9 +161,6 @@ export default{
     },
   },
   mounted(){
-    this.getAllReports()
-  },
-  activated(){
     this.getAllReports()
   }
 }

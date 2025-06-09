@@ -123,6 +123,8 @@ import LoadingSpinner from './LoadingSpinner.vue';
                         gibberishLevel: Schema.Types.Decimal128 */
                     }else
                         alert(ErrorCodes[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 }).finally(() =>{
                     this.loadingQuestionnaire = false;
                 });
@@ -199,6 +201,8 @@ import LoadingSpinner from './LoadingSpinner.vue';
                 }).then(response => {
                     if (response)
                         alert(ErrorCodes[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 });
             },
             getQuestionWith(questionId){

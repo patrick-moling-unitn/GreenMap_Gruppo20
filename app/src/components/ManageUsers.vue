@@ -96,6 +96,8 @@ export default{
               else
                 alert(errors[users.errorCode])
             });
+        }).catch(() =>{
+          alert("Network error. Please try again later!")
         })
     },
     async deleteUserWrapper(self){
@@ -124,13 +126,12 @@ export default{
             })
         })
         .then(response => console.log(response))
-        .then(() => this.showUsers());
+        .then(() => this.showUsers()).catch(() =>{
+          alert("Network error. Please try again later!")
+        });
     }
   },
   mounted(){
-    this.showUsers()
-  },
-  activated(){
     this.showUsers()
   }
 }

@@ -214,6 +214,8 @@ export default{
         .then(response => {
           if (response)
             alert(errors[response.errorCode])
+        }).catch(() =>{
+          alert("Network error. Please try again later!")
         });
         this.clearReport();
     },

@@ -162,6 +162,8 @@ import LoadingSpinner from './LoadingSpinner.vue';
                 }).then(response => {
                     if (response)
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                alert("Network error. Please try again later!")
                 }).finally(() => {
                     deletionQuestion.loading = false;
                 });
@@ -191,6 +193,8 @@ import LoadingSpinner from './LoadingSpinner.vue';
                     }
                     else
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 }).finally(() => {
                     newQuestion.loading = false;
                 });
@@ -220,6 +224,8 @@ import LoadingSpinner from './LoadingSpinner.vue';
                 }).then(response => {
                     if (response)
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 }).finally(() => {
                     updatingQuestion.loading = false;
                 });
@@ -245,6 +251,8 @@ import LoadingSpinner from './LoadingSpinner.vue';
                         });
                     }else
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 }).finally(() => {
                     this.loadingQuestions = false;
                 })

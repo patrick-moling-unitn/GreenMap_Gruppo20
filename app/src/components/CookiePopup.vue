@@ -5,9 +5,9 @@
     </div>
     <div class="offcanvas-body small">
         <div class="me-5">
-            <p class="m-0">In order to save your authentication status an authentication Cookie is saved 
+            <p class="m-0 text-left">In order to save your authentication status an authentication Cookie is saved 
                 on your browser to avoid making you login every time you refresh the WebPage.</p>
-            <p class="m-0">Since none of your personal data will be used during this process we 
+            <p class="m-0 text-left">Since none of your personal data will be used during this process we 
                 strongly suggest keeping the Cookie enabled but it's up to you.</p>
             <div class="d-flex mt-5">
                 <button type="button" class="btn btn-secondary" aria-label="Deny consent" @click="denyConsent">Deny consent</button>
