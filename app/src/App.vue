@@ -62,7 +62,7 @@ const routes = {
   '/compileQuestionnaire': CompileQuestionnaire,
   '/answerVisualization' : AnswerVisualization,
   '/manageQuestions': ManageQuestions,
-  '/seeDiscounts' : ManageDiscounts,
+  '/viewDiscounts' : ManageDiscounts,
   '/todo': Todo
   
 }
@@ -144,7 +144,7 @@ const loginHandler = function(newAuthToken, automaticLogin) {
   authToken.value = newAuthToken;
   
   if (localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME) == `${true}`)
-    CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn);
+    CookieManagerClass.createCookie(AUTHENTICATION_TOKEN_COOKIE_NAME, newAuthToken, data.expiresIn * 1_000);
   if (!automaticLogin) {
     alert("Logged in")
     returnToHomePage();
@@ -226,7 +226,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
       <a href="#/resolveReport">Resolve Report</a> |
       <a href="#/manageTrashcans">Manage Trashcans</a> |
       <a href="#/manageQuestions">Manage Questionnaire's Questions</a> |
-      <a href="#/seeDiscounts">Manage Discounts</a> |
+      <a href="#/viewDiscounts">Manage Discounts</a> |
       <a href="#/answerVisualization">View Questionnaire's Answers</a> |
       <a href="#/manageUsers">Manage Users</a> |
       <a href="#/logout">Logout</a>
@@ -234,7 +234,7 @@ if (hasCookieConsent && CookieManagerClass.getCookie(AUTHENTICATION_TOKEN_COOKIE
     <div v-else>
       <a href="#/">Home</a> |
       <a href="#/compileQuestionnaire">Compile Questionnaire</a> |
-      <a href="#/seeDiscounts">See Discounts</a> |
+      <a href="#/viewDiscounts">View Discounts</a> |
       <a href="#/accountDetails">View Profile</a> |
       <a href="#/logout">Logout</a>
     </div>

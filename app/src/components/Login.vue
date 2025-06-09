@@ -1,18 +1,22 @@
 <template>
-  <div>
+  <div class="adaptive-margin-body">
     <h1>Login using existing account</h1>
-    <form @submit.prevent="handleSubmit">
+    
+    <form @submit.prevent="handleSubmit" class="p-4 mt-4">
       <div>
-        <label for="email">Email:</label>
-        <input id="email" v-model="form.email" type="email" required />
+        <label for="email" class="form-label">Email:</label>
+        <input id="email" v-model="form.email" type="email" class="form-control w-75" placeholder="name@example.com" required />
       </div>
 
-      <div>
-        <label for="password">Password:</label>
-        <input id="password" v-model="form.password" type="password" required />
+      <div class="mt-2">
+        <label for="password" class="form-label">Password:</label>
+        <input id="password" v-model="form.password" class="form-control w-75" type="password" required />
       </div>
 
-      <button type="submit">Login</button>
+      <div class="mt-4">
+        <LoadingSpinner v-if="logginIn"></LoadingSpinner>
+        <button class="btn btn-success" type="submit" v-else>Login</button>
+      </div>
     </form>
   </div>
 </template>
@@ -21,19 +25,25 @@
 import EventBus from '@/EventBus';
 import UrlManager from '@/urlManager'
 import errors from '@enum/errorCodesDecoded.esm';
+import LoadingSpinner from './LoadingSpinner.vue';
 
 export default {
+    components: {
+      LoadingSpinner
+    },
     data() {
         return {
             form: {
                 email: '',
                 password: ''
-            }
+            },
+            logginIn: false,
         }
     },
     methods: {
         handleSubmit() {
             console.log('Dati inviati:', this.form);
+            this.logginIn = true;
             fetch(`${UrlManager()}/authenticatedUsers`, {
                 method: "POST",
                 body: JSON.stringify({
@@ -61,46 +71,12 @@ export default {
               else {
                 alert(errors[data.errorCode])
               }
+            }).catch(() =>{
+              alert("Network error. Please try again later!")
+            }).finally(() => {
+              this.logginIn = false;
             });
         }
-    },
-    mounted() {
-        //
     }
 }
 </script>
-
-<style scoped>
-form {
-  display: flex;
-  flex-direction: column;
-  max-width: 300px;
-}
-
-div {
-  margin-bottom: 1rem;
-}
-
-label {
-  font-weight: bold;
-}
-
-input {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  padding: 0.6rem;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #369f75;
-}
-</style>

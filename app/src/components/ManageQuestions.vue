@@ -26,9 +26,7 @@
             <button type="button" class="btn btn-success mt-1" @click="addOptionToQuestion(index)">Add New Option</button>
         </div>
 
-        <div v-if="question.loading" class="spinner-border  mt-4 mb-4" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+        <LoadingSpinner v-if="question.loading"></LoadingSpinner>
         <div v-else class="d-flex mt-4 mb-4">
             <button v-if="question.questionId==null" type="button" class="btn btn-primary" @click="updateSelectedQuestion(index)">Submit New Question</button>
             <button v-else-if="hasAnswerChanged(index)" type="button" class="btn btn-success" @click="updateSelectedQuestion(index)">Update Question</button>
@@ -36,9 +34,7 @@
         </div>
     </div>
     <div class="d-flex secondary-color p-4 mt-4">
-        <div v-if="loadingQuestions" class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+        <LoadingSpinner v-if="loadingQuestions"></LoadingSpinner>
         <div v-else>
         <button type="button" class="btn btn-success" @click="addNewEmptyQuestion()">Add New Question</button>
         <button type="button" class="btn btn-primary ms-2" @click="getAllQuestions()">Get All Questions</button>
@@ -53,8 +49,12 @@ import TokenManager from '@/tokenManager'
 import QuestionType from '@enum/questionType.esm';
 import QuestionOption from '@enum/questionOption.esm';
 import errors from '@enum/errorCodesDecoded.esm';
+import LoadingSpinner from './LoadingSpinner.vue';
 
     export default{
+        components: {
+            LoadingSpinner
+        },
         data() {
             return {
                 dichotomousOptions: QuestionOption.DICHOTOMOUS,
@@ -162,6 +162,8 @@ import errors from '@enum/errorCodesDecoded.esm';
                 }).then(response => {
                     if (response)
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                alert("Network error. Please try again later!")
                 }).finally(() => {
                     deletionQuestion.loading = false;
                 });
@@ -191,6 +193,8 @@ import errors from '@enum/errorCodesDecoded.esm';
                     }
                     else
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 }).finally(() => {
                     newQuestion.loading = false;
                 });
@@ -220,6 +224,8 @@ import errors from '@enum/errorCodesDecoded.esm';
                 }).then(response => {
                     if (response)
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 }).finally(() => {
                     updatingQuestion.loading = false;
                 });
@@ -245,6 +251,8 @@ import errors from '@enum/errorCodesDecoded.esm';
                         });
                     }else
                         alert(errors[response.errorCode])
+                }).catch(() =>{
+                    alert("Network error. Please try again later!")
                 }).finally(() => {
                     this.loadingQuestions = false;
                 })

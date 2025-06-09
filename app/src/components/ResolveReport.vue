@@ -1,11 +1,14 @@
 <template class="flex-div">
-  <div class="mb-4 flex-wrap gap-2">
-    <div>
-      <button type="button" class="btn btn-danger" @click="deleteAllReports">Delete all reports</button>
+  <div class="adaptive-margin-body">
+    <h1>Manage Reports</h1>
+    <div class="mt-4 p-4">
+    <LoadingSpinner v-if="requestRunning"></LoadingSpinner>
+    <div class="d-flex" v-else>
       <button type="button" class="btn btn-primary" @click="getAllReports">Get all reports</button>
+      <button type="button" class="ms-4 btn btn-danger" @click="deleteAllReports">Delete all reports</button>
     </div>
-    <div class="container" v-if="this.reports.length > 0">
-    <h2 class="mb-4">Report ricevuti</h2>
+    <div class="container p-0" v-if="this.reports.length > 0">
+    <h3 class="mt-4">Recieved reports</h3>
     <table class="table table-bordered table-hover">
       <thead class="table-primary">
         <tr>
@@ -39,7 +42,8 @@
       </tbody>
     </table>
     </div>
-    <h2 v-else>Nessun report da mostrare</h2>
+    <h5 class="mt-4" v-else-if="!requestRunning">No reports issued</h5>
+    </div>
   </div>
 </template>
 
@@ -56,8 +60,12 @@ import UrlManager from '@/urlManager'
 import usersFunctions from '@/usersFunctions'
 import errors from '@enum/errorCodesDecoded.esm';
 import reportAPIUtility from '@/reportAPIUtility'
+import LoadingSpinner from './LoadingSpinner.vue';
 
 export default{
+  components: {
+    LoadingSpinner
+  },
   data() {
       return {
           selectedReportType: {},
@@ -67,7 +75,8 @@ export default{
             '2': "Trashcan position missing",
             '3': "Trash out of place",
             '4': "Trashcan full"
-          }
+          },
+          requestRunning: false,
       }
   },
   methods: {
@@ -103,6 +112,7 @@ export default{
       this.showUsers()
     },
     deleteAllReports(){
+      this.requestRunning = true;
       fetch(`${UrlManager()}/reports?type=all`, {
         method: "DELETE",
         headers: {
@@ -120,9 +130,14 @@ export default{
       .then(response => { 
         if (response)
           alert(errors[response.errorCode])
+      }).catch(() =>{
+        alert("Network error. Please try again later!")
+      }).finally(() => {
+        this.requestRunning = false;
       });
     },
     getAllReports(){
+      this.requestRunning = true;
       fetch(`${UrlManager()}/reports?type=all`, {
         method: "GET",
         headers: {
@@ -138,13 +153,14 @@ export default{
           this.reports = response;
         }else
           alert(errors[response.errorCode])
+      }).catch(() =>{
+        alert("Network error. Please try again later!")
+      }).finally(() => {
+        this.requestRunning = false;
       });
     },
   },
   mounted(){
-    this.getAllReports()
-  },
-  activated(){
     this.getAllReports()
   }
 }

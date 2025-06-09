@@ -23,6 +23,8 @@ class TrashcanAPIUtility {
         .then(response => {
           if (response)
             alert(errors[response.errorCode])
+        }).catch(() =>{
+          alert("Network error. Please try again later!")
         });
     }
     deleteTrashcan(trashcanId, successCallback){
@@ -45,6 +47,8 @@ class TrashcanAPIUtility {
             .then(response => { 
                 if (response)
                   alert(errors[response.errorCode])
+            }).catch(() =>{
+              alert("Network error. Please try again later!")
             });
     }
     updateTrashcan(trashcanId, trashcanTypeParam, successCallback){
@@ -69,6 +73,8 @@ class TrashcanAPIUtility {
         .then(response => { 
           if (response)
             alert(errors[response.errorCode])
+        }).catch(() =>{
+          alert("Network error. Please try again later!")
         });
     }
 }

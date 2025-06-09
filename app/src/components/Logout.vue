@@ -1,5 +1,7 @@
 <template>
-    <button type="button" class="btn btn-success" @click="logout">Conferma logout</button>
+    <div class="adaptive-margin-body">
+        <button type="button" class="btn btn-success w-auto" @click="logout">Conferma logout</button>
+    </div>
 </template>
 
 

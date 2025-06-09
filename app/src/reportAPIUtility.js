@@ -25,6 +25,8 @@ class ReportAPIUtility {
         .then(response => { 
           if (response)
             alert(errors[response.errorCode])
+        }).catch(() =>{
+          alert("Network error. Please try again later!")
         });
     }
     deleteReport(reportId, successCallback){
@@ -45,6 +47,8 @@ class ReportAPIUtility {
         .then(response => { 
           if (response)
             alert(errors[response.errorCode])
+        }).catch(() =>{
+          alert("Network error. Please try again later!")
         });
     }
 }
