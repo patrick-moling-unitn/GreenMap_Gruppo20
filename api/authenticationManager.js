@@ -165,7 +165,12 @@ router.put("/:id", async (req, res) => {
  */
 router.post("/",  async (req, res) => {
     if (LOG_MODE >= 1) console.log("Authentication request!")
-    let authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
+    let authenticatedUser;
+    try {
+        authenticatedUser = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
+    }catch {
+        return res.status(400).json({ errorCode: error("WRONG_DATA") })
+    }
     if(!authenticatedUser)
         return res.status(400).json({ errorCode: error("AUTHENTICATED_USER_EMAIL_NOT_FOUND") })
     if(authenticatedUser.banned)

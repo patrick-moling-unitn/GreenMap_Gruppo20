@@ -32,7 +32,7 @@ const API_V = process.env.API_VERSION;
  */
 router.get("/:position", async (req, res, next) => {
     let [lat, lng] = req.params.position.split(',').map(Number);
-    if (isNaN(lat) || isNaN(lng))
+    if (!geolibUtility.areLatLngValid(lat, lng))
         return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
     req.latitude = lat;
     req.longitude = lng;
