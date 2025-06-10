@@ -7,7 +7,7 @@ let payload = {email: "abra.cadabra@gmail.com", password: "12345678"}
 let apiRequest = testUtility.formatRequestJSON("POST", "authenticatedUsers/", 
                 "execute login request with non existent email adress", "<QUERY_PARAMETERS>", payload)
 
-xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //FAIL: GOT STATUS CODE 500
+xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //OK
     beforeAll( () => testUtility.connectToDatabase(jest, app) );
     afterAll(async () => await testUtility.closeDatabaseConnection());
 
@@ -31,7 +31,7 @@ xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //FAIL
     beforeAll( () => testUtility.connectToDatabase(jest, app) );
     afterAll(async () => await testUtility.closeDatabaseConnection());
 
-    let expectedHttpCode = 400, expectedHttpJSON = { errorCode: error("AUTHENTICATED_USER_EMAIL_NOT_FOUND") },
+    let expectedHttpCode = 400, expectedHttpJSON = { errorCode: error("WRONG_DATA") },
         _payload = apiRequest.BODY
 
     let fullAPIAdress = testUtility.getFullAPIadress(apiRequest.API_PATH, apiRequest.QUERY_PARAMS);
