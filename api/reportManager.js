@@ -222,8 +222,9 @@ router.post("",  async (req, res) => {
 
     let user = await AuthenticatedUser.findById(req.loggedUser.id)
     if (!user) 
-        return res.status(500).json({ errorCode: error("NO_MATCHING_REPORT_ID") })
-    if (user.banned)
+        return res.status(400).json({ errorCode: error("USER_NOT_FOUND") })
+    //E' difficile che un utente bannato arrivi fino a qua* e in caso sarebbe da usare un middleware. *C'è un blocco direttamente sul login...
+    if (user.banned) 
         return res.status(401).json({ errorCode: error("BANNED") })
     
     if (user.lastReportIssueDate && !TEST_MODE) {

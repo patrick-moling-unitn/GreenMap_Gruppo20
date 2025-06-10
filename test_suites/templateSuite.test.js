@@ -10,7 +10,7 @@ let API_METHOD = "<METHOD_TO_UPPER_CASE>", // GET, POST, PUT, DELETE, ...
     BODY = "<BODY_PARAMETERS>"; // {email:a.com}, {email:a.com, password:bcd},  ...
 
 //E' più veloce sviluppare casi di test usando 'formatRequestJSON' che rende il codice più compatto e leggibile.
-//Le variabili soprastanti vanno rimosse ed inserite direttamente come parametri del metodo (vedi esempio 'trashcanVisualization.test.js').
+//Le variabili soprastanti vanno rimosse ed inserite direttamente come parametri del metodo (vedi esempio 'locateTrashcans.test.js').
 let apiRequest = testUtility.formatRequestJSON(API_METHOD, API_PATH, API_DESCRIPTION, QUERY_PARAMS, BODY)
 
 /*Non è necessario avviare il server.js per far funzionare questa test suite!
@@ -21,7 +21,7 @@ xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => {
     
     let adminUser = true, //Se l'utente che sta eseguendo la richiesta è un admin
         tokenExpiration = 86400, //Tempo che ci mette il token a scadere in secondi
-        token = testUtility.getJwtToken(adminUser, tokenExpiration);
+        token = testUtility.getJwtToken(adminUser, tokenExpiration/*, 682c459970094692410b318f*/); //può essere aggiunto un ID utente custom
 
     let expectedHttpCode = 400, expectedHttpJSON = { errorCode: error("MISSING_QUERY_PARAMETER") },
         _payload = apiRequest.BODY; //Il payload deve essere salvato in locale per evitare problemi di concorrenza

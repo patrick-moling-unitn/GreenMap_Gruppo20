@@ -14,8 +14,8 @@ class TestUtility {
     async closeDatabaseConnection() {
         await mongoose.connection.close(true); 
     }
-    getJwtToken(adminUser, tokenExpiration){
-        let userId = "$2b$10$grA8jaHQ.m.fNSRyFArsh.FU.ct071WBMGpVTRkdCGcwUiL0G.zQe", //ID esistente per superare i check su alcune API
+    getJwtToken(adminUser, tokenExpiration, customUserId){
+        let userId = customUserId ? customUserId : "682c459970094692410b318f", //ID esistente per superare i check su alcune API
             payload = {id: userId, email: 'John@mail.com', administrator: adminUser, expiresIn: tokenExpiration}
         return jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: tokenExpiration} ); //creazione auth token
     }

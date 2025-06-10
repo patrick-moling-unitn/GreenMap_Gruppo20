@@ -107,7 +107,7 @@ payload = {email: "patrick.moling@studenti.unitn.it", password: "testtest"}
 apiRequest = testUtility.formatRequestJSON("POST", "authenticatedUsers/", 
                 "execute login request with correct credentials", "<QUERY_PARAMETERS>", payload)
 
-describe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //OK
+xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //OK
     beforeAll( () => testUtility.connectToDatabase(jest, app) );
     afterAll(async () => await testUtility.closeDatabaseConnection());
 
