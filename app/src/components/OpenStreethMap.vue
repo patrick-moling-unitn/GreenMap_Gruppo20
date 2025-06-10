@@ -29,7 +29,7 @@ import ReportModal from './ReportModal.vue'
 import EventBus from '@/EventBus'
 import TrashcanModal from './TrashcanModal.vue';
 import errors from '@enum/errorCodesDecoded.esm';
-import { TrashcanType } from '@enum/trashcanType.ems.js'
+import { TrashcanType } from '@enum/trashcanType.esm.js'
 import LoadingSpinner from './LoadingSpinner.vue';
 
 export default

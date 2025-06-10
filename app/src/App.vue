@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import Register from './components/Register.vue'
-import Todo from './components/Todo.vue'
 import ResolveReport from './components/ResolveReport.vue'
 import Login from './components/Login.vue'
 import Logout from './components/Logout.vue'
@@ -14,8 +13,7 @@ import ManageQuestions from './components/ManageQuestions.vue'
 import ManageDiscounts from './components/ManageDiscounts.vue'
 import CompileQuestionnaire from './components/CompileQuestionnaire.vue'
 import AnswerVisualization from './components/AnswerVisualization.vue'
-
-//import NotFound from './NotFound.vue'
+import NotFound from './components/NotFound.vue'
 
 import EventBus from './EventBus';
 import CookieManager from './cookieManager'
@@ -63,8 +61,6 @@ const routes = {
   '/answerVisualization' : AnswerVisualization,
   '/manageQuestions': ManageQuestions,
   '/viewDiscounts' : ManageDiscounts,
-  '/todo': Todo
-  
 }
 
 const currentPath = ref(window.location.hash)
@@ -136,6 +132,28 @@ function returnToHomePage(){
   window.location.hash = "#/"
 }
 
+//Verifichiamo che l'authToken sia valido con una fetch. Se invalido lo cancelliamo.
+function verifyTokenValidity(authToken){
+  fetch(SERVER_URL+"/authenticatedUsers?type=personal", {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json; charset=UTF-8",
+      "x-access-token": authToken
+    }
+  }).then(response => response.json())
+  .then((response) => {
+    if (response && response.errorCode){
+      CookieManagerClass.deleteCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
+      let logoutReason = "Authentication token was invalid! Please login.";
+      logoutHandler(logoutReason);
+      console.warn(logoutReason);
+      window.location.hash = "#/login";
+    }
+  }).catch((err) => {
+    console.warn(err)
+  })
+}
+
 const loginHandler = function(newAuthToken, automaticLogin) {
   let data = parseJwt(newAuthToken);
   if (LOG_MODE >= 1) console.log(`User logged in and has the following auth token: ${newAuthToken} and admin value: ${data.administrator}`)
@@ -148,10 +166,11 @@ const loginHandler = function(newAuthToken, automaticLogin) {
   if (!automaticLogin) {
     alert("Logged in")
     returnToHomePage();
-  }
+  }else
+    verifyTokenValidity(newAuthToken)
 }
 
-const logoutHandler = function() {
+const logoutHandler = function(logoutReason) {
   if (LOG_MODE >= 2) console.log(`User logged out`)
   administrator.value = false;
   id.value = '';
@@ -161,7 +180,8 @@ const logoutHandler = function() {
     CookieManagerClass.deleteCookie(AUTHENTICATION_TOKEN_COOKIE_NAME);
 
   returnToHomePage();
-  alert("Logged out")
+  if (logoutReason) alert(logoutReason)
+  else alert("Logged out")
 }
 
 const registrationHandler = function() {
@@ -201,6 +221,8 @@ EventBus.on('cookieConsentUpdated', updateCookiesConsent)
 //Richieste eseguite dai componenti VueJS
 EventBus.on('authTokenRequest', sendAuthToken)
 EventBus.on('serverUrlRequest', sendServerUrl)
+
+EventBus.on('backToHomeRequest', returnToHomePage);
 
 let hasCookieConsent = localStorage.getItem(COOKIES_CONSENT_LOCAL_STORAGE_NAME)
 askedCookieConsent.value = hasCookieConsent != null

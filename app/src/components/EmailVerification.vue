@@ -8,7 +8,7 @@
         <button class="col-auto ms-2 btn btn-success" type="submit">Confirm Code</button>
       </div>
       
-      <div class="d-flex mt-5">
+      <div class="d-flex align-items-center mt-5">
         <h5 class="mt-1">or</h5>
         <button class="btn ms-2 btn-danger" @click="resetUserIdCallback()">Cancel registration</button>
       </div>

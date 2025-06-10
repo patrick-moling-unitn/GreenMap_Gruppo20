@@ -68,8 +68,8 @@ import AlertMessage from './AlertMessage.vue'
 import usersFunctions from '@/usersFunctions'
 import reportAPIUtility from '@/reportAPIUtility'
 import trashcanAPIUtility from '@/trashcanAPIUtility'
-import { TrashcanType, TrashcanTypeStringValue } from '@enum/trashcanType.ems.js'
-import { ReportType, ReportTypeStringValue } from '@enum/reportType.ems.js'
+import { TrashcanType, TrashcanTypeStringValue } from '@enum/trashcanType.esm.js'
+import { ReportType, ReportTypeStringValue } from '@enum/reportType.esm.js'
 
 export default{
   components: {
