@@ -4,11 +4,11 @@
     <table class="table table-bordered table-hover w-100 text-center align-middle">
       <thead class="table-primary">
         <tr>
-          <th>Tipo</th>
-          <th>Valore</th>
-          <th>Metodo</th>
-          <th>Codice</th>
-          <th v-if="admin">Operazione</th>
+          <th>Type</th>
+          <th>Value</th>
+          <th>Method</th>
+          <th>Code</th>
+          <th v-if="admin">Operation</th>
         </tr>
       </thead>
       <tbody>

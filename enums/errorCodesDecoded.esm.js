@@ -27,7 +27,8 @@ const errorCodes = Object.freeze([
     "The question type selected must contain options!",
     "The ID provided doesn't match any authenticated user!",
     "The password submitted is wrong!",
-    "The searched item was not found."
+    "The searched item was not found.",
+    "The insterted email is not valid"
 ]);
 
 

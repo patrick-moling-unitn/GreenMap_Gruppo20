@@ -13,12 +13,12 @@
       <thead class="table-primary">
         <tr>
           <th>Issuer ID</th>
-          <th>Tipo</th>
-          <th>Descrizione</th>
-          <th>Latitudine</th>
-          <th>Longitudine</th>
-          <th>Risolto</th>
-          <th>Risolvi</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Solved</th>
+          <th>Solve</th>
         </tr>
       </thead>
       <tbody> 

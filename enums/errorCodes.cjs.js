@@ -27,7 +27,8 @@ const errorCodes = Object.freeze([
     "MISSING_QUESTION_OPTIONS",
     "NO_MATCHING_AUTHENTICATED_USER_ID",
     "WRONG_PASSWORD",
-    "NOT_FOUND"
+    "NOT_FOUND",
+    "EMAIL_CHOOSEN_NOT_VALID"
 ]);
 
 const getError = (errorToSearch) => (errorCodes.indexOf(errorToSearch));

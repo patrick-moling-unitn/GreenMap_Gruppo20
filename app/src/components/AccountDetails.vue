@@ -29,7 +29,7 @@
                     </tbody>
                     </table>
                     </div>
-                    <h2 v-else>Nessun report da mostrare</h2>
+                    <h2 v-else>No reports to show</h2>
                 </div>
             </div>
             <!-- Colonna Destra -->

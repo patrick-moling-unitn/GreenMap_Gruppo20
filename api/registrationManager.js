@@ -56,6 +56,7 @@ router.get("/", async (req, res) => {
  */
 router.post("/",  async (req, res) => {
     //Errore precedente: pensare che /registeringUsers/REG_USER_ID/code venisse indirizzato a questo metodo. E' falso!
+    if(req.body.email || req.body.password){ 
         alreadyRegisteringEmail = await RegisteringUser.findOne({ email: req.body.email.toLowerCase()});
         let verificationCode = alreadyRegisteringEmail ? alreadyRegisteringEmail.verificationCode : null;
         if (verificationCode){ //IF USER IS ALREADY VERIFYING
@@ -72,7 +73,9 @@ router.post("/",  async (req, res) => {
                 return; //return dentro bcrypt.compare non impedisce al metodo di coninuare!
             }
         }
-
+        let email = req.body.email.toLowerCase()
+        if(email.search("@")==-1 || email.search(".")==-1)
+            return res.status(400).json({ errorCode: error("EMAIL_CHOOSEN_NOT_VALID") });
         if(alreadyRegisteringEmail)
             return res.status(400).json({ errorCode: error("REGISTRATING_USER_DUPLICATED_REQUEST") });
         alreadyExistingEmail = await AuthenticatedUser.findOne({ email: req.body.email.toLowerCase()});
@@ -102,6 +105,8 @@ router.post("/",  async (req, res) => {
         }catch(err){
             return res.status(500).json({ errorMessage: err });
         }
+    }else
+        return res.status(400).json({ errorCode: error("MISSING_QUERY_PARAMETERS") });
 });
 
 /**

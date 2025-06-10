@@ -14,10 +14,10 @@
     <table class="table table-bordered table-hover w-100 text-center align-middle">
       <thead class="table-primary">
         <tr>
-          <th>Tipo</th>
-          <th>Latitudine</th>
-          <th>Longitudine</th>
-          <th>Cancella</th>
+          <th>Type</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Delete</th>
         </tr>
       </thead>
       <tbody>
