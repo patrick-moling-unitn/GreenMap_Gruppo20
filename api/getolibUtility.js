@@ -10,6 +10,9 @@ class GeolibUtility {
             return this.distance(position, elementPosition) < maxDistance;
         });
     }
+    areLatLngValid(lat, lng) {
+        return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+    }
     latLngToJSON(lat, lng){
         return {
             latitude: lat,

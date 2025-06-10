@@ -2,6 +2,7 @@ const express = require('express');
 const Report = require('../models/report');
 const router = express.Router();
 const geolibUtility = require('./getolibUtility.js');
+const ReportType = require('../enums/reportType.cjs.js')
 
 const AuthenticatedUser = require('../models/authenticatedUser');
 const error = require('../enums/errorCodes.cjs.js');
@@ -58,10 +59,9 @@ router.get("/", async (req, res, next) => {
         if (req.loggedUser.administrator == false)
             return res.status(401).json({ errorCode: error("UNAUTHORIZED") })
         const [lat, lng] = req.query.position.split(',').map(Number);
-        if (LOG_MODE >= 1) console.log("Get all reports near: " + req.query.position + " max distance (meters): " + req.query.distance)
-
-        if (isNaN(lat) || isNaN(lng))
+        if (!geolibUtility.areLatLngValid(lat, lng))
             return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
+        if (LOG_MODE >= 1) console.log("Get all reports near: " + req.query.position + " max distance (meters): " + req.query.distance)
         
         let userPosition = geolibUtility.latLngToJSON(lat, lng);
         
@@ -174,6 +174,8 @@ router.put("/:id",  async (req, res, next) => {
  *  The method shares the parameters of the one above
  */
 router.put("/:id",  async (req, res) => {
+    if (req.body.resolved == null || req.body.resolved != false && req.body.resolved != true)
+        return res.status(400).json({ errorCode: error("WRONG_DATA") })
     if (req.report.resolved == req.body.resolved)
         return res.status(400).json({ errorCode: error("ALREADY_RESOLVED_REPORT") })
     req.report.resolved = req.body.resolved;
@@ -239,6 +241,13 @@ router.post("",  async (req, res) => {
                     (ISSUE_REPORT_COOLDOWN_MIN / 60) + " ORE FA. RIPROVA FRA: " + remainingMinutes.toFixed(0) + " MINUTI"});
         }
     }
+
+    if (!geolibUtility.areLatLngValid(Number(req.body.latitude), Number(req.body.longitude)))
+        return res.status(400).json({ errorCode: error("COORDINATES_CHOOSEN_NOT_VALID") });
+    
+    if (req.body.type == null || req.body.description == null || req.body.type < ReportType.
+            TRASHCAN_LOCATION_SUGGESTION || req.body.type > ReportType.TRASHCAN_FULL)
+        return res.status(400).json({ errorCode: error("WRONG_DATA") });
 
     let report = new Report({
         issuerId: req.loggedUser.id,
