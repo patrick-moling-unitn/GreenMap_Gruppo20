@@ -31,7 +31,6 @@ xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => { //OK
     let expectedHttpCode = 200, expectedHttpJSON = { }
 
     let fullAPIAdress = testUtility.getFullAPIadress(apiRequest.API_PATH, apiRequest.QUERY_PARAMS);
-    console.log(fullAPIAdress)
     test(apiRequest.API_METHOD+" "+fullAPIAdress+" "+apiRequest.API_DESCRIPTION, async () => {
         const response = await request(app).get(fullAPIAdress).set('Accept','application/json')
 

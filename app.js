@@ -50,7 +50,7 @@ app.use(API_V+"/questionnaires", questionnaireManager)
 app.use(API_V+"/discounts", discountManager)
 
 const path = __dirname + '/app/dist/';
-console.log(path)
+//console.log(path)
 app.use(express.static(path));
 
 module.exports = app;

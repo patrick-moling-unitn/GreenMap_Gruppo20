@@ -15,7 +15,6 @@ const errorCodes = Object.freeze([
     "The services to this application has been restricted." ,
     "Authentication token missing." ,
     "Failed to authenticate token." ,
-    "The password inserted is wrong!",
     "The email inserted does not exist.",
     "Your account has been banned!",
     "Registration request for this email already running!",

@@ -23,14 +23,15 @@ xdescribe(apiRequest.API_METHOD + "/api/v2/"+apiRequest.API_PATH, () => {
         tokenExpiration = 86400, //Tempo che ci mette il token a scadere in secondi
         token = testUtility.getJwtToken(adminUser, tokenExpiration);
 
-    let expectedHttpCode = 400,
-        expectedHttpJSON = { errorCode: error("MISSING_QUERY_PARAMETER") }
+    let expectedHttpCode = 400, expectedHttpJSON = { errorCode: error("MISSING_QUERY_PARAMETER") },
+        _payload = apiRequest.BODY; //Il payload deve essere salvato in locale per evitare problemi di concorrenza
 
     let fullAPIAdress = testUtility.getFullAPIadress(apiRequest.API_PATH, apiRequest.QUERY_PARAMS);
+    //console.log(fullApiAdress) //per debuggare l'adress dell'API e trovare eventuali errori
     test(apiRequest.API_METHOD+" "+fullAPIAdress+" "+apiRequest.API_DESCRIPTION, () => {
                           //  ↓ > sostituisci 'post' con il tuo metodo (API_METHOD)
         return request(app).post(fullAPIAdress)
-        //.send('apiRequest.BODY') //usa solo se devi passare un body ad un post
+        //.send(_payload) //usa solo se devi passare un body ad un post/put/patch
         .set('x-access-token', token).set('Accept','application/json')
         .expect(expectedHttpCode, expectedHttpJSON);
     });
